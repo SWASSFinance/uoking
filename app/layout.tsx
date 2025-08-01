@@ -1,12 +1,49 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
+import { ThemeProvider } from '@/components/theme-provider'
+import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { Toaster } from '@/components/ui/toaster'
+import { ClientOnly } from '@/components/ui/client-only'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'UOKing - Premium Ultima Online Items & Gold',
+  description: 'Your trusted source for premium Ultima Online items, gold, and services. Fast delivery, competitive prices, and 24/7 support.',
+  keywords: 'Ultima Online, UO, gold, items, equipment, scrolls, suits, gaming',
+  authors: [{ name: 'UOKing' }],
+  creator: 'UOKing',
+  publisher: 'UOKing',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://uoking.com'),
+  openGraph: {
+    title: 'UOKing - Premium Ultima Online Items & Gold',
+    description: 'Your trusted source for premium Ultima Online items, gold, and services.',
+    url: 'https://uoking.com',
+    siteName: 'UOKing',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'UOKing - Premium Ultima Online Items & Gold',
+    description: 'Your trusted source for premium Ultima Online items, gold, and services.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({
@@ -15,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <style>{`
 html {
@@ -24,8 +61,25 @@ html {
   --font-mono: ${GeistMono.variable};
 }
         `}</style>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="theme-color" content="#d97706" />
       </head>
-      <body>{children}</body>
+      <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen" suppressHydrationWarning>
+        <ClientOnly>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              {children}
+              <Toaster />
+            </ErrorBoundary>
+          </ThemeProvider>
+        </ClientOnly>
+      </body>
     </html>
   )
 }

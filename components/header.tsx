@@ -1,70 +1,363 @@
 "use client"
 
-import { useState } from "react"
-import { Search, ShoppingCart, Menu, User, Crown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, ShoppingCart, Menu, User, Crown, ChevronDown } from "lucide-react"
+import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
 
-  const navigationItems = [
-    { name: "Home", href: "/" },
-    { name: "Classes", href: "/classes", hasDropdown: true },
-    { name: "Properties", href: "/properties", hasDropdown: true },
-    { name: "Slots", href: "/slots", hasDropdown: true },
-    { name: "Store", href: "/store" },
-    { name: "Gold", href: "/gold" },
-    { name: "Suits", href: "/suits" },
-    { name: "Scrolls", href: "/scrolls" },
-    { name: "Tools", href: "/tools" },
-    { name: "Contact", href: "/contact" },
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeout) {
+        clearTimeout(dropdownTimeout)
+      }
+    }
+  }, [dropdownTimeout])
+
+  const handleMouseEnter = (dropdown: string) => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout)
+      setDropdownTimeout(null)
+    }
+    setActiveDropdown(dropdown)
+  }
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setActiveDropdown(null)
+    }, 300) // 300ms delay before closing
+    setDropdownTimeout(timeout)
+  }
+
+  const classItems = [
+    "Getting Started",
+    "Mage",
+    "Tamer", 
+    "Melee",
+    "Ranged",
+    "Thief",
+    "Crafter"
+  ]
+
+  const propItems = [
+    "Damage Increase",
+    "Defense Chance Increase", 
+    "Enhance Potions",
+    "Faster Cast Recovery",
+    "Faster Casting",
+    "Hit Chance Increase",
+    "Hit Point Regeneration",
+    "Lower Mana Cost",
+    "Lower Reagent Cost",
+    "Mana Regeneration",
+    "Spell Channeling",
+    "Spell Damage Increase",
+    "Stamina Regeneration",
+    "Swing Speed Increase"
+  ]
+
+  const slotItems = [
+    "Belts Aprons",
+    "Chest Armor",
+    "Cloaks Quivers",
+    "Footwear",
+    "Glove Armor", 
+    "Head",
+    "Jewelry",
+    "Leg Armor",
+    "Neck Armor",
+    "Robes",
+    "Sashes",
+    "Sleeve Armor",
+    "Talismans"
+  ]
+
+  const storeItems = [
+    "Accounts",
+    "Alacrity Scrolls",
+    "Armor Refinements",
+    "Artifacts",
+    "Crest Of Blackthorn",
+    "Custom Suits",
+    "Decorations",
+    "Dye Tubs",
+    "Dyes",
+    "GameTime",
+    "Gems",
+    "Gold",
+    "Hair Dyes",
+    "Houses",
+    "Ingots",
+    "Luck Gear",
+    "Mastery Primers",
+    "Mounts",
+    "New Legacy",
+    "New Legacy Gold",
+    "Pets",
+    "Potions",
+    "Power Leveling",
+    "Powerscrolls",
+    "Rares",
+    "Reagents",
+    "Recipes",
+    "Resources",
+    "Runics",
+    "Shard Bound",
+    "Shields",
+    "Ships",
+    "SOT Scrolls",
+    "Special Deals",
+    "Spellbooks",
+    "Statues",
+    "Time of Legends",
+    "Tokens",
+    "Veteran Rewards",
+    "Weapons"
+  ]
+
+  const scrollItems = [
+    "Alacrity Scrolls",
+    "Power Scrolls", 
+    "Transcendence Scrolls"
+  ]
+
+  const toolItems = [
+    "Maps",
+    "IDOC",
+    "EM Event List",
+    "Event Rares",
+    "Price Checker",
+    "Lost Ark Gold",
+    "Auction Safes",
+    "Invasion Event"
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 w-full border-b border-amber-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <Crown className="h-8 w-8 text-amber-600" />
-              <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-orange-500"></div>
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="relative w-32 h-12">
+              <Image
+                src="/logof.png"
+                alt="UO KING"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-gray-900">UO</span>
-              <span className="text-sm font-semibold text-amber-600 -mt-1">KING</span>
-            </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <NavigationMenu className="hidden lg:flex">
-            <NavigationMenuList>
-              {navigationItems.slice(0, 6).map((item) => (
-                <NavigationMenuItem key={item.name}>
-                  {item.hasDropdown ? (
-                    <NavigationMenuTrigger className="text-sm font-medium">{item.name}</NavigationMenuTrigger>
-                  ) : (
-                    <NavigationMenuLink
-                      href={item.href}
-                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+          <nav className="hidden lg:flex items-center space-x-1">
+            <Link href="/" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+              Home
+            </Link>
+
+            {/* Class Dropdown */}
+            <div className="relative group">
+              <button 
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                onMouseEnter={() => handleMouseEnter('class')}
+                onMouseLeave={handleMouseLeave}
+              >
+                Class
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </button>
+              {activeDropdown === 'class' && (
+                <div 
+                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('class')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {classItems.map((item) => (
+                    <Link
+                      key={item}
+                      href={`/class/${item.toLowerCase().replace(' ', '-')}`}
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
-                      {item.name}
-                    </NavigationMenuLink>
-                  )}
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Prop Dropdown */}
+            <div className="relative group">
+              <button 
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                onMouseEnter={() => handleMouseEnter('prop')}
+                onMouseLeave={handleMouseLeave}
+              >
+                Prop
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </button>
+              {activeDropdown === 'prop' && (
+                <div 
+                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('prop')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {propItems.map((item) => (
+                    <Link
+                      key={item}
+                      href={`/prop/${item.toLowerCase().replace(' ', '-')}`}
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Slot Dropdown */}
+            <div className="relative group">
+              <button 
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                onMouseEnter={() => handleMouseEnter('slot')}
+                onMouseLeave={handleMouseLeave}
+              >
+                Slot
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </button>
+              {activeDropdown === 'slot' && (
+                <div 
+                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('slot')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {slotItems.map((item) => (
+                    <Link
+                      key={item}
+                      href={`/slot/${item.toLowerCase().replace(' ', '-')}`}
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Store Dropdown */}
+            <div className="relative group">
+              <button 
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                onMouseEnter={() => handleMouseEnter('store')}
+                onMouseLeave={handleMouseLeave}
+              >
+                Store
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </button>
+              {activeDropdown === 'store' && (
+                <div 
+                  className="absolute left-0 top-full mt-1 w-96 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('store')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <div className="grid grid-cols-3 gap-1 p-2">
+                    {storeItems.map((item) => (
+                      <Link
+                        key={item}
+                        href={`/store/${item.toLowerCase().replace(' ', '-')}`}
+                        className="block px-2 py-1 text-xs hover:bg-accent hover:text-accent-foreground rounded transition-colors"
+                      >
+                        {item}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link href="/gold" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+              Gold
+            </Link>
+
+            <Link href="/suits" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+              Suits
+            </Link>
+
+            {/* Scrolls Dropdown */}
+            <div className="relative group">
+              <button 
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                onMouseEnter={() => handleMouseEnter('scrolls')}
+                onMouseLeave={handleMouseLeave}
+              >
+                Scrolls
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </button>
+              {activeDropdown === 'scrolls' && (
+                <div 
+                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('scrolls')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {scrollItems.map((item) => (
+                    <Link
+                      key={item}
+                      href={`/scrolls/${item.toLowerCase().replace(' ', '-')}`}
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Tools Dropdown */}
+            <div className="relative group">
+              <button 
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                onMouseEnter={() => handleMouseEnter('tools')}
+                onMouseLeave={handleMouseLeave}
+              >
+                Tools
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </button>
+              {activeDropdown === 'tools' && (
+                <div 
+                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('tools')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {toolItems.map((item) => (
+                    <Link
+                      key={item}
+                      href={`/tools/${item.toLowerCase().replace(' ', '-')}`}
+                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href="/contact" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+              Contact
+            </Link>
+          </nav>
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center space-x-2 flex-1 max-w-md mx-4">
@@ -83,21 +376,27 @@ export function Header() {
 
             {/* Auth Buttons */}
             <div className="hidden sm:flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Login
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/login">
+                  <User className="h-4 w-4 mr-2" />
+                  Login
+                </Link>
               </Button>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                Register
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" asChild>
+                <Link href="/signup">
+                  Sign Up
+                </Link>
               </Button>
             </div>
 
             {/* Cart */}
-            <Button variant="outline" size="icon" className="relative bg-transparent">
-              <ShoppingCart className="h-5 w-5" />
-              <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-                0
-              </Badge>
+            <Button variant="outline" size="icon" className="relative bg-transparent" asChild>
+              <Link href="/cart">
+                <ShoppingCart className="h-5 w-5" />
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
+                  3
+                </Badge>
+              </Link>
             </Button>
 
             {/* Mobile Menu */}
@@ -110,16 +409,26 @@ export function Header() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-4 mt-4">
                   <div className="flex items-center space-x-2 pb-4 border-b">
-                    <Crown className="h-6 w-6 text-amber-600" />
-                    <span className="text-lg font-bold">UO KING</span>
+                    <div className="relative w-24 h-8">
+                      <Image
+                        src="/logof.png"
+                        alt="UO KING"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                    <Button variant="outline" className="justify-start bg-transparent">
-                      <User className="h-4 w-4 mr-2" />
-                      Login
+                    <Button variant="outline" className="justify-start bg-transparent" asChild>
+                      <Link href="/login">
+                        <User className="h-4 w-4 mr-2" />
+                        Login
+                      </Link>
                     </Button>
-                    <Button className="justify-start bg-green-600 hover:bg-green-700">Register</Button>
+                    <Button className="justify-start bg-amber-600 hover:bg-amber-700" asChild>
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
                   </div>
 
                   <div className="relative">
@@ -128,16 +437,96 @@ export function Header() {
                   </div>
 
                   <nav className="flex flex-col space-y-2">
-                    {navigationItems.map((item) => (
-                      <Button
-                        key={item.name}
-                        variant="ghost"
-                        className="justify-start"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {item.name}
-                      </Button>
-                    ))}
+                    <Button variant="ghost" className="justify-start">Home</Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="justify-between w-full">
+                          Class
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        {classItems.map((item) => (
+                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="justify-between w-full">
+                          Prop
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        {propItems.map((item) => (
+                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="justify-between w-full">
+                          Slot
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        {slotItems.map((item) => (
+                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="justify-between w-full">
+                          Store
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        {storeItems.map((item) => (
+                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="ghost" className="justify-start">Gold</Button>
+                    <Button variant="ghost" className="justify-start">Suits</Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="justify-between w-full">
+                          Scrolls
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        {scrollItems.map((item) => (
+                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="justify-between w-full">
+                          Tools
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        {toolItems.map((item) => (
+                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="ghost" className="justify-start">Contact</Button>
                   </nav>
                 </div>
               </SheetContent>
