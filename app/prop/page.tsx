@@ -188,7 +188,7 @@ export default function PropPage() {
                       size="sm"
                       asChild
                     >
-                      <Link href={`/prop/${property.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/prop/${property.name.toLowerCase().replace(/\s+/g, '-')}`}>
                         Learn More
                       </Link>
                     </Button>

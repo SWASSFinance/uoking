@@ -15,10 +15,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+
+  // Load categories from API
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        console.log('Fetching categories...')
+        const response = await fetch('/api/categories')
+        if (response.ok) {
+          const dbCategories = await response.json()
+          console.log('Categories loaded:', dbCategories.length)
+          setCategories(dbCategories)
+        } else {
+          console.error('Failed to fetch categories:', response.status)
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error)
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
+    loadCategories()
+  }, [])
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -28,6 +53,31 @@ export function Header() {
       }
     }
   }, [dropdownTimeout])
+
+  // Helper function to convert category name to URL format
+  const categoryToUrl = (categoryName: string) => {
+    return categoryName.replace(/\s+/g, '_')
+  }
+
+  // Helper function to convert slot name to category URL
+  const slotToCategoryUrl = (slotName: string) => {
+    const slotToCategoryMap: { [key: string]: string } = {
+      "Head": "Head",
+      "Chest Armor": "Chest_Armor", 
+      "Leg Armor": "Leg_Armor",
+      "Glove Armor": "Glove_Armor",
+      "Sleeve Armor": "Sleeve_Armor", 
+      "Footwear": "Footwear",
+      "Neck Armor": "Neck_Armor",
+      "Jewelry": "Jewelry",
+      "Talismans": "Talismans",
+      "Robes": "Robes",
+      "Belts Aprons": "Belts_Aprons",
+      "Sashes": "Sashes",
+      "Cloaks Quivers": "Cloaks_Quivers"
+    }
+    return slotToCategoryMap[slotName] || slotName.replace(/\s+/g, '_')
+  }
 
   const handleMouseEnter = (dropdown: string) => {
     if (dropdownTimeout) {
@@ -72,63 +122,22 @@ export function Header() {
   ]
 
   const slotItems = [
-    "Belts Aprons",
-    "Chest Armor",
-    "Cloaks Quivers",
-    "Footwear",
-    "Glove Armor", 
     "Head",
-    "Jewelry",
+    "Chest Armor",
     "Leg Armor",
-    "Neck Armor",
-    "Robes",
-    "Sashes",
+    "Glove Armor",
     "Sleeve Armor",
-    "Talismans"
+    "Footwear",
+    "Neck Armor",
+    "Jewelry",
+    "Talismans",
+    "Robes",
+    "Belts Aprons",
+    "Sashes",
+    "Cloaks Quivers"
   ]
 
-  const storeItems = [
-    "Accounts",
-    "Alacrity Scrolls",
-    "Armor Refinements",
-    "Artifacts",
-    "Crest Of Blackthorn",
-    "Custom Suits",
-    "Decorations",
-    "Dye Tubs",
-    "Dyes",
-    "GameTime",
-    "Gems",
-    "Gold",
-    "Hair Dyes",
-    "Houses",
-    "Ingots",
-    "Luck Gear",
-    "Mastery Primers",
-    "Mounts",
-    "New Legacy",
-    "New Legacy Gold",
-    "Pets",
-    "Potions",
-    "Power Leveling",
-    "Powerscrolls",
-    "Rares",
-    "Reagents",
-    "Recipes",
-    "Resources",
-    "Runics",
-    "Shard Bound",
-    "Shields",
-    "Ships",
-    "SOT Scrolls",
-    "Special Deals",
-    "Spellbooks",
-    "Statues",
-    "Time of Legends",
-    "Tokens",
-    "Veteran Rewards",
-    "Weapons"
-  ]
+
 
   const scrollItems = [
     "Alacrity Scrolls",
@@ -166,14 +175,14 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            <Link href="/" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <Link href="/" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
               Home
             </Link>
 
             {/* Class Dropdown */}
             <div className="relative group">
               <button 
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
                 onMouseEnter={() => handleMouseEnter('class')}
                 onMouseLeave={handleMouseLeave}
               >
@@ -190,7 +199,7 @@ export function Header() {
                     <Link
                       key={item}
                       href={`/class/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
                     </Link>
@@ -202,7 +211,7 @@ export function Header() {
             {/* Prop Dropdown */}
             <div className="relative group">
               <button 
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
                 onMouseEnter={() => handleMouseEnter('prop')}
                 onMouseLeave={handleMouseLeave}
               >
@@ -219,7 +228,7 @@ export function Header() {
                     <Link
                       key={item}
                       href={`/prop/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
                     </Link>
@@ -231,7 +240,7 @@ export function Header() {
             {/* Slot Dropdown */}
             <div className="relative group">
               <button 
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
                 onMouseEnter={() => handleMouseEnter('slot')}
                 onMouseLeave={handleMouseLeave}
               >
@@ -247,8 +256,8 @@ export function Header() {
                   {slotItems.map((item) => (
                     <Link
                       key={item}
-                      href={`/slot/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                      href={`/UO/${slotToCategoryUrl(item)}`}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
                     </Link>
@@ -260,7 +269,7 @@ export function Header() {
             {/* Store Dropdown */}
             <div className="relative group">
               <button 
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
                 onMouseEnter={() => handleMouseEnter('store')}
                 onMouseLeave={handleMouseLeave}
               >
@@ -274,32 +283,42 @@ export function Header() {
                   onMouseLeave={handleMouseLeave}
                 >
                   <div className="grid grid-cols-3 gap-1 p-2">
-                    {storeItems.map((item) => (
-                      <Link
-                        key={item}
-                        href={`/store/${item.toLowerCase().replace(' ', '-')}`}
-                        className="block px-2 py-1 text-xs hover:bg-accent hover:text-accent-foreground rounded transition-colors"
-                      >
-                        {item}
-                      </Link>
-                    ))}
+                    {categoriesLoading ? (
+                      <div className="col-span-3 text-center py-4 text-gray-500 text-sm">
+                        Loading categories...
+                      </div>
+                    ) : categories.length > 0 ? (
+                      categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/UO/${categoryToUrl(category.name)}`}
+                          className="block px-2 py-1 text-xs text-gray-700 hover:bg-amber-50 hover:text-amber-800 rounded transition-colors"
+                        >
+                          {category.name}
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="col-span-3 text-center py-4 text-gray-500 text-sm">
+                        No categories available
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
-            <Link href="/gold" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <Link href="/gold" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
               Gold
             </Link>
 
-            <Link href="/suits" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <Link href="/suits" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
               Suits
             </Link>
 
             {/* Scrolls Dropdown */}
             <div className="relative group">
               <button 
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
                 onMouseEnter={() => handleMouseEnter('scrolls')}
                 onMouseLeave={handleMouseLeave}
               >
@@ -316,7 +335,7 @@ export function Header() {
                     <Link
                       key={item}
                       href={`/scrolls/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
                     </Link>
@@ -328,7 +347,7 @@ export function Header() {
             {/* Tools Dropdown */}
             <div className="relative group">
               <button 
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
                 onMouseEnter={() => handleMouseEnter('tools')}
                 onMouseLeave={handleMouseLeave}
               >
@@ -345,7 +364,7 @@ export function Header() {
                     <Link
                       key={item}
                       href={`/tools/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
                     </Link>
@@ -354,7 +373,7 @@ export function Header() {
               )}
             </div>
 
-            <Link href="/contact" className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+            <Link href="/contact" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
               Contact
             </Link>
           </nav>
@@ -476,7 +495,11 @@ export function Header() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
                         {slotItems.map((item) => (
-                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
+                          <DropdownMenuItem key={item} asChild>
+                            <Link href={`/UO/${slotToCategoryUrl(item)}`}>
+                              {item}
+                            </Link>
+                          </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -489,9 +512,23 @@ export function Header() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
-                        {storeItems.map((item) => (
-                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
-                        ))}
+                        {categoriesLoading ? (
+                          <DropdownMenuItem disabled>
+                            Loading categories...
+                          </DropdownMenuItem>
+                        ) : categories.length > 0 ? (
+                          categories.map((category) => (
+                            <DropdownMenuItem key={category.id} asChild>
+                              <Link href={`/UO/${categoryToUrl(category.name)}`}>
+                                {category.name}
+                              </Link>
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <DropdownMenuItem disabled>
+                            No categories available
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
 

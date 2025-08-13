@@ -180,7 +180,7 @@ export default function SlotPage() {
                       size="sm"
                       asChild
                     >
-                      <Link href={`/slot/${slot.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/UO/${slot.name.replace(/\s+/g, '_')}`}>
                         Browse Equipment
                       </Link>
                     </Button>

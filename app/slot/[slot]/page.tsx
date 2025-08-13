@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Star, Shield } from "lucide-react"
 
-export default function SlotPage({ params }: { params: { slot: string } }) {
+export default async function SlotPage({ params }: { params: Promise<{ slot: string }> }) {
+  const { slot } = await params
   const slotData = {
     "belts-aprons": {
       name: "Belts Aprons",
@@ -204,7 +205,7 @@ export default function SlotPage({ params }: { params: { slot: string } }) {
     }
   }
 
-  const currentSlot = slotData[params.slot as keyof typeof slotData]
+  const currentSlot = slotData[slot as keyof typeof slotData]
 
   if (!currentSlot) {
     return (

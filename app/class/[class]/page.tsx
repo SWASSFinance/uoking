@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Crown, Star, Shield, Zap, Target, Users, Sword, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 
-export default async function ClassPage({ params }: { params: { class: string } }) {
+export default async function ClassPage({ params }: { params: Promise<{ class: string }> }) {
+  const { class: classParam } = await params
   // Function to convert item name to URL-friendly slug
   const createProductSlug = (itemName: string) => {
     return itemName
@@ -452,7 +453,7 @@ export default async function ClassPage({ params }: { params: { class: string } 
     }
   }
 
-  const currentClass = classData[params.class as keyof typeof classData]
+  const currentClass = classData[classParam as keyof typeof classData]
   const IconComponent = currentClass?.icon || Crown
 
   if (!currentClass) {
@@ -492,7 +493,7 @@ export default async function ClassPage({ params }: { params: { class: string } 
           </div>
 
                      {/* Class Items Grid - Show for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes */}
-           {(params.class === 'mage' || params.class === 'tamer' || params.class === 'melee' || params.class === 'ranged' || params.class === 'thief' || params.class === 'crafter') && 'items' in currentClass && Array.isArray(currentClass.items) && (
+           {(classParam === 'mage' || classParam === 'tamer' || classParam === 'melee' || classParam === 'ranged' || classParam === 'thief' || classParam === 'crafter') && 'items' in currentClass && Array.isArray(currentClass.items) && (
              <div className="mb-12">
                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{currentClass.name} Items</h2>
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -531,23 +532,23 @@ export default async function ClassPage({ params }: { params: { class: string } 
           </div>
 
                      {/* Veteran Class Description - Show for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes */}
-           {(params.class === 'mage' || params.class === 'tamer' || params.class === 'melee' || params.class === 'ranged' || params.class === 'thief' || params.class === 'crafter') && 'veteranDescription' in currentClass && currentClass.veteranDescription && (
+           {(classParam === 'mage' || classParam === 'tamer' || classParam === 'melee' || classParam === 'ranged' || classParam === 'thief' || classParam === 'crafter') && 'veteranDescription' in currentClass && currentClass.veteranDescription && (
              <div className="mb-12">
                                     <Card className={`bg-gradient-to-r ${
-                       params.class === 'mage' ? 'from-purple-50 to-purple-100 border-purple-200' :
-                       params.class === 'tamer' ? 'from-green-50 to-green-100 border-green-200' :
-                       params.class === 'melee' ? 'from-red-50 to-red-100 border-red-200' :
-                       params.class === 'ranged' ? 'from-blue-50 to-blue-100 border-blue-200' :
-                       params.class === 'thief' ? 'from-gray-50 to-gray-100 border-gray-200' :
+                       classParam === 'mage' ? 'from-purple-50 to-purple-100 border-purple-200' :
+                       classParam === 'tamer' ? 'from-green-50 to-green-100 border-green-200' :
+                       classParam === 'melee' ? 'from-red-50 to-red-100 border-red-200' :
+                       classParam === 'ranged' ? 'from-blue-50 to-blue-100 border-blue-200' :
+                       classParam === 'thief' ? 'from-gray-50 to-gray-100 border-gray-200' :
                        'from-yellow-50 to-yellow-100 border-yellow-200'
                      } border`}>
                  <CardContent className="p-8">
                                             <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                           {params.class === 'mage' ? 'A Veteran Mage' :
-                            params.class === 'tamer' ? 'A Master Tamer Reflecting on Their Journey' :
-                            params.class === 'melee' ? 'A Battle-Hardened Warrior Reflecting on Their Arsenal' :
-                            params.class === 'ranged' ? 'A Master Archer Reflecting on Their Arsenal' :
-                            params.class === 'thief' ? 'A Cunning Thief Recounting Their Exploits' :
+                           {classParam === 'mage' ? 'A Veteran Mage' :
+                            classParam === 'tamer' ? 'A Master Tamer Reflecting on Their Journey' :
+                            classParam === 'melee' ? 'A Battle-Hardened Warrior Reflecting on Their Arsenal' :
+                            classParam === 'ranged' ? 'A Master Archer Reflecting on Their Arsenal' :
+                            classParam === 'thief' ? 'A Cunning Thief Recounting Their Exploits' :
                             'A Legendary Crafter Reflecting on Their Tools'}
                          </h3>
                    <p className="text-gray-700 leading-relaxed text-lg">

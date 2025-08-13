@@ -60,7 +60,7 @@ export function Banner() {
               Shop Now
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
-            <Button size="lg" variant="outline" className="px-8 py-4 bg-white/90 backdrop-blur-sm text-lg border-2 border-amber-300 hover:bg-amber-50 transform hover:scale-105 transition-all duration-200">
+            <Button size="lg" variant="outline" className="px-8 py-4 bg-white/90 backdrop-blur-sm text-lg border-2 border-amber-600 text-amber-700 hover:bg-amber-600 hover:text-white font-semibold shadow-lg transform hover:scale-105 transition-all duration-200">
               Browse Categories
             </Button>
           </div>
