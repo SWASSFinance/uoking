@@ -13,7 +13,6 @@ import {
   Target, 
   ArrowUp,
   Star,
-  Armor,
   Gem,
   Hammer,
   Eye,
@@ -131,7 +130,7 @@ export default function SuitsPage() {
           {/* Hero Section */}
           <div className="text-center mb-12">
             <div className="flex justify-center mb-4">
-              <Armor className="h-16 w-16 text-amber-600" />
+              <Shield className="h-16 w-16 text-amber-600" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Character Suits
@@ -339,7 +338,7 @@ export default function SuitsPage() {
             <Card className="text-center border-amber-200">
               <CardContent className="pt-6">
                 <div className="flex justify-center mb-4">
-                  <Armor className="h-8 w-8 text-amber-600" />
+                  <Shield className="h-8 w-8 text-amber-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">1000+</h3>
                 <p className="text-gray-600">Suit Items</p>
