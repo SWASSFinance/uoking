@@ -288,11 +288,13 @@ export function Header() {
             </div>
 
             {/* Store Dropdown */}
-            <div className="relative group">
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('store')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
                 className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
-                onMouseEnter={() => handleMouseEnter('store')}
-                onMouseLeave={handleMouseLeave}
               >
                 Store
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -300,8 +302,6 @@ export function Header() {
               {activeDropdown === 'store' && (
                 <div 
                   className="absolute left-0 top-full mt-1 w-96 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                  onMouseEnter={() => handleMouseEnter('store')}
-                  onMouseLeave={handleMouseLeave}
                 >
                   <div className="grid grid-cols-3 gap-1 p-2">
                     {categoriesLoading ? (
@@ -337,11 +337,13 @@ export function Header() {
             </Link>
 
             {/* Scrolls Dropdown */}
-            <div className="relative group">
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('scrolls')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
                 className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
-                onMouseEnter={() => handleMouseEnter('scrolls')}
-                onMouseLeave={handleMouseLeave}
               >
                 Scrolls
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -349,8 +351,6 @@ export function Header() {
               {activeDropdown === 'scrolls' && (
                 <div 
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                  onMouseEnter={() => handleMouseEnter('scrolls')}
-                  onMouseLeave={handleMouseLeave}
                 >
                   {scrollItems.map((item) => (
                     <Link
@@ -366,11 +366,13 @@ export function Header() {
             </div>
 
             {/* Tools Dropdown */}
-            <div className="relative group">
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('tools')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
                 className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
-                onMouseEnter={() => handleMouseEnter('tools')}
-                onMouseLeave={handleMouseLeave}
               >
                 Tools
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -378,8 +380,6 @@ export function Header() {
               {activeDropdown === 'tools' && (
                 <div 
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                  onMouseEnter={() => handleMouseEnter('tools')}
-                  onMouseLeave={handleMouseLeave}
                 >
                   {toolItems.map((item) => (
                     <Link
