@@ -9,7 +9,8 @@ import {
   Users, 
   ShoppingCart,
   LogOut,
-  FolderOpen
+  FolderOpen,
+  Tag
 } from "lucide-react"
 
 const adminNavItems = [
@@ -32,6 +33,11 @@ const adminNavItems = [
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart
+  },
+  {
+    name: "Coupons",
+    href: "/admin/coupons",
+    icon: Tag
   },
   {
     name: "Users",

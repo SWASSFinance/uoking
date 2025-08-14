@@ -309,15 +309,17 @@ export function Header() {
                         Loading categories...
                       </div>
                     ) : categories.length > 0 ? (
-                      categories.map((category) => (
-                        <Link
-                          key={category.id}
-                          href={`/UO/${categoryToUrl(category.name)}`}
-                          className="block px-2 py-1 text-xs text-gray-700 hover:bg-amber-50 hover:text-amber-800 rounded transition-colors"
-                        >
-                          {category.name}
-                        </Link>
-                      ))
+                      [...categories]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((category) => (
+                          <Link
+                            key={category.id}
+                            href={`/UO/${categoryToUrl(category.name)}`}
+                            className="block px-2 py-1 text-xs text-gray-700 hover:bg-amber-50 hover:text-amber-800 rounded transition-colors"
+                          >
+                            {category.name}
+                          </Link>
+                        ))
                     ) : (
                       <div className="col-span-3 text-center py-4 text-gray-500 text-sm">
                         No categories available

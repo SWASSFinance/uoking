@@ -24,7 +24,9 @@ import {
   Truck,
   Shield,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  Tag,
+  X
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -36,6 +38,9 @@ export default function CartPage() {
   const { cart, updateQuantity, removeItem, clearCart, syncToServer } = useCart()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     setIsUpdating(itemId)
@@ -75,6 +80,74 @@ export default function CartPage() {
         variant: "default",
       })
     }
+  }
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a coupon code",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!session) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to apply a coupon",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsApplyingCoupon(true)
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          cartTotal: cart.total
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setAppliedCoupon(data.coupon)
+        setCouponCode('')
+        toast({
+          title: "Coupon Applied!",
+          description: `${data.coupon.description} - ${data.coupon.discount_type === 'percentage' ? `${data.coupon.discount_value}% off` : `$${data.coupon.discount_value} off`}`,
+        })
+      } else {
+        toast({
+          title: "Invalid Coupon",
+          description: data.error || "Failed to apply coupon",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error applying coupon:', error)
+      toast({
+        title: "Error",
+        description: "Failed to apply coupon",
+        variant: "destructive",
+      })
+    } finally {
+      setIsApplyingCoupon(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    toast({
+      title: "Coupon Removed",
+      description: "Coupon has been removed from your cart",
+    })
   }
 
   const handleCheckout = async () => {
@@ -278,12 +351,73 @@ export default function CartPage() {
                   <CardTitle className="text-xl font-bold text-gray-900">Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Coupon Section */}
+                  <div className="space-y-3">
+                    {!appliedCoupon ? (
+                      <div className="space-y-2">
+                        <div className="flex space-x-2">
+                          <Input
+                            placeholder="Enter coupon code"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                            className="flex-1"
+                          />
+                          <Button
+                            onClick={handleApplyCoupon}
+                            disabled={isApplyingCoupon || !couponCode.trim()}
+                            size="sm"
+                            variant="outline"
+                          >
+                            {isApplyingCoupon ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <Tag className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Tag className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-800">
+                              {appliedCoupon.code}
+                            </span>
+                          </div>
+                          <Button
+                            onClick={handleRemoveCoupon}
+                            size="sm"
+                            variant="ghost"
+                            className="text-green-600 hover:text-green-700"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">
+                          {appliedCoupon.description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Summary Details */}
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Subtotal ({cart.itemCount} items)</span>
                       <span className="font-medium">${cart.total.toFixed(2)}</span>
                     </div>
+                    
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Discount ({appliedCoupon.code})</span>
+                        <span className="font-medium text-green-600">
+                          -${appliedCoupon.discount_amount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Shipping</span>
                       <span className="font-medium text-green-600">Free</span>
@@ -295,7 +429,9 @@ export default function CartPage() {
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span className="text-amber-600">${cart.total.toFixed(2)}</span>
+                      <span className="text-amber-600">
+                        ${(cart.total - (appliedCoupon?.discount_amount || 0)).toFixed(2)}
+                      </span>
                     </div>
                   </div>
 
