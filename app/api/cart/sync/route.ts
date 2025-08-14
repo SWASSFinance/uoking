@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 import { Cart } from '@/lib/cart'
 
 export async function POST(request: NextRequest) {
   try {
-    const token = await getToken({ req: request })
+    const session = await auth()
     
-    if (!token?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // Get user ID
     const userResult = await query(`
       SELECT id FROM users WHERE email = $1
-    `, [token.email])
+    `, [session.user.email])
 
     if (!userResult.rows || userResult.rows.length === 0) {
       return NextResponse.json(

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = await getToken({ req: request })
+    const session = await auth()
     
-    if (!token?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
       WHERE u.email = $1
-    `, [token.email])
+    `, [session.user.email])
 
     if (!result.rows || result.rows.length === 0) {
       return NextResponse.json(
@@ -69,9 +69,9 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const token = await getToken({ req: request })
+    const session = await auth()
     
-    if (!token?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -98,7 +98,7 @@ export async function PUT(request: NextRequest) {
     // Get user ID from email
     const userResult = await query(`
       SELECT id FROM users WHERE email = $1
-    `, [token.email])
+    `, [session.user.email])
 
     if (!userResult.rows || userResult.rows.length === 0) {
       return NextResponse.json(
