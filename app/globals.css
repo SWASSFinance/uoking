@@ -134,4 +134,49 @@
   .btn-amber-outline {
     @apply bg-white text-amber-700 border-2 border-amber-600 hover:bg-amber-600 hover:text-white;
   }
+  
+  /* Admin theme overrides - ensure light theme */
+  .admin-page {
+    @apply bg-white text-black;
+  }
+  
+  .admin-page * {
+    @apply bg-white text-black;
+  }
+  
+  .admin-page .bg-card {
+    @apply bg-white;
+  }
+  
+  .admin-page .text-card-foreground {
+    @apply text-black;
+  }
+  
+  .admin-page .bg-popover {
+    @apply bg-white;
+  }
+  
+  .admin-page .text-popover-foreground {
+    @apply text-black;
+  }
+  
+  .admin-page .bg-muted {
+    @apply bg-gray-100;
+  }
+  
+  .admin-page .text-muted-foreground {
+    @apply text-gray-600;
+  }
+  
+  .admin-page .border {
+    @apply border-gray-300;
+  }
+  
+  .admin-page .bg-input {
+    @apply bg-white;
+  }
+  
+  .admin-page .text-input {
+    @apply text-black;
+  }
 }

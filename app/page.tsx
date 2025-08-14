@@ -4,6 +4,7 @@ import { ClassSection } from "@/components/class-section"
 import { SlotSection } from "@/components/slot-section"
 import { FeaturedProducts } from "@/components/featured-products"
 import { HelpSection } from "@/components/help-section"
+import { DealOfTheDay } from "@/components/deal-of-the-day"
 import { Footer } from "@/components/footer"
 
 export default function HomePage() {
@@ -18,6 +19,13 @@ export default function HomePage() {
 
         {/* Main Content */}
         <div className="relative z-10">
+          {/* Deal of the Day */}
+          <section className="py-16 bg-gradient-to-r from-orange-50 to-amber-50">
+            <div className="container mx-auto px-4">
+              <DealOfTheDay />
+            </div>
+          </section>
+
           {/* Class Section */}
           <section className="py-16 bg-white/50 backdrop-blur-sm">
             <ClassSection />

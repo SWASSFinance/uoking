@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Star, Shield, CreditCard, MessageCircle, Truck, CheckCircle } from 'lucide-react'
 import { getProductBySlug, getProductReviews } from '@/lib/db'
 import { notFound } from 'next/navigation'
+import { ProductImageFallback } from '@/components/ui/product-image'
 
 interface ProductPageProps {
   params: Promise<{ 'product-name': string }>
@@ -63,8 +64,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {/* Product Image */}
             <div className="space-y-6">
               <div className="bg-white rounded-lg shadow-lg p-8">
-                <img 
-                  src={product.image_url || '/placeholder.png'} 
+                <ProductImageFallback
+                  src={product.image_url}
                   alt={product.name}
                   className="w-full h-96 object-cover rounded-lg"
                 />
@@ -164,12 +165,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <CardTitle>Game Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {product.available_shards && product.available_shards.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Available Shards:</span>
-                      <span className="font-medium">{product.available_shards.join(', ')}</span>
-                    </div>
-                  )}
+
                   {product.spawn_location && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Spawn Location:</span>
@@ -202,9 +198,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         </label>
                         <select className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
                           <option value="">Choose your shard...</option>
-                          {product.available_shards?.map((shard: string) => (
-                            <option key={shard} value={shard}>{shard}</option>
-                          ))}
+                          <option value="Arirang">Arirang</option>
+                          <option value="Ultima">Ultima</option>
+                          <option value="Tokuno">Tokuno</option>
+                          <option value="Other">Other</option>
                         </select>
                       </div>
                     )}

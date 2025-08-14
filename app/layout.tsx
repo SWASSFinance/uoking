@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import { ThemeProvider } from '@/components/theme-provider'
+import { Providers } from '@/components/providers'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
 import { ClientOnly } from '@/components/ui/client-only'
@@ -67,17 +67,12 @@ html {
       </head>
       <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen" suppressHydrationWarning>
         <ClientOnly>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <Providers>
             <ErrorBoundary>
               {children}
               <Toaster />
             </ErrorBoundary>
-          </ThemeProvider>
+          </Providers>
         </ClientOnly>
       </body>
     </html>

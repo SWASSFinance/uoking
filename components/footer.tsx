@@ -43,7 +43,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-amber-600">Quick Links</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="/gold" className="text-gray-300 hover:text-white transition-colors">Gold</a></li>
+              <li><a href="/UO/Gold" className="text-gray-300 hover:text-white transition-colors">Gold</a></li>
               <li><a href="/suits" className="text-gray-300 hover:text-white transition-colors">Suits</a></li>
               <li><a href="/scrolls" className="text-gray-300 hover:text-white transition-colors">Scrolls</a></li>
               <li><a href="/tools" className="text-gray-300 hover:text-white transition-colors">Tools</a></li>

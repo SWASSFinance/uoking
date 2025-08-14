@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { AdminHeader } from "@/components/admin-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -32,9 +31,15 @@ interface User {
   username: string
   first_name: string
   last_name: string
+  discord_username?: string
+  main_shard?: string
+  character_names?: string[]
   status: string
+  email_verified: boolean
+  is_admin: boolean
   created_at: string
   updated_at: string
+  last_login_at?: string
 }
 
 export default function UsersAdminPage() {
@@ -90,15 +95,25 @@ export default function UsersAdminPage() {
   const handleDelete = async (userId: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
       try {
+        console.log('Deleting user:', userId)
         const response = await fetch(`/api/admin/users/${userId}`, {
           method: 'DELETE',
         })
 
+        console.log('Delete response status:', response.status)
+        
         if (response.ok) {
+          const result = await response.json()
+          console.log('Delete result:', result)
           fetchUsers()
+        } else {
+          const error = await response.json()
+          console.error('Delete failed:', error)
+          alert('Failed to delete user: ' + (error.error || 'Unknown error'))
         }
       } catch (error) {
         console.error('Error deleting user:', error)
+        alert('Error deleting user: ' + error)
       }
     }
   }
@@ -107,7 +122,10 @@ export default function UsersAdminPage() {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+                         user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.discord_username && user.discord_username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (user.main_shard && user.main_shard.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (user.character_names && user.character_names.some(name => name.toLowerCase().includes(searchTerm.toLowerCase())))
     const matchesStatus = filterStatus === "all" || user.status === filterStatus
     
     return matchesSearch && matchesStatus
@@ -123,7 +141,12 @@ export default function UsersAdminPage() {
       username: user?.username || '',
       first_name: user?.first_name || '',
       last_name: user?.last_name || '',
-      status: user?.status || 'active'
+      discord_username: user?.discord_username || '',
+      main_shard: user?.main_shard || '',
+      character_names: user?.character_names || [],
+      status: user?.status || 'active',
+      email_verified: user?.email_verified || false,
+      is_admin: user?.is_admin || false
     })
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -131,75 +154,156 @@ export default function UsersAdminPage() {
       onSave(formData)
     }
 
+    const handleCharacterNamesChange = (value: string) => {
+      const names = value.split(',').map(name => name.trim()).filter(name => name.length > 0)
+      setFormData({...formData, character_names: names})
+    }
+
     return (
-      <Card className="mb-6 border border-gray-200">
+      <Card className="mb-6 border border-gray-200 bg-gray-100">
         <CardHeader>
-          <CardTitle className="text-gray-900">{user ? 'Edit User' : 'Add New User'}</CardTitle>
+          <CardTitle className="text-black">{user ? 'Edit User' : 'Add New User'}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="email" className="text-gray-700">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required
-                  className="border-gray-300"
-                />
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="email" className="text-gray-700">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="username" className="text-gray-700">Username</Label>
+                  <Input
+                    id="username"
+                    value={formData.username}
+                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                    required
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="first_name" className="text-gray-700">First Name</Label>
+                  <Input
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                    required
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="last_name" className="text-gray-700">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                    required
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="username" className="text-gray-700">Username</Label>
-                <Input
-                  id="username"
-                  value={formData.username}
-                  onChange={(e) => setFormData({...formData, username: e.target.value})}
-                  required
-                  className="border-gray-300"
-                />
+            </div>
+
+            {/* Gaming Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Gaming Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="discord_username" className="text-gray-700">Discord Username</Label>
+                  <Input
+                    id="discord_username"
+                    value={formData.discord_username}
+                    onChange={(e) => setFormData({...formData, discord_username: e.target.value})}
+                    placeholder="username#1234"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="main_shard" className="text-gray-700">Main Shard</Label>
+                  <Input
+                    id="main_shard"
+                    value={formData.main_shard}
+                    onChange={(e) => setFormData({...formData, main_shard: e.target.value})}
+                    placeholder="e.g., Atlantic, Arirang"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <Label htmlFor="character_names" className="text-gray-700">Character Names</Label>
+                  <Textarea
+                    id="character_names"
+                    value={formData.character_names.join(', ')}
+                    onChange={(e) => handleCharacterNamesChange(e.target.value)}
+                    placeholder="Enter character names separated by commas"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                    rows={3}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Separate multiple character names with commas</p>
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="first_name" className="text-gray-700">First Name</Label>
-                <Input
-                  id="first_name"
-                  value={formData.first_name}
-                  onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                  required
-                  className="border-gray-300"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="last_name" className="text-gray-700">Last Name</Label>
-                <Input
-                  id="last_name"
-                  value={formData.last_name}
-                  onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                  required
-                  className="border-gray-300"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="status" className="text-gray-700">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-                  <SelectTrigger className="border-gray-300">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                  </SelectContent>
-                </Select>
+            </div>
+
+            {/* Account Settings */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Account Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="status" className="text-gray-700">Status</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="banned">Banned</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="email_verified"
+                      checked={formData.email_verified}
+                      onCheckedChange={(checked) => setFormData({...formData, email_verified: checked})}
+                      className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-200"
+                    />
+                    <Label htmlFor="email_verified" className="text-gray-700">Email Verified</Label>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_admin"
+                      checked={formData.is_admin}
+                      onCheckedChange={(checked) => setFormData({...formData, is_admin: checked})}
+                      className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-200"
+                    />
+                    <Label htmlFor="is_admin" className="text-gray-700">Admin Access</Label>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
               <Button type="button" variant="outline" onClick={onCancel} className="border-gray-300 text-gray-700">
                 Cancel
               </Button>
@@ -214,15 +318,15 @@ export default function UsersAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-screen bg-white text-black">
+      <AdminHeader />
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Users Management</h1>
-              <p className="text-gray-600">Manage user accounts, profiles, and permissions</p>
+              <h1 className="text-4xl font-bold text-black mb-2">Users Management</h1>
+              <p className="text-gray-700">Manage user accounts, profiles, and permissions</p>
             </div>
             <Button 
               onClick={() => setShowForm(true)}
@@ -234,27 +338,27 @@ export default function UsersAdminPage() {
           </div>
 
           {/* Filters */}
-          <Card className="mb-6 border border-gray-200">
+          <Card className="mb-6 border border-gray-200 bg-white">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="search" className="text-gray-700">Search Users</Label>
+                  <Label htmlFor="search" className="text-black font-semibold">Search Users</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
                       id="search"
-                      placeholder="Search by email, username, or name..."
+                      placeholder="Search by email, username, name, discord, shard, or characters..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 border-gray-300"
+                      className="pl-10 border-gray-300 bg-white text-black"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor="status-filter" className="text-gray-700">Status</Label>
+                  <Label htmlFor="status-filter" className="text-black font-semibold">Status</Label>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="border-gray-300">
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -262,6 +366,7 @@ export default function UsersAdminPage() {
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
                       <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="banned">Banned</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -295,20 +400,20 @@ export default function UsersAdminPage() {
               <p className="mt-4 text-gray-600">Loading users...</p>
             </div>
           ) : (
-            <Card className="border border-gray-200">
+            <Card className="border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-gray-900">Users ({filteredUsers.length})</CardTitle>
+                <CardTitle className="text-black">Users ({filteredUsers.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-gray-700">User</TableHead>
-                      <TableHead className="text-gray-700">Email</TableHead>
-                      <TableHead className="text-gray-700">Username</TableHead>
-                      <TableHead className="text-gray-700">Status</TableHead>
-                      <TableHead className="text-gray-700">Joined</TableHead>
-                      <TableHead className="text-gray-700">Actions</TableHead>
+                      <TableHead className="text-black font-semibold">User</TableHead>
+                      <TableHead className="text-black font-semibold">Contact</TableHead>
+                      <TableHead className="text-black font-semibold">Gaming Info</TableHead>
+                      <TableHead className="text-black font-semibold">Status</TableHead>
+                      <TableHead className="text-black font-semibold">Account</TableHead>
+                      <TableHead className="text-black font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -320,38 +425,71 @@ export default function UsersAdminPage() {
                               <User className="h-5 w-5 text-blue-600" />
                             </div>
                             <div>
-                              <div className="font-semibold text-gray-900">
+                              <div className="font-semibold text-black">
                                 {user.first_name} {user.last_name}
                               </div>
-                              <div className="text-sm text-gray-500">ID: {user.id}</div>
+                              <div className="text-sm text-gray-700">@{user.username}</div>
+                              {user.is_admin && (
+                                <Badge className="bg-purple-100 text-purple-800 text-xs mt-1">Admin</Badge>
+                              )}
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Mail className="h-4 w-4 mr-2" />
-                            <span className="truncate max-w-xs">{user.email}</span>
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm text-gray-700">
+                              <Mail className="h-4 w-4 mr-2" />
+                              <span className="truncate max-w-xs">{user.email}</span>
+                            </div>
+                            {user.discord_username && (
+                              <div className="text-xs text-gray-500">
+                                Discord: {user.discord_username}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-gray-600">
-                            @{user.username}
+                          <div className="space-y-1">
+                            {user.main_shard && (
+                              <div className="text-sm text-gray-700">
+                                Shard: {user.main_shard}
+                              </div>
+                            )}
+                            {user.character_names && user.character_names.length > 0 && (
+                              <div className="text-xs text-gray-500">
+                                Characters: {user.character_names.slice(0, 2).join(', ')}
+                                {user.character_names.length > 2 && ` +${user.character_names.length - 2} more`}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge 
-                            className={`${
-                              user.status === 'active' ? 'bg-green-100 text-green-800' : 
-                              user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {user.status}
-                          </Badge>
+                          <div className="space-y-1">
+                            <Badge 
+                              className={`${
+                                user.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
+                                user.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {user.status}
+                            </Badge>
+                            {user.email_verified && (
+                              <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            <span>{new Date(user.created_at).toLocaleDateString()}</span>
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm text-gray-700">
+                              <Calendar className="h-4 w-4 mr-2" />
+                              <span>{new Date(user.created_at).toLocaleDateString()}</span>
+                            </div>
+                            {user.last_login_at && (
+                              <div className="text-xs text-gray-500">
+                                Last login: {new Date(user.last_login_at).toLocaleDateString()}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -389,8 +527,8 @@ export default function UsersAdminPage() {
           {!loading && filteredUsers.length === 0 && (
             <div className="text-center py-12">
               <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No users found</h3>
-              <p className="text-gray-600 mb-6">Try adjusting your search or filters</p>
+              <h3 className="text-xl font-semibold text-black mb-2">No users found</h3>
+              <p className="text-gray-700 mb-6">Try adjusting your search or filters</p>
               <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First User
@@ -399,7 +537,6 @@ export default function UsersAdminPage() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   )
 } 

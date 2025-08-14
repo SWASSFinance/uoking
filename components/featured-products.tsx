@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Star, ShoppingCart, Crown } from "lucide-react"
 import Link from "next/link"
 import { getFeaturedProducts } from "@/lib/db"
+import { ProductImageFallback } from "@/components/ui/product-image"
 
 export async function FeaturedProducts() {
   // Fetch featured products from database
@@ -33,8 +34,8 @@ export async function FeaturedProducts() {
               <Link key={product.id} href={`/product/${product.slug}`}>
                 <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 cursor-pointer">
                   <div className="relative">
-                    <img
-                      src={product.image_url || "/placeholder.svg"}
+                    <ProductImageFallback
+                      src={product.image_url}
                       alt={product.name}
                       className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -44,11 +45,7 @@ export async function FeaturedProducts() {
                     {originalPrice && (
                       <Badge className="absolute top-3 left-3 bg-red-500 text-white">Sale</Badge>
                     )}
-                    {product.available_shards && product.available_shards.length > 0 && (
-                      <Badge className="absolute top-3 right-3 bg-gray-800 text-white text-xs">
-                        {product.available_shards.length === 1 ? product.available_shards[0] : 'All Shards'}
-                      </Badge>
-                    )}
+
                   </div>
 
                   <CardContent className="p-4">

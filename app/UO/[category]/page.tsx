@@ -1,16 +1,44 @@
+"use client"
+
+import { useState, useEffect } from 'react'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Star, ArrowLeft, Filter, Grid, List } from 'lucide-react'
+import { ProductImage } from '@/components/ui/product-image'
+import { Star, ArrowLeft, Filter, Grid, List, ShoppingCart, Plus, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { getCategories, getProducts, getCategoryBySlug } from '@/lib/db'
+import { useToast } from '@/hooks/use-toast'
+import { useCart } from '@/contexts/cart-context'
+
 
 interface CategoryPageProps {
   params: Promise<{
     category: string
   }>
+}
+
+interface Product {
+  id: string | number
+  name: string
+  slug: string
+  price: string
+  sale_price?: string
+  image_url?: string
+  short_description?: string
+  featured: boolean
+  avg_rating: number
+  review_count: number
+  category?: string
+}
+
+interface Category {
+  id: string
+  name: string
+  description?: string
+  image_url?: string
+  meta_title?: string
+  meta_description?: string
 }
 
 // Helper function to convert URL format to database format
@@ -29,51 +57,115 @@ function createSlug(name: string) {
     .replace(/^-|-$/g, '')
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { category: categoryParam } = await params
-  
-  // Convert URL parameter to readable category name
-  const categoryName = urlToCategoryName(categoryParam)
-  const categorySlug = createSlug(categoryName)
-  
-  // Try to find the category by slug
-  let category
-  try {
-    category = await getCategoryBySlug(categorySlug)
-  } catch (error) {
-    console.error('Error fetching category:', error)
-  }
+export default function CategoryPage({ params }: CategoryPageProps) {
+  const [category, setCategory] = useState<Category | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [categoryParam, setCategoryParam] = useState('')
+  const { toast } = useToast()
+  const { addItem } = useCart()
 
-  // If no category found, try to find by name (case insensitive)
-  if (!category) {
-    try {
-      const allCategories = await getCategories()
-      category = allCategories.find(cat => 
-        cat.name.toLowerCase() === categoryName.toLowerCase()
-      )
-    } catch (error) {
-      console.error('Error fetching categories:', error)
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { category: catParam } = await params
+        setCategoryParam(catParam)
+        
+        // Convert URL parameter to readable category name
+        const categoryName = urlToCategoryName(catParam)
+        const categorySlug = createSlug(categoryName)
+        
+        // Try to find the category by slug
+        let foundCategory
+        try {
+          const categoryResponse = await fetch(`/api/categories/${categorySlug}`)
+          if (categoryResponse.ok) {
+            foundCategory = await categoryResponse.json()
+          }
+        } catch (error) {
+          console.error('Error fetching category:', error)
+        }
+
+        // If no category found, try to find by name (case insensitive)
+        if (!foundCategory) {
+          try {
+            const categoriesResponse = await fetch('/api/categories')
+            if (categoriesResponse.ok) {
+              const allCategories = await categoriesResponse.json()
+              foundCategory = allCategories.find((cat: any) => 
+                cat.name.toLowerCase() === categoryName.toLowerCase()
+              )
+            }
+          } catch (error) {
+            console.error('Error fetching categories:', error)
+          }
+        }
+
+        // If still no category found, redirect to store
+        if (!foundCategory) {
+          redirect('/store')
+        }
+
+        setCategory(foundCategory)
+
+        // Fetch products for this category
+        let categoryProducts = []
+        try {
+          const productsResponse = await fetch(`/api/products?categoryId=${foundCategory.id}&limit=100`)
+          if (productsResponse.ok) {
+            categoryProducts = await productsResponse.json()
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error)
+        }
+
+        setProducts(categoryProducts)
+      } catch (error) {
+        console.error('Error loading category data:', error)
+      } finally {
+        setLoading(false)
+      }
     }
+
+    loadData()
+  }, [params])
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: String(product.id),
+      name: product.name,
+      price: parseFloat(product.sale_price || product.price),
+      image_url: product.image_url || '',
+      category: product.category || ''
+    })
+    
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+      variant: "default",
+    })
   }
 
-  // If still no category found, redirect to store
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading products...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!category) {
     redirect('/store')
   }
 
-  // Fetch products for this category
-  let products = []
-  try {
-    products = await getProducts({ 
-      categoryId: category.id,
-      limit: 50 
-    })
-  } catch (error) {
-    console.error('Error fetching products:', error)
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+      <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
           <Link href="/" className="hover:text-amber-600 transition-colors">
@@ -103,7 +195,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             {category.image_url && (
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="relative w-24 h-24 flex-shrink-0">
-                  <Image
+                  <ProductImage
                     src={category.image_url}
                     alt={category.name}
                     fill
@@ -152,54 +244,50 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         {/* Products Grid */}
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {products.map((product) => (
-              <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-amber-200">
-                <CardContent className="p-4">
+              <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                <CardContent className="p-3">
                   <Link href={`/product/${product.slug}`}>
-                    <div className="aspect-square relative mb-4 bg-gray-50 rounded-lg overflow-hidden">
-                      {product.image_url ? (
-                        <Image
-                          src={product.image_url}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-gray-400">No Image</span>
-                        </div>
-                      )}
+                    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden">
+                      <ProductImage
+                        src={product.image_url}
+                        alt={product.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
                       {product.featured && (
-                        <Badge className="absolute top-2 left-2 bg-amber-500">
+                        <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
                           Featured
                         </Badge>
                       )}
                     </div>
                     
-                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">
+                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
                       {product.name}
                     </h3>
                     
-                    {product.short_description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {product.short_description}
-                      </p>
-                    )}
+                    <div className="min-h-[3rem] mb-3">
+                      {product.short_description && (
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {product.short_description}
+                        </p>
+                      )}
+                    </div>
                     
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex flex-col">
                         {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
                           <div className="flex items-center space-x-2">
-                            <span className="text-lg font-bold text-amber-600">
+                            <span className="text-sm font-bold text-amber-600">
                               ${parseFloat(product.sale_price).toFixed(2)}
                             </span>
-                            <span className="text-sm text-gray-500 line-through">
+                            <span className="text-xs text-gray-500 line-through">
                               ${parseFloat(product.price).toFixed(2)}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-lg font-bold text-amber-600">
+                          <span className="text-sm font-bold text-amber-600">
                             ${parseFloat(product.price).toFixed(2)}
                           </span>
                         )}
@@ -207,25 +295,40 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                       
                       {product.avg_rating > 0 && (
                         <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="text-sm font-medium">
-                            {parseFloat(product.avg_rating).toFixed(1)}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({product.review_count})
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span className="text-xs font-medium">
+                            {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
                           </span>
                         </div>
                       )}
                     </div>
-                    
-                    {product.available_shards && product.available_shards.length > 0 && (
-                      <div className="mt-2">
-                        <span className="text-xs text-gray-500">
-                          Available on: {product.available_shards.join(', ')}
-                        </span>
-                      </div>
-                    )}
                   </Link>
+
+                  {/* Quantity and Add to Cart Section */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      id={`qty-${product.id}`}
+                      type="number"
+                      min="1"
+                      defaultValue="1"
+                      className="w-12 h-8 text-center text-sm border border-gray-300 rounded-md bg-white text-black font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                    />
+                    
+                    <Button 
+                      onClick={() => {
+                        const input = document.getElementById(`qty-${product.id}`) as HTMLInputElement
+                        const quantity = parseInt(input?.value) || 1
+                        for (let i = 0; i < quantity; i++) {
+                          handleAddToCart(product)
+                        }
+                      }}
+                      size="sm"
+                      className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                    >
+                      <ShoppingCart className="h-3 w-3 mr-1" />
+                      Add to Cart
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -269,36 +372,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             </div>
           </div>
         )}
+      </div>
     </div>
   )
 }
 
-// Generate metadata for SEO
-export async function generateMetadata({ params }: CategoryPageProps) {
-  const { category: categoryParam } = await params
-  const categoryName = urlToCategoryName(categoryParam)
-  const categorySlug = createSlug(categoryName)
-  
-  let category
-  try {
-    category = await getCategoryBySlug(categorySlug)
-  } catch (error) {
-    // Fallback to dynamic title
-    return {
-      title: `${categoryName} - UO King`,
-      description: `Shop ${categoryName} items for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support.`
-    }
-  }
-
-  if (!category) {
-    return {
-      title: `${categoryName} - UO King`,
-      description: `Shop ${categoryName} items for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support.`
-    }
-  }
-
-  return {
-    title: category.meta_title || `${category.name} - UO King`,
-    description: category.meta_description || category.description?.substring(0, 160) || `Shop ${category.name} items for Ultima Online at UO King.`
-  }
-} 
+ 

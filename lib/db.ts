@@ -182,7 +182,7 @@ export async function getProducts(filters?: {
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE ${whereClause}
       GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
-      ORDER BY p.featured DESC, p.created_at DESC
+      ORDER BY p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       ${limitClause} ${offsetClause}
     `, params);
 
@@ -502,7 +502,7 @@ export async function searchProducts(searchTerm: string, limit = 20) {
           OR p.description ILIKE $2
         )
       GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
-      ORDER BY rank DESC, p.featured DESC, p.created_at DESC
+      ORDER BY rank DESC, p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       LIMIT $3
     `, [searchTerm, `%${searchTerm}%`, limit]);
     return result.rows;
@@ -608,8 +608,8 @@ export async function createProduct(productData: any) {
     const result = await query(`
       INSERT INTO products (
         name, slug, description, short_description, price, sale_price, 
-        image_url, status, featured, category_id, class_id, type,
-        requires_character_name, requires_shard, available_shards
+        image_url, status, featured, category_id, class_id, type, rank,
+        requires_character_name, requires_shard
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *
     `, [
@@ -625,9 +625,9 @@ export async function createProduct(productData: any) {
       productData.category_id || null,
       productData.class_id || null,
       productData.type || '',
+      productData.rank || 0,
       productData.requires_character_name || false,
-      productData.requires_shard || false,
-      JSON.stringify(productData.available_shards || [])
+      productData.requires_shard || false
     ])
     return result.rows[0]
   } catch (error) {
@@ -638,6 +638,9 @@ export async function createProduct(productData: any) {
 
 export async function updateProduct(id: string, productData: any) {
   try {
+    console.log('Database update - Product ID:', id)
+    console.log('Database update - Product data:', JSON.stringify(productData, null, 2))
+    
     const result = await query(`
       UPDATE products SET 
         name = $1,
@@ -652,9 +655,9 @@ export async function updateProduct(id: string, productData: any) {
         category_id = $10,
         class_id = $11,
         type = $12,
-        requires_character_name = $13,
-        requires_shard = $14,
-        available_shards = $15,
+        rank = $13,
+        requires_character_name = $14,
+        requires_shard = $15,
         updated_at = NOW()
       WHERE id = $16
       RETURNING *
@@ -670,15 +673,18 @@ export async function updateProduct(id: string, productData: any) {
       productData.featured || false,
       productData.category_id || null,
       productData.class_id || null,
-      productData.type || '',
+      productData.type || 'item',
+      productData.rank || 0,
       productData.requires_character_name || false,
       productData.requires_shard || false,
-      JSON.stringify(productData.available_shards || []),
       id
     ])
+    
+    console.log('Database update - Success, updated rows:', result.rowCount)
     return result.rows[0]
   } catch (error) {
-    console.error('Error updating product:', error)
+    console.error('Database update - Error:', error)
+    console.error('Database update - Error details:', (error as Error).message)
     throw error
   }
 }
@@ -706,7 +712,7 @@ export async function getAllCategories() {
         p.name as parent_name
       FROM categories c
       LEFT JOIN categories p ON c.parent_id = p.id
-      ORDER BY c.sort_order, c.name
+      ORDER BY c.name ASC
     `)
     return result.rows
   } catch (error) {
@@ -749,21 +755,19 @@ export async function updateCategory(id: string, categoryData: any) {
         name = $1,
         slug = $2,
         description = $3,
-        bottom_desc = $4,
-        image_url = $5,
-        parent_id = $6,
-        sort_order = $7,
-        is_active = $8,
-        meta_title = $9,
-        meta_description = $10,
+        image_url = $4,
+        parent_id = $5,
+        sort_order = $6,
+        is_active = $7,
+        meta_title = $8,
+        meta_description = $9,
         updated_at = NOW()
-      WHERE id = $11
+      WHERE id = $10
       RETURNING *
     `, [
       categoryData.name,
       categoryData.slug,
       categoryData.description || '',
-      categoryData.bottom_desc || '',
       categoryData.image_url || '',
       categoryData.parent_id || null,
       categoryData.sort_order || 0,
@@ -815,7 +819,7 @@ export async function deleteCategory(id: string) {
 export async function getAllUsers() {
   try {
     const result = await query(`
-      SELECT id, email, username, first_name, last_name, status, created_at, updated_at
+      SELECT id, email, username, first_name, last_name, discord_username, main_shard, character_names, status, email_verified, is_admin, created_at, updated_at, last_login_at
       FROM users 
       ORDER BY created_at DESC
     `)

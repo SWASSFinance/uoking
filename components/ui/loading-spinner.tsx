@@ -1,4 +1,5 @@
-import { Crown } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg"
@@ -6,22 +7,17 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-export function LoadingSpinner({ size = "md", text, className = "" }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = "md", text, className }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "h-4 w-4",
-    md: "h-8 w-8", 
-    lg: "h-12 w-12"
+    md: "h-6 w-6",
+    lg: "h-8 w-8"
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center space-y-2 ${className}`}>
-      <div className="relative">
-        <Crown className={`${sizeClasses[size]} text-amber-600 animate-pulse`} />
-        <div className={`absolute inset-0 ${sizeClasses[size]} border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin`}></div>
-      </div>
-      {text && (
-        <p className="text-sm text-gray-600 font-medium">{text}</p>
-      )}
+    <div className={cn("flex items-center justify-center", className)}>
+      <Loader2 className={cn("animate-spin", sizeClasses[size])} />
+      {text && <span className="ml-2 text-sm">{text}</span>}
     </div>
   )
 } 

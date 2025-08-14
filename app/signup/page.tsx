@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -21,29 +21,42 @@ import {
   Shield, 
   Crown, 
   User, 
-  Phone,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Gift,
+  Sword
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 export default function SignUpPage() {
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    characterName: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
-    agreeToMarketing: false
+    agreeToMarketing: false,
+    referralCode: ""
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [referralValid, setReferralValid] = useState<boolean | null>(null)
+
+  // Load referral code from URL params
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      setFormData(prev => ({ ...prev, referralCode: ref }))
+      validateReferralCode(ref)
+    }
+  }, [searchParams])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -53,25 +66,37 @@ export default function SignUpPage() {
     }
   }
 
+  const validateReferralCode = async (code: string) => {
+    if (!code) {
+      setReferralValid(null)
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/auth/validate-referral?code=${code}`)
+      if (response.ok) {
+        setReferralValid(true)
+      } else {
+        setReferralValid(false)
+      }
+    } catch (error) {
+      setReferralValid(false)
+    }
+  }
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required"
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required"
+    if (!formData.characterName.trim()) {
+      newErrors.characterName = "Character name is required"
+    } else if (formData.characterName.trim().length < 2) {
+      newErrors.characterName = "Character name must be at least 2 characters"
     }
 
     if (!formData.email.trim()) {
       newErrors.email = "Email is required"
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address"
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required"
     }
 
     if (!formData.password) {
@@ -103,20 +128,51 @@ export default function SignUpPage() {
 
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsSubmitting(false)
-    
-    // Show success toast
-    toast({
-      title: "Account Created Successfully!",
-      description: "Welcome to UOKing! You can now log in and start your Ultima Online journey.",
-      variant: "default",
-    })
-    
-    // Here you would typically redirect to login or dashboard
-    // For now, we'll just show the success message
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          characterName: formData.characterName,
+          email: formData.email,
+          password: formData.password,
+          agreeToTerms: formData.agreeToTerms,
+          agreeToMarketing: formData.agreeToMarketing,
+          referralCode: formData.referralCode || undefined
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "Account Created Successfully!",
+          description: "Welcome to UOKing! You can now log in and start your Ultima Online journey.",
+          variant: "default",
+        })
+        
+        // Redirect to login page
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 2000)
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: data.error || "Failed to create account. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: "Network error. Please check your connection and try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -150,110 +206,56 @@ export default function SignUpPage() {
             
             <CardContent className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-gray-700 font-medium">
-                      First Name *
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="firstName"
-                        type="text"
-                        placeholder="Enter your first name"
-                        value={formData.firstName}
-                        onChange={(e) => handleInputChange("firstName", e.target.value)}
-                        className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
-                          errors.firstName ? "border-red-500" : ""
-                        }`}
-                      />
-                    </div>
-                    {errors.firstName && (
-                      <p className="text-red-500 text-sm flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.firstName}
-                      </p>
-                    )}
+                {/* Character Name Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="characterName" className="text-gray-700 font-medium">
+                    Character Name *
+                  </Label>
+                  <div className="relative">
+                    <Sword className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="characterName"
+                      type="text"
+                      placeholder="Enter your Ultima Online character name"
+                      value={formData.characterName}
+                      onChange={(e) => handleInputChange("characterName", e.target.value)}
+                      className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
+                        errors.characterName ? "border-red-500" : ""
+                      }`}
+                    />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-gray-700 font-medium">
-                      Last Name *
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="lastName"
-                        type="text"
-                        placeholder="Enter your last name"
-                        value={formData.lastName}
-                        onChange={(e) => handleInputChange("lastName", e.target.value)}
-                        className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
-                          errors.lastName ? "border-red-500" : ""
-                        }`}
-                      />
-                    </div>
-                    {errors.lastName && (
-                      <p className="text-red-500 text-sm flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.lastName}
-                      </p>
-                    )}
-                  </div>
+                  {errors.characterName && (
+                    <p className="text-red-500 text-sm flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.characterName}
+                    </p>
+                  )}
                 </div>
 
-                {/* Contact Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-700 font-medium">
-                      Email Address *
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
-                          errors.email ? "border-red-500" : ""
-                        }`}
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="text-red-500 text-sm flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.email}
-                      </p>
-                    )}
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-gray-700 font-medium">
+                    Email Address *
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
+                        errors.email ? "border-red-500" : ""
+                      }`}
+                    />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-gray-700 font-medium">
-                      Phone Number *
-                    </Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="Enter your phone number"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                        className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
-                          errors.phone ? "border-red-500" : ""
-                        }`}
-                      />
-                    </div>
-                    {errors.phone && (
-                      <p className="text-red-500 text-sm flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.phone}
-                      </p>
-                    )}
-                  </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-sm flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
 
                 {/* Password Fields */}
@@ -323,6 +325,43 @@ export default function SignUpPage() {
                   </div>
                 </div>
 
+                {/* Referral Code */}
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode" className="text-gray-700 font-medium">
+                    Referral Code (Optional)
+                  </Label>
+                  <div className="relative">
+                    <Gift className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="referralCode"
+                      type="text"
+                      placeholder="Enter referral code if you have one"
+                      value={formData.referralCode}
+                      onChange={(e) => {
+                        handleInputChange("referralCode", e.target.value)
+                        validateReferralCode(e.target.value)
+                      }}
+                      className={`pl-10 bg-white border-gray-300 focus:border-amber-500 focus:ring-amber-500 ${
+                        formData.referralCode && referralValid === false ? "border-red-500" : ""
+                      } ${
+                        formData.referralCode && referralValid === true ? "border-green-500" : ""
+                      }`}
+                    />
+                  </div>
+                  {formData.referralCode && referralValid === false && (
+                    <p className="text-red-500 text-sm flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      Invalid referral code
+                    </p>
+                  )}
+                  {formData.referralCode && referralValid === true && (
+                    <p className="text-green-500 text-sm flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Valid referral code! You'll earn bonus rewards.
+                    </p>
+                  )}
+                </div>
+
                 {/* Terms and Marketing */}
                 <div className="space-y-4">
                   <div className="flex items-start space-x-2">
@@ -388,11 +427,19 @@ export default function SignUpPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="border-gray-300 hover:bg-gray-50">
+                <Button 
+                  variant="outline" 
+                  className="border-gray-300 hover:bg-gray-50"
+                  onClick={() => signIn('google', { callbackUrl: '/' })}
+                >
                   <Shield className="h-4 w-4 mr-2" />
                   Google
                 </Button>
-                <Button variant="outline" className="border-gray-300 hover:bg-gray-50">
+                <Button 
+                  variant="outline" 
+                  className="border-gray-300 hover:bg-gray-50"
+                  onClick={() => signIn('discord', { callbackUrl: '/' })}
+                >
                   <Crown className="h-4 w-4 mr-2" />
                   Discord
                 </Button>

@@ -1,60 +1,68 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, ShoppingCart, Menu, User, Crown, ChevronDown } from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { SearchModal } from "@/components/search-modal"
+import { useCart } from "@/contexts/cart-context"
+import { 
+  Search, 
+  Menu, 
+  User, 
+  ShoppingCart, 
+  LogOut, 
+  DollarSign,
+  ChevronDown,
+  Crown
+} from "lucide-react"
 
 export function Header() {
+  const { data: session, status } = useSession()
+  const { cart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([])
+  const [cashbackBalance, setCashbackBalance] = useState(0)
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
 
-  // Load categories from API
+  // Fetch cashback balance when user is authenticated
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        console.log('Fetching categories...')
-        const response = await fetch('/api/categories')
-        if (response.ok) {
-          const dbCategories = await response.json()
-          console.log('Categories loaded:', dbCategories.length)
-          setCategories(dbCategories)
-        } else {
-          console.error('Failed to fetch categories:', response.status)
-        }
-      } catch (error) {
-        console.error('Error loading categories:', error)
-      } finally {
-        setCategoriesLoading(false)
-      }
+    if (session?.user?.email) {
+      fetch('/api/user/cashback-balance')
+        .then(res => res.json())
+        .then(data => {
+          setCashbackBalance(data.referral_cash || 0)
+        })
+        .catch(error => {
+          console.error('Error fetching cashback balance:', error)
+        })
     }
-    loadCategories()
+  }, [session])
+
+  // Fetch categories
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data || [])
+      })
+      .catch(error => {
+        console.error('Error fetching categories:', error)
+      })
+      .finally(() => {
+        setCategoriesLoading(false)
+      })
   }, [])
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (dropdownTimeout) {
-        clearTimeout(dropdownTimeout)
-      }
-    }
-  }, [dropdownTimeout])
-
-  // Helper function to convert category name to URL format
+  // Helper function to convert category name to URL
   const categoryToUrl = (categoryName: string) => {
     return categoryName.replace(/\s+/g, '_')
   }
@@ -137,8 +145,6 @@ export function Header() {
     "Cloaks Quivers"
   ]
 
-
-
   const scrollItems = [
     "Alacrity Scrolls",
     "Power Scrolls", 
@@ -156,13 +162,23 @@ export function Header() {
     "Invasion Event"
   ]
 
+  const getCharacterName = () => {
+    if (session?.user?.firstName) {
+      return session.user.firstName
+    }
+    if (session?.user?.name) {
+      return session.user.name.split(' ')[0]
+    }
+    return 'User'
+  }
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-amber-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex h-20 items-center justify-between">
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="relative w-32 h-12">
+          <Link href="/" className="flex-shrink-0">
+            <div className="relative w-32 h-8">
               <Image
                 src="/logof.png"
                 alt="UO KING"
@@ -175,10 +191,6 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            <Link href="/" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
-              Home
-            </Link>
-
             {/* Class Dropdown */}
             <div className="relative group">
               <button 
@@ -307,7 +319,7 @@ export function Header() {
               )}
             </div>
 
-            <Link href="/gold" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
+            <Link href="/UO/Gold" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
               Gold
             </Link>
 
@@ -372,49 +384,91 @@ export function Header() {
                 </div>
               )}
             </div>
-
-            <Link href="/contact" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
-              Contact
-            </Link>
           </nav>
-
-          {/* Search Bar */}
-          <div className="hidden md:flex items-center space-x-2 flex-1 max-w-md mx-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input type="search" placeholder="Search items..." className="pl-10 pr-4 py-2 w-full" />
-            </div>
-          </div>
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
-            {/* Mobile Search */}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Search className="h-5 w-5" />
+            {/* Search Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsSearchModalOpen(true)}
+              className="hidden sm:flex hover:bg-gray-100"
+            >
+              <Search className="h-5 w-5 text-gray-700" />
             </Button>
 
-            {/* Auth Buttons */}
-            <div className="hidden sm:flex items-center space-x-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/login">
-                  <User className="h-4 w-4 mr-2" />
-                  Login
-                </Link>
-              </Button>
-              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" asChild>
-                <Link href="/signup">
-                  Sign Up
-                </Link>
-              </Button>
-            </div>
+            {/* Auth Buttons / User Info */}
+            {status === 'loading' ? (
+              <div className="hidden sm:flex items-center space-x-2">
+                <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ) : session ? (
+              <div className="hidden sm:flex items-center space-x-3">
+                {/* Cashback Balance */}
+                <div className="flex items-center space-x-1 bg-green-100 px-3 py-1 rounded-full">
+                  <DollarSign className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700">
+                    ${cashbackBalance.toFixed(2)}
+                  </span>
+                </div>
+                
+                {/* User Menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                      <User className="h-4 w-4" />
+                      <span className="hidden md:inline">Hi, {getCharacterName()}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/account" className="flex items-center">
+                        <User className="h-4 w-4 mr-2" />
+                        My Account
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/cart" className="flex items-center">
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Cart
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="flex items-center text-red-600"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center space-x-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/login">
+                    <User className="h-4 w-4 mr-2" />
+                    Login
+                  </Link>
+                </Button>
+                <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" asChild>
+                  <Link href="/signup">
+                    Sign Up
+                  </Link>
+                </Button>
+              </div>
+            )}
 
             {/* Cart */}
             <Button variant="outline" size="icon" className="relative bg-transparent" asChild>
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-                  3
-                </Badge>
+                {cart.itemCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
+                    {cart.itemCount}
+                  </Badge>
+                )}
               </Link>
             </Button>
 
@@ -438,132 +492,146 @@ export function Header() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col space-y-2">
-                    <Button variant="outline" className="justify-start bg-transparent" asChild>
-                      <Link href="/login">
-                        <User className="h-4 w-4 mr-2" />
-                        Login
-                      </Link>
-                    </Button>
-                    <Button className="justify-start bg-amber-600 hover:bg-amber-700" asChild>
-                      <Link href="/signup">Sign Up</Link>
-                    </Button>
-                  </div>
+                  {/* Mobile Search */}
+                  <Button 
+                    variant="outline" 
+                    className="justify-start bg-transparent" 
+                    onClick={() => {
+                      setIsSearchModalOpen(true)
+                      setIsOpen(false)
+                    }}
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Search
+                  </Button>
 
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input type="search" placeholder="Search items..." className="pl-10" />
-                  </div>
+                  {/* Mobile Auth Section */}
+                  {session ? (
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">
+                            Cashback: ${cashbackBalance.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Hi, {getCharacterName()}!
+                      </div>
+                      <Button variant="outline" className="justify-start bg-transparent" asChild>
+                        <Link href="/account">
+                          <User className="h-4 w-4 mr-2" />
+                          My Account
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="justify-start text-red-600 border-red-200"
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col space-y-2">
+                      <Button variant="outline" className="justify-start bg-transparent" asChild>
+                        <Link href="/login">
+                          <User className="h-4 w-4 mr-2" />
+                          Login
+                        </Link>
+                      </Button>
+                      <Button className="justify-start bg-amber-600 hover:bg-amber-700" asChild>
+                        <Link href="/signup">Sign Up</Link>
+                      </Button>
+                    </div>
+                  )}
 
                   <nav className="flex flex-col space-y-2">
-                    <Button variant="ghost" className="justify-start">Home</Button>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="justify-between w-full">
-                          Class
-                          <ChevronDown className="h-4 w-4" />
+                    {/* Class Section */}
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-gray-700 px-2">Class</h3>
+                      {classItems.map((item) => (
+                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
+                          <Link href={`/class/${item.toLowerCase().replace(' ', '-')}`}>
+                            {item}
+                          </Link>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        {classItems.map((item) => (
-                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      ))}
+                    </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="justify-between w-full">
-                          Prop
-                          <ChevronDown className="h-4 w-4" />
+                    {/* Prop Section */}
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-gray-700 px-2">Prop</h3>
+                      {propItems.map((item) => (
+                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
+                          <Link href={`/prop/${item.toLowerCase().replace(' ', '-')}`}>
+                            {item}
+                          </Link>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        {propItems.map((item) => (
-                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      ))}
+                    </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="justify-between w-full">
-                          Slot
-                          <ChevronDown className="h-4 w-4" />
+                    {/* Slot Section */}
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-gray-700 px-2">Slot</h3>
+                      {slotItems.map((item) => (
+                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
+                          <Link href={`/UO/${slotToCategoryUrl(item)}`}>
+                            {item}
+                          </Link>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        {slotItems.map((item) => (
-                          <DropdownMenuItem key={item} asChild>
-                            <Link href={`/UO/${slotToCategoryUrl(item)}`}>
-                              {item}
+                      ))}
+                    </div>
+
+                    {/* Store Section */}
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-gray-700 px-2">Store</h3>
+                      {categoriesLoading ? (
+                        <div className="px-2 text-sm text-gray-500">Loading...</div>
+                      ) : (
+                        categories.slice(0, 8).map((category) => (
+                          <Button key={category.id} variant="ghost" className="justify-start text-sm" asChild>
+                            <Link href={`/UO/${categoryToUrl(category.name)}`}>
+                              {category.name}
                             </Link>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          </Button>
+                        ))
+                      )}
+                    </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="justify-between w-full">
-                          Store
-                          <ChevronDown className="h-4 w-4" />
+                    {/* Other Links */}
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link href="/UO/Gold">Gold</Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link href="/suits">Suits</Link>
+                    </Button>
+
+                    {/* Scrolls Section */}
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-gray-700 px-2">Scrolls</h3>
+                      {scrollItems.map((item) => (
+                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
+                          <Link href={`/scrolls/${item.toLowerCase().replace(' ', '-')}`}>
+                            {item}
+                          </Link>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        {categoriesLoading ? (
-                          <DropdownMenuItem disabled>
-                            Loading categories...
-                          </DropdownMenuItem>
-                        ) : categories.length > 0 ? (
-                          categories.map((category) => (
-                            <DropdownMenuItem key={category.id} asChild>
-                              <Link href={`/UO/${categoryToUrl(category.name)}`}>
-                                {category.name}
-                              </Link>
-                            </DropdownMenuItem>
-                          ))
-                        ) : (
-                          <DropdownMenuItem disabled>
-                            No categories available
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      ))}
+                    </div>
 
-                    <Button variant="ghost" className="justify-start">Gold</Button>
-                    <Button variant="ghost" className="justify-start">Suits</Button>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="justify-between w-full">
-                          Scrolls
-                          <ChevronDown className="h-4 w-4" />
+                    {/* Tools Section */}
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-gray-700 px-2">Tools</h3>
+                      {toolItems.map((item) => (
+                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
+                          <Link href={`/tools/${item.toLowerCase().replace(' ', '-')}`}>
+                            {item}
+                          </Link>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        {scrollItems.map((item) => (
-                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="justify-between w-full">
-                          Tools
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        {toolItems.map((item) => (
-                          <DropdownMenuItem key={item}>{item}</DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <Button variant="ghost" className="justify-start">Contact</Button>
+                      ))}
+                    </div>
                   </nav>
                 </div>
               </SheetContent>
@@ -571,6 +639,12 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={() => setIsSearchModalOpen(false)} 
+      />
     </header>
   )
 }

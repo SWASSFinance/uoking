@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { AdminHeader } from "@/components/admin-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +26,8 @@ import {
   Image as ImageIcon
 } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
+import { ProductImage } from "@/components/ui/product-image"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface Product {
   id: string
@@ -36,16 +36,16 @@ interface Product {
   description: string
   short_description: string
   price: string
-  sale_price: string
   image_url: string
   status: string
   featured: boolean
   category_id: string
   class_id: string
   type: string
+  rank: number
   requires_character_name: boolean
   requires_shard: boolean
-  available_shards: string[]
+
   created_at: string
   updated_at: string
   category_name?: string
@@ -87,10 +87,11 @@ export default function ProductsAdminPage() {
       const response = await fetch('/api/admin/products')
       if (response.ok) {
         const data = await response.json()
-        setProducts(data)
+        setProducts(data.products || [])
       }
     } catch (error) {
       console.error('Error fetching products:', error)
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -98,7 +99,7 @@ export default function ProductsAdminPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories')
+      const response = await fetch('/api/admin/categories')
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -159,9 +160,9 @@ export default function ProductsAdminPage() {
     }
   }
 
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = (products || []).filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase())
+                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesStatus = filterStatus === "all" || product.status === filterStatus
     const matchesCategory = filterCategory === "all" || product.category_id === filterCategory
     
@@ -173,23 +174,22 @@ export default function ProductsAdminPage() {
     onSave: (data: Partial<Product>) => void, 
     onCancel: () => void 
   }) => {
-    const [formData, setFormData] = useState({
-      name: product?.name || '',
-      slug: product?.slug || '',
-      description: product?.description || '',
-      short_description: product?.short_description || '',
-      price: product?.price || '',
-      sale_price: product?.sale_price || '',
-      image_url: product?.image_url || '',
-      status: product?.status || 'active',
-      featured: product?.featured || false,
-      category_id: product?.category_id || '',
-      class_id: product?.class_id || '',
-      type: product?.type || '',
-      requires_character_name: product?.requires_character_name || false,
-      requires_shard: product?.requires_shard || false,
-      available_shards: product?.available_shards || []
-    })
+      const [formData, setFormData] = useState({
+    name: product?.name || '',
+    slug: product?.slug || '',
+    description: product?.description || '',
+    short_description: product?.short_description || '',
+    price: product?.price || '',
+    image_url: product?.image_url || '',
+    status: product?.status || 'active',
+    featured: product?.featured || false,
+    category_id: product?.category_id || '',
+    class_id: product?.class_id || '',
+    type: product?.type || 'item',
+    rank: product?.rank || 0,
+    requires_character_name: product?.requires_character_name || false,
+    requires_shard: product?.requires_shard || false
+  })
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
@@ -197,37 +197,37 @@ export default function ProductsAdminPage() {
     }
 
     return (
-      <Card className="mb-6 border border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-gray-900">{product ? 'Edit Product' : 'Add New Product'}</CardTitle>
-        </CardHeader>
+                  <Card className="mb-6 border border-gray-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-black">{product ? 'Edit Product' : 'Add New Product'}</CardTitle>
+              </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="name" className="text-gray-700">Product Name</Label>
+                <Label htmlFor="name" className="text-black font-semibold">Product Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required
-                  className="border-gray-300"
+                  className="border-gray-300 bg-white text-black"
                 />
               </div>
               
               <div>
-                <Label htmlFor="slug" className="text-gray-700">Slug</Label>
+                <Label htmlFor="slug" className="text-black font-semibold">Slug</Label>
                 <Input
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => setFormData({...formData, slug: e.target.value})}
                   placeholder="auto-generated"
-                  className="border-gray-300"
+                  className="border-gray-300 bg-white text-black"
                 />
               </div>
               
               <div>
-                <Label htmlFor="price" className="text-gray-700">Price</Label>
+                <Label htmlFor="price" className="text-black font-semibold">Price</Label>
                 <Input
                   id="price"
                   type="number"
@@ -235,31 +235,21 @@ export default function ProductsAdminPage() {
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
                   required
-                  className="border-gray-300"
+                  className="border-gray-300 bg-white text-black"
                 />
               </div>
               
-              <div>
-                <Label htmlFor="sale_price" className="text-gray-700">Sale Price</Label>
-                <Input
-                  id="sale_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.sale_price}
-                  onChange={(e) => setFormData({...formData, sale_price: e.target.value})}
-                  className="border-gray-300"
-                />
-              </div>
+
               
               <div>
-                <Label htmlFor="category" className="text-gray-700">Category</Label>
+                <Label htmlFor="category" className="text-black font-semibold">Category</Label>
                 <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
-                  <SelectTrigger className="border-gray-300">
+                  <SelectTrigger className="border-gray-300 bg-white text-black">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
+                      <SelectItem key={category.id} value={category.id} className="text-black">
                         {category.name}
                       </SelectItem>
                     ))}
@@ -268,14 +258,14 @@ export default function ProductsAdminPage() {
               </div>
               
               <div>
-                <Label htmlFor="class" className="text-gray-700">Class</Label>
+                <Label htmlFor="class" className="text-black font-semibold">Class</Label>
                 <Select value={formData.class_id} onValueChange={(value) => setFormData({...formData, class_id: value})}>
-                  <SelectTrigger className="border-gray-300">
+                  <SelectTrigger className="border-gray-300 bg-white text-black">
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     {classes.map((classItem) => (
-                      <SelectItem key={classItem.id} value={classItem.id}>
+                      <SelectItem key={classItem.id} value={classItem.id} className="text-black">
                         {classItem.name}
                       </SelectItem>
                     ))}
@@ -284,61 +274,76 @@ export default function ProductsAdminPage() {
               </div>
               
               <div>
-                <Label htmlFor="status" className="text-gray-700">Status</Label>
+                <Label htmlFor="status" className="text-black font-semibold">Status</Label>
                 <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-                  <SelectTrigger className="border-gray-300">
+                  <SelectTrigger className="border-gray-300 bg-white text-black">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="active" className="text-black">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-black">Inactive</SelectItem>
+                    <SelectItem value="draft" className="text-black">Draft</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="type" className="text-gray-700">Type</Label>
+                <Label htmlFor="type" className="text-black font-semibold">Type</Label>
+                <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                  <SelectTrigger className="border-gray-300 bg-white text-black">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="item" className="text-black">Item</SelectItem>
+                    <SelectItem value="service" className="text-black">Service</SelectItem>
+                    <SelectItem value="account" className="text-black">Account</SelectItem>
+                    <SelectItem value="gold" className="text-black">Gold</SelectItem>
+                    <SelectItem value="house" className="text-black">House</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="rank" className="text-black font-semibold">Display Order (Rank)</Label>
                 <Input
-                  id="type"
-                  value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  placeholder="e.g., Weapon, Armor, Consumable"
-                  className="border-gray-300"
+                  id="rank"
+                  type="number"
+                  value={formData.rank}
+                  onChange={(e) => setFormData({...formData, rank: parseInt(e.target.value) || 0})}
+                  placeholder="0"
+                  className="border-gray-300 bg-white text-black"
                 />
+                <p className="text-xs text-gray-600 mt-1">Lower numbers appear first. Products with same rank are sorted alphabetically.</p>
               </div>
             </div>
             
             <div>
-              <Label htmlFor="short_description" className="text-gray-700">Short Description</Label>
+              <Label htmlFor="short_description" className="text-black font-semibold">Short Description</Label>
               <Textarea
                 id="short_description"
                 value={formData.short_description}
                 onChange={(e) => setFormData({...formData, short_description: e.target.value})}
                 rows={3}
-                className="border-gray-300"
+                className="border-gray-300 bg-white text-black"
               />
             </div>
             
             <div>
-              <Label htmlFor="description" className="text-gray-700">Full Description</Label>
+              <Label htmlFor="description" className="text-black font-semibold">Full Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={6}
-                className="border-gray-300"
+                className="border-gray-300 bg-white text-black"
               />
             </div>
             
             <div>
-              <Label htmlFor="image_url" className="text-gray-700">Image URL</Label>
-              <Input
-                id="image_url"
+              <ImageUpload
                 value={formData.image_url}
-                onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                placeholder="https://example.com/image.jpg"
-                className="border-gray-300"
+                onChange={(url) => setFormData({...formData, image_url: url})}
+                label="Product Image"
               />
             </div>
             
@@ -349,7 +354,7 @@ export default function ProductsAdminPage() {
                   checked={formData.featured}
                   onCheckedChange={(checked) => setFormData({...formData, featured: checked})}
                 />
-                <Label htmlFor="featured" className="text-gray-700">Featured Product</Label>
+                <Label htmlFor="featured" className="text-black font-semibold">Featured Product</Label>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -358,7 +363,7 @@ export default function ProductsAdminPage() {
                   checked={formData.requires_character_name}
                   onCheckedChange={(checked) => setFormData({...formData, requires_character_name: checked})}
                 />
-                <Label htmlFor="requires_character_name" className="text-gray-700">Requires Character Name</Label>
+                <Label htmlFor="requires_character_name" className="text-black font-semibold">Requires Character Name</Label>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -367,7 +372,7 @@ export default function ProductsAdminPage() {
                   checked={formData.requires_shard}
                   onCheckedChange={(checked) => setFormData({...formData, requires_shard: checked})}
                 />
-                <Label htmlFor="requires_shard" className="text-gray-700">Requires Shard</Label>
+                <Label htmlFor="requires_shard" className="text-black font-semibold">Requires Shard</Label>
               </div>
             </div>
             
@@ -386,15 +391,15 @@ export default function ProductsAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-screen bg-white text-black admin-page">
+      <AdminHeader />
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Products Management</h1>
-              <p className="text-gray-600">Manage all products, pricing, and inventory</p>
+              <h1 className="text-4xl font-bold text-black mb-2">Products Management</h1>
+              <p className="text-gray-700">Manage all products, pricing, and inventory</p>
             </div>
             <Button 
               onClick={() => setShowForm(true)}
@@ -406,11 +411,11 @@ export default function ProductsAdminPage() {
           </div>
 
           {/* Filters */}
-          <Card className="mb-6 border border-gray-200">
+          <Card className="mb-6 border border-gray-200 bg-white">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <Label htmlFor="search" className="text-gray-700">Search Products</Label>
+                  <Label htmlFor="search" className="text-black font-semibold">Search Products</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
@@ -418,36 +423,36 @@ export default function ProductsAdminPage() {
                       placeholder="Search by name or description..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 border-gray-300"
+                      className="pl-10 border-gray-300 bg-white text-black"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor="status-filter" className="text-gray-700">Status</Label>
+                  <Label htmlFor="status-filter" className="text-black font-semibold">Status</Label>
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="border-gray-300">
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all" className="text-black">All Status</SelectItem>
+                      <SelectItem value="active" className="text-black">Active</SelectItem>
+                      <SelectItem value="inactive" className="text-black">Inactive</SelectItem>
+                      <SelectItem value="draft" className="text-black">Draft</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div>
-                  <Label htmlFor="category-filter" className="text-gray-700">Category</Label>
+                  <Label htmlFor="category-filter" className="text-black font-semibold">Category</Label>
                   <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="border-gray-300">
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all" className="text-black">All Categories</SelectItem>
                       {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
+                        <SelectItem key={category.id} value={category.id} className="text-black">
                           {category.name}
                         </SelectItem>
                       ))}
@@ -484,20 +489,21 @@ export default function ProductsAdminPage() {
               <p className="mt-4 text-gray-600">Loading products...</p>
             </div>
           ) : (
-            <Card className="border border-gray-200">
+            <Card className="border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-gray-900">Products ({filteredProducts.length})</CardTitle>
+                <CardTitle className="text-black">Products ({filteredProducts.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-gray-700">Product</TableHead>
-                      <TableHead className="text-gray-700">Price</TableHead>
-                      <TableHead className="text-gray-700">Category</TableHead>
-                      <TableHead className="text-gray-700">Status</TableHead>
-                      <TableHead className="text-gray-700">Type</TableHead>
-                      <TableHead className="text-gray-700">Actions</TableHead>
+                      <TableHead className="text-black font-semibold">Product</TableHead>
+                      <TableHead className="text-black font-semibold">Price</TableHead>
+                      <TableHead className="text-black font-semibold">Category</TableHead>
+                      <TableHead className="text-black font-semibold">Status</TableHead>
+                      <TableHead className="text-black font-semibold">Type</TableHead>
+                      <TableHead className="text-black font-semibold">Rank</TableHead>
+                      <TableHead className="text-black font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -506,21 +512,17 @@ export default function ProductsAdminPage() {
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                              {product.image_url ? (
-                                <Image
-                                  src={product.image_url}
-                                  alt={product.name}
-                                  width={48}
-                                  height={48}
-                                  className="object-cover"
-                                />
-                              ) : (
-                                <ImageIcon className="h-6 w-6 text-gray-400" />
-                              )}
+                              <ProductImage
+                                src={product.image_url}
+                                alt={product.name}
+                                width={48}
+                                height={48}
+                                className="object-cover"
+                              />
                             </div>
                             <div>
-                              <div className="font-semibold text-gray-900">{product.name}</div>
-                              <div className="text-sm text-gray-500">
+                              <div className="font-semibold text-black">{product.name}</div>
+                              <div className="text-sm text-gray-700">
                                 {product.short_description && product.short_description.length > 50 
                                   ? `${product.short_description.substring(0, 50)}...` 
                                   : product.short_description}
@@ -539,19 +541,14 @@ export default function ProductsAdminPage() {
                             <div className="font-semibold text-green-600">
                               ${parseFloat(product.price).toFixed(2)}
                             </div>
-                            {product.sale_price && (
-                              <div className="text-sm text-gray-500 line-through">
-                                ${parseFloat(product.sale_price).toFixed(2)}
-                              </div>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-black">
                             {product.category_name || 'No Category'}
                           </div>
                           {product.class_name && (
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-700">
                               Class: {product.class_name}
                             </div>
                           )}
@@ -567,8 +564,13 @@ export default function ProductsAdminPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-black">
                             {product.type || 'N/A'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-black">
+                            {product.rank || 0}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -606,8 +608,8 @@ export default function ProductsAdminPage() {
           {!loading && filteredProducts.length === 0 && (
             <div className="text-center py-12">
               <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-              <p className="text-gray-600 mb-6">Try adjusting your search or filters</p>
+              <h3 className="text-xl font-semibold text-black mb-2">No products found</h3>
+              <p className="text-gray-700 mb-6">Try adjusting your search or filters</p>
               <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Product
@@ -616,7 +618,6 @@ export default function ProductsAdminPage() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   )
 } 
