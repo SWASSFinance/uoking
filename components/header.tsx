@@ -201,11 +201,13 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
             {/* Class Dropdown */}
-            <div className="relative group">
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('class')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
                 className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
-                onMouseEnter={() => handleMouseEnter('class')}
-                onMouseLeave={handleMouseLeave}
               >
                 Class
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -213,8 +215,6 @@ export function Header() {
               {activeDropdown === 'class' && (
                 <div 
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                  onMouseEnter={() => handleMouseEnter('class')}
-                  onMouseLeave={handleMouseLeave}
                 >
                   {classItems.map((item) => (
                     <Link
@@ -230,11 +230,13 @@ export function Header() {
             </div>
 
             {/* Prop Dropdown */}
-            <div className="relative group">
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('prop')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
                 className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
-                onMouseEnter={() => handleMouseEnter('prop')}
-                onMouseLeave={handleMouseLeave}
               >
                 Prop
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -242,8 +244,6 @@ export function Header() {
               {activeDropdown === 'prop' && (
                 <div 
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                  onMouseEnter={() => handleMouseEnter('prop')}
-                  onMouseLeave={handleMouseLeave}
                 >
                   {propItems.map((item) => (
                     <Link
@@ -259,11 +259,13 @@ export function Header() {
             </div>
 
             {/* Slot Dropdown */}
-            <div className="relative group">
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('slot')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button 
                 className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
-                onMouseEnter={() => handleMouseEnter('slot')}
-                onMouseLeave={handleMouseLeave}
               >
                 Slot
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -271,8 +273,6 @@ export function Header() {
               {activeDropdown === 'slot' && (
                 <div 
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                  onMouseEnter={() => handleMouseEnter('slot')}
-                  onMouseLeave={handleMouseLeave}
                 >
                   {slotItems.map((item) => (
                     <Link
