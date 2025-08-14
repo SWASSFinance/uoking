@@ -6,7 +6,7 @@ import { query } from '@/lib/db'
 import { getUserReferralCode } from '@/lib/referral'
 import bcrypt from 'bcryptjs'
 
-const handler = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -208,4 +208,4 @@ const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
 })
 
-export { handler as GET, handler as POST } 
+export const { GET, POST } = handlers 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -98,8 +98,17 @@ export function Header() {
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
       setActiveDropdown(null)
-    }, 300) // 300ms delay before closing
+    }, 150)
     setDropdownTimeout(timeout)
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/signout', { method: 'POST' })
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const classItems = [
@@ -435,7 +444,7 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem 
-                      onClick={() => signOut({ callbackUrl: '/' })}
+                      onClick={handleSignOut}
                       className="flex items-center text-red-600"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
@@ -528,7 +537,7 @@ export function Header() {
                       <Button 
                         variant="outline" 
                         className="justify-start text-red-600 border-red-200"
-                        onClick={() => signOut({ callbackUrl: '/' })}
+                        onClick={handleSignOut}
                       >
                         <LogOut className="h-4 w-4 mr-2" />
                         Logout
