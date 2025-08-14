@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { AdminHeader } from "@/components/admin-header"
 import { Button } from "@/components/ui/button"
@@ -50,8 +48,6 @@ interface Coupon {
 }
 
 export default function AdminCouponsPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
   const { toast } = useToast()
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -68,20 +64,10 @@ export default function AdminCouponsPage() {
     valid_until: ''
   })
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (status === 'loading') return
-    if (!session?.user?.isAdmin) {
-      router.push('/')
-    }
-  }, [session, status, router])
-
   // Fetch coupons
   useEffect(() => {
-    if (session?.user?.isAdmin) {
-      fetchCoupons()
-    }
-  }, [session])
+    fetchCoupons()
+  }, [])
 
   const fetchCoupons = async () => {
     try {
@@ -229,7 +215,7 @@ export default function AdminCouponsPage() {
     return `$${coupon.discount_value.toFixed(2)}`
   }
 
-  if (status === 'loading' || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <AdminHeader />
@@ -238,10 +224,6 @@ export default function AdminCouponsPage() {
         </div>
       </div>
     )
-  }
-
-  if (!session?.user?.isAdmin) {
-    return null
   }
 
   return (
