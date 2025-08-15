@@ -16,6 +16,7 @@ interface VideoUploadProps {
 
 export function VideoUpload({ value, onChange, label = "Video", className }: VideoUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [preview, setPreview] = useState<string | null>(value || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -23,10 +24,10 @@ export function VideoUpload({ value, onChange, label = "Video", className }: Vid
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Check file size (19MB limit)
-    const maxSize = 19 * 1024 * 1024 // 19MB in bytes
+    // Check file size (100MB limit - can be increased further if needed)
+    const maxSize = 100 * 1024 * 1024 // 100MB in bytes
     if (file.size > maxSize) {
-      alert('Video file too large. Maximum size is 19MB.')
+      alert('Video file too large. Maximum size is 100MB.')
       return
     }
 
@@ -46,6 +47,7 @@ export function VideoUpload({ value, onChange, label = "Video", className }: Vid
 
     // Upload to server
     setIsUploading(true)
+    setUploadProgress(0)
     try {
       const formData = new FormData()
       formData.append('video', file)
@@ -59,6 +61,7 @@ export function VideoUpload({ value, onChange, label = "Video", className }: Vid
         const data = await response.json()
         onChange(data.url)
         setPreview(data.url)
+        setUploadProgress(100)
       } else {
         const errorData = await response.json()
         console.error('Upload failed:', errorData.error)
@@ -71,6 +74,7 @@ export function VideoUpload({ value, onChange, label = "Video", className }: Vid
       setPreview(null)
     } finally {
       setIsUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -132,14 +136,24 @@ export function VideoUpload({ value, onChange, label = "Video", className }: Vid
             className="w-full"
           >
             {isUploading ? (
-              <LoadingSpinner size="sm" text="Uploading..." />
+              <LoadingSpinner size="sm" text={`Uploading... ${uploadProgress}%`} />
             ) : (
               <>
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Video (Max 19MB)
+                Upload Video (Max 100MB)
               </>
             )}
           </Button>
+          
+          {/* Progress bar for large uploads */}
+          {isUploading && uploadProgress > 0 && (
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          )}
         </div>
 
         {/* URL Input */}

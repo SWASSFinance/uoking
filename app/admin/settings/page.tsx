@@ -381,14 +381,17 @@ export default function SettingsAdminPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <VideoUpload
-                    value={formData.video_url}
-                    onChange={(url) => setFormData({...formData, video_url: url})}
-                    label="Video"
-                    className="w-full"
-                  />
-                </div>
+                                  <div>
+                    <VideoUpload
+                      value={formData.video_url}
+                      onChange={(url) => setFormData({...formData, video_url: url})}
+                      label="Video"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-600 mt-2">
+                      Supports videos up to 100MB. Larger files may take longer to upload.
+                    </p>
+                  </div>
 
                 <div>
                   <Label className="text-black font-semibold">Fallback Image</Label>

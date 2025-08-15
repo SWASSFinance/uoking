@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check file size (19MB limit)
-    const maxSize = 19 * 1024 * 1024 // 19MB in bytes
+    // Check file size (100MB limit - can be increased further if needed)
+    const maxSize = 100 * 1024 * 1024 // 100MB in bytes
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'Video file too large. Maximum size is 19MB.' },
+        { error: 'Video file too large. Maximum size is 100MB.' },
         { status: 400 }
       )
     }
@@ -49,12 +49,13 @@ export async function POST(request: NextRequest) {
           folder: 'uoking/videos',
           resource_type: 'video',
           overwrite: true,
-          chunk_size: 6000000, // 6MB chunks for large files
+          chunk_size: 20000000, // 20MB chunks for larger files
           eager: [
             { width: 1280, height: 720, crop: 'scale' },
             { width: 854, height: 480, crop: 'scale' }
           ],
-          eager_async: true
+          eager_async: true,
+          timeout: 300000 // 5 minute timeout for large uploads
         },
         (error, result) => {
           if (error) reject(error)
