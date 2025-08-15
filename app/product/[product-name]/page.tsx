@@ -7,7 +7,9 @@ import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Star, Shield, CreditCard, MessageCircle, Truck, CheckCircle } from 'lucide-react'
 import { getProductBySlug, getProductReviews } from '@/lib/db'
 import { notFound } from 'next/navigation'
-import { ProductImageFallback } from '@/components/ui/product-image'
+import { ProductImageGallery } from '@/components/product-image-gallery'
+import { ProductReviewForm } from '@/components/product-review-form'
+import { ProductReviews } from '@/components/product-reviews'
 
 interface ProductPageProps {
   params: Promise<{ 'product-name': string }>
@@ -63,13 +65,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Product Image */}
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-lg p-8">
-                <ProductImageFallback
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-96 object-cover rounded-lg"
-                />
-              </div>
+              <ProductImageGallery 
+                imageUrl={product.image_url} 
+                productName={product.name} 
+              />
               
               {/* Features */}
               <div className="grid grid-cols-2 gap-4">
@@ -139,7 +138,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
               {/* Stats */}
               {stats.length > 0 && (
-                <Card>
+                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Star className="h-5 w-5 text-amber-500" />
@@ -160,12 +159,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
               )}
 
               {/* Game Info */}
-              <Card>
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                 <CardHeader>
                   <CardTitle>Game Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-
                   {product.spawn_location && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Spawn Location:</span>
@@ -188,7 +186,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </Card>
 
               {/* Purchase Options */}
-              <Card>
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     {product.requires_shard && (
@@ -250,11 +248,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
 
-          {/* Product Description */}
+          {/* Product Description and Reviews */}
           <div className="mt-16">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                <Card>
+                {/* Product Description */}
+                <Card className="bg-white/90 backdrop-blur-sm border-amber-200 mb-8">
                   <CardHeader>
                     <CardTitle>Product Description</CardTitle>
                   </CardHeader>
@@ -265,50 +264,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </CardContent>
                 </Card>
 
-                {/* Reviews */}
-                {reviews.length > 0 && (
-                  <Card className="mt-8">
-                    <CardHeader>
-                      <CardTitle>Customer Reviews</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-6">
-                        {reviews.map((review: any) => (
-                          <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium">{review.username}</span>
-                                {review.verified_purchase && (
-                                  <Badge variant="secondary" className="text-xs">Verified Purchase</Badge>
-                                )}
-                              </div>
-                              <div className="flex items-center">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star 
-                                    key={i} 
-                                    className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                            {review.title && (
-                              <h4 className="font-medium mb-2">{review.title}</h4>
-                            )}
-                            <p className="text-gray-700">{review.content}</p>
-                            <div className="text-sm text-gray-500 mt-2">
-                              {new Date(review.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                {/* Reviews Section */}
+                <ProductReviews 
+                  productId={product.id} 
+                  initialReviews={reviews}
+                  avgRating={avgRating}
+                  reviewCount={reviewCount}
+                />
               </div>
 
               {/* Sidebar */}
               <div className="space-y-6">
-                <Card>
+                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                   <CardHeader>
                     <CardTitle>Need Help?</CardTitle>
                   </CardHeader>
@@ -325,7 +292,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                   <CardHeader>
                     <CardTitle>Delivery Information</CardTitle>
                   </CardHeader>

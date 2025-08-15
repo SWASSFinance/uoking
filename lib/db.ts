@@ -287,6 +287,35 @@ export async function getProductReviews(productId: string) {
   }
 }
 
+export async function createProductReview({
+  productId,
+  userId,
+  rating,
+  title,
+  content,
+  status = 'pending'
+}: {
+  productId: string
+  userId: string
+  rating: number
+  title?: string | null
+  content: string
+  status?: string
+}) {
+  try {
+    const result = await query(`
+      INSERT INTO product_reviews (product_id, user_id, rating, title, content, status)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `, [productId, userId, rating, title, content, status]);
+    
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error creating product review:', error);
+    throw error;
+  }
+}
+
 // Order functions (replacing old transaction functions)
 export async function getOrders() {
   try {
