@@ -94,8 +94,8 @@ export function Header() {
   const scrollToUrl = (scrollName: string) => {
     const scrollToUrlMap: { [key: string]: string } = {
       "Alacrity Scrolls": "Alacrity-Scrolls",
-      "Power Scrolls": "Power-Scrolls",
-      "Transcendence Scrolls": "Transcendence-Scrolls"
+      "Powerscrolls": "Powerscrolls",
+      "Sot Scrolls": "Sot-Scrolls"
     }
     return scrollToUrlMap[scrollName] || scrollName.replace(/\s+/g, '-')
   }

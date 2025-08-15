@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const cart: Cart = await request.json()
+    const { cart, cashbackAmount = 0 }: { cart: Cart, cashbackAmount?: number } = await request.json()
 
     if (!cart.items || cart.items.length === 0) {
       return NextResponse.json(
@@ -23,9 +23,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user ID
+    // Get user ID and cashback balance
     const userResult = await query(`
-      SELECT id FROM users WHERE email = $1
+      SELECT u.id, up.referral_cash 
+      FROM users u 
+      LEFT JOIN user_points up ON u.id = up.user_id 
+      WHERE u.email = $1
     `, [session.user.email])
 
     if (!userResult.rows || userResult.rows.length === 0) {
@@ -36,9 +39,30 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = userResult.rows[0].id
+    const currentCashbackBalance = parseFloat(userResult.rows[0].referral_cash || 0)
+
+    // Validate cashback amount
+    if (cashbackAmount > currentCashbackBalance) {
+      return NextResponse.json(
+        { error: 'Insufficient cashback balance' },
+        { status: 400 }
+      )
+    }
+
+    if (cashbackAmount > cart.total) {
+      return NextResponse.json(
+        { error: 'Cashback amount cannot exceed cart total' },
+        { status: 400 }
+      )
+    }
 
     // Generate order number
     const orderNumber = `UOK-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+
+    // Calculate final amounts
+    const subtotal = cart.total
+    const discountAmount = cashbackAmount
+    const totalAmount = subtotal - discountAmount
 
     // Create order
     const orderResult = await query(`
@@ -47,15 +71,16 @@ export async function POST(request: NextRequest) {
         order_number, 
         status, 
         subtotal,
+        discount_amount,
         total_amount, 
         currency,
         payment_status,
         delivery_status,
         created_at, 
         updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
       RETURNING id
-    `, [userId, orderNumber, 'pending', cart.total, cart.total, 'USD', 'pending', 'pending'])
+    `, [userId, orderNumber, 'pending', subtotal, discountAmount, totalAmount, 'USD', 'pending', 'pending'])
 
     if (!orderResult.rows || orderResult.rows.length === 0) {
       return NextResponse.json(
@@ -95,10 +120,21 @@ export async function POST(request: NextRequest) {
       ])
     }
 
+    // Update cashback balance if used
+    if (cashbackAmount > 0) {
+      await query(`
+        UPDATE user_points 
+        SET referral_cash = referral_cash - $1, updated_at = NOW()
+        WHERE user_id = $2
+      `, [cashbackAmount, userId])
+    }
+
     return NextResponse.json({
       success: true,
       orderId,
       orderNumber,
+      cashbackUsed: cashbackAmount,
+      finalTotal: totalAmount,
       message: 'Cart synced successfully'
     })
 

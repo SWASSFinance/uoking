@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -41,6 +41,27 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+  const [cashbackBalance, setCashbackBalance] = useState(0)
+  const [cashbackToUse, setCashbackToUse] = useState(0)
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false)
+
+  // Fetch cashback balance when user is authenticated
+  useEffect(() => {
+    if (session?.user?.email) {
+      setIsLoadingBalance(true)
+      fetch('/api/user/cashback-balance')
+        .then(res => res.json())
+        .then(data => {
+          setCashbackBalance(data.referral_cash || 0)
+        })
+        .catch(error => {
+          console.error('Error fetching cashback balance:', error)
+        })
+        .finally(() => {
+          setIsLoadingBalance(false)
+        })
+    }
+  }, [session])
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     setIsUpdating(itemId)
@@ -170,13 +191,34 @@ export default function CartPage() {
       return
     }
 
+    // Validate cashback amount
+    if (cashbackToUse > cashbackBalance) {
+      toast({
+        title: "Invalid Cashback Amount",
+        description: "Cashback amount cannot exceed your available balance.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (cashbackToUse > cart.total) {
+      toast({
+        title: "Invalid Cashback Amount",
+        description: "Cashback amount cannot exceed cart total.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsCheckingOut(true)
     try {
-      const success = await syncToServer()
+      const success = await syncToServer(cashbackToUse)
       if (success) {
         toast({
           title: "Order Created!",
-          description: "Your order has been successfully created.",
+          description: cashbackToUse > 0 
+            ? `Your order has been created using $${cashbackToUse.toFixed(2)} in cashback!`
+            : "Your order has been successfully created.",
           variant: "default",
         })
         router.push('/account')
@@ -402,6 +444,57 @@ export default function CartPage() {
                     )}
                   </div>
 
+                  {/* Cashback Balance Section */}
+                  {session && (
+                    <div className="space-y-3 border-t pt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-gray-700">Cashback Balance</span>
+                        </div>
+                        <span className="text-sm font-bold text-green-600">
+                          {isLoadingBalance ? (
+                            <LoadingSpinner size="sm" />
+                          ) : (
+                            `$${cashbackBalance.toFixed(2)}`
+                          )}
+                        </span>
+                      </div>
+                      
+                      {cashbackBalance > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="number"
+                              placeholder="0.00"
+                              value={cashbackToUse}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0
+                                setCashbackToUse(Math.min(value, Math.min(cashbackBalance, cart.total)))
+                              }}
+                              min="0"
+                              max={Math.min(cashbackBalance, cart.total)}
+                              step="0.01"
+                              className="flex-1 text-sm"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setCashbackToUse(Math.min(cashbackBalance, cart.total))}
+                              className="text-xs"
+                            >
+                              Max
+                            </Button>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>Use cashback</span>
+                            <span>Max: ${Math.min(cashbackBalance, cart.total).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Summary Details */}
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
@@ -414,6 +507,15 @@ export default function CartPage() {
                         <span className="text-gray-600">Discount ({appliedCoupon.code})</span>
                         <span className="font-medium text-green-600">
                           -${appliedCoupon.discount_amount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+
+                    {cashbackToUse > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Cashback Applied</span>
+                        <span className="font-medium text-green-600">
+                          -${cashbackToUse.toFixed(2)}
                         </span>
                       </div>
                     )}
@@ -430,7 +532,7 @@ export default function CartPage() {
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-amber-600">
-                        ${(cart.total - (appliedCoupon?.discount_amount || 0)).toFixed(2)}
+                        ${(cart.total - (appliedCoupon?.discount_amount || 0) - cashbackToUse).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -447,8 +549,15 @@ export default function CartPage() {
                       </div>
                     ) : (
                       <>
-                        <CreditCard className="h-5 w-5 mr-2" />
-                        Proceed to Checkout
+                        {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) ? (
+                          <DollarSign className="h-5 w-5 mr-2" />
+                        ) : (
+                          <CreditCard className="h-5 w-5 mr-2" />
+                        )}
+                        {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) 
+                          ? "Complete Order with Cashback"
+                          : "Proceed to Checkout"
+                        }
                       </>
                     )}
                   </Button>
