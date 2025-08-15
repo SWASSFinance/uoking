@@ -20,18 +20,16 @@ import {
   CheckCircle,
   Tag,
   Users,
-  Video,
   Plus,
   Edit,
   Trash2,
   Search,
   Eye,
   EyeOff,
-  Play,
   X
 } from "lucide-react"
 import { ImageUpload } from "@/components/ui/image-upload"
-import { VideoUpload } from "@/components/ui/video-upload"
+
 
 interface Banner {
   id: string
@@ -381,17 +379,34 @@ export default function SettingsAdminPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                  <div>
-                    <VideoUpload
-                      value={formData.video_url}
-                      onChange={(url) => setFormData({...formData, video_url: url})}
-                      label="Video"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-600 mt-2">
-                      Supports videos up to 100MB. Larger files may take longer to upload.
-                    </p>
-                  </div>
+                                                  <div>
+                  <Label htmlFor="video_url" className="text-black font-semibold">YouTube Video URL</Label>
+                  <Input
+                    id="video_url"
+                    type="url"
+                    placeholder="https://youtu.be/XxdCFGYId_4"
+                    value={formData.video_url}
+                    onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                    className="border-gray-300 bg-white text-black"
+                  />
+                  <p className="text-xs text-gray-600 mt-1">
+                    Paste a YouTube video URL (e.g., https://youtu.be/XxdCFGYId_4)
+                  </p>
+                  {formData.video_url && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">Video preview:</p>
+                      <div className="w-full max-w-md">
+                        <iframe
+                          src={`${formData.video_url.replace('youtu.be/', 'youtube.com/embed/').replace('watch?v=', 'embed/')}?autoplay=0&mute=1&controls=1&modestbranding=1`}
+                          title="Video preview"
+                          className="w-full h-48 rounded-lg border border-gray-300"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div>
                   <Label className="text-black font-semibold">Fallback Image</Label>
@@ -890,16 +905,20 @@ export default function SettingsAdminPage() {
             <Card className="border border-gray-200 bg-white">
               <CardHeader>
                 <CardTitle className="text-black flex items-center">
-                  <Video className="h-5 w-5 mr-2" />
+                  <div className="h-5 w-5 bg-red-100 rounded flex items-center justify-center mr-2">
+                    <div className="text-red-600 font-bold text-xs">YT</div>
+                  </div>
                   Banners ({banners.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {banners.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Video className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-black mb-2">No banners found</h3>
-                    <p className="text-gray-700 mb-6">Create your first banner to display on the homepage</p>
+                                 {banners.length === 0 ? (
+                   <div className="text-center py-12">
+                     <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                       <div className="text-red-600 font-bold text-xl">YT</div>
+                     </div>
+                     <h3 className="text-xl font-semibold text-black mb-2">No banners found</h3>
+                     <p className="text-gray-700 mb-6">Create your first banner to display on the homepage</p>
                     <Button onClick={() => setShowBannerForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Your First Banner
@@ -910,22 +929,22 @@ export default function SettingsAdminPage() {
                     {banners.map((banner) => (
                       <div key={banner.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                         <div className="flex items-center space-x-4">
-                          <div className="relative w-16 h-12 border border-gray-300 rounded-lg overflow-hidden">
-                            {banner.video_url ? (
-                              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                <Play className="h-6 w-6 text-gray-400" />
-                              </div>
-                            ) : banner.image_url ? (
+                                                   <div className="relative w-16 h-12 border border-gray-300 rounded-lg overflow-hidden">
+                           {banner.video_url ? (
+                             <div className="w-full h-full bg-red-100 flex items-center justify-center">
+                               <div className="text-red-600 font-bold text-xs">YT</div>
+                             </div>
+                           ) : banner.image_url ? (
                               <img
                                 src={banner.image_url}
                                 alt={banner.title}
                                 className="w-full h-full object-cover"
                               />
-                            ) : (
-                              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                <Video className="h-6 w-6 text-gray-400" />
-                              </div>
-                            )}
+                                                         ) : (
+                               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                 <div className="text-gray-400 text-xs">No Media</div>
+                               </div>
+                             )}
                           </div>
                           <div>
                             <div className="font-semibold text-black">{banner.title}</div>

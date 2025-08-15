@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
+
 import Link from 'next/link'
 
 interface Banner {
@@ -25,10 +25,6 @@ interface VideoBannerProps {
 
 export function VideoBanner({ banners }: VideoBannerProps) {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(true)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   const currentBanner = banners[currentBannerIndex]
 
@@ -42,36 +38,13 @@ export function VideoBanner({ banners }: VideoBannerProps) {
     }
   }, [banners.length])
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted
-    }
-  }, [isMuted])
-
-  const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        videoRef.current.play()
-      }
-      setIsPlaying(!isPlaying)
-    }
-  }
-
-  const handleVideoLoad = () => {
-    setIsLoaded(true)
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {
-        // Auto-play failed, that's okay
-      })
-      setIsPlaying(true)
-    }
-  }
-
-  const handleVideoError = () => {
-    // If video fails to load, show fallback image
-    setIsLoaded(false)
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return ''
+    // Convert various YouTube URL formats to embed URL
+    return url
+      .replace('youtu.be/', 'youtube.com/embed/')
+      .replace('watch?v=', 'embed/')
+      .replace('youtube.com/', 'youtube.com/embed/')
   }
 
   if (!currentBanner) {
@@ -80,22 +53,21 @@ export function VideoBanner({ banners }: VideoBannerProps) {
 
   return (
     <div className="relative w-full h-[600px] overflow-hidden bg-black">
-      {/* Video Background */}
+      {/* YouTube Video Background */}
       {currentBanner.video_url && (
-        <video
-          ref={videoRef}
-          src={currentBanner.video_url}
-          className="absolute inset-0 w-full h-full object-cover"
-          muted={isMuted}
-          loop
-          playsInline
-          onLoadedData={handleVideoLoad}
-          onError={handleVideoError}
-        />
+        <div className="absolute inset-0 w-full h-full">
+          <iframe
+            src={`${getYouTubeEmbedUrl(currentBanner.video_url)}?autoplay=1&mute=0&loop=1&playlist=${currentBanner.video_url.split('/').pop()}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
+            title="YouTube video player"
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
       )}
 
       {/* Fallback Image */}
-      {(!currentBanner.video_url || !isLoaded) && currentBanner.image_url && (
+      {!currentBanner.video_url && currentBanner.image_url && (
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center"
           style={{ backgroundImage: `url(${currentBanner.image_url})` }}
@@ -103,7 +75,7 @@ export function VideoBanner({ banners }: VideoBannerProps) {
       )}
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-40" />
+      <div className="absolute inset-0 bg-black bg-opacity-30" />
 
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center h-full">
@@ -134,28 +106,6 @@ export function VideoBanner({ banners }: VideoBannerProps) {
           )}
         </div>
       </div>
-
-      {/* Video Controls */}
-      {currentBanner.video_url && isLoaded && (
-        <div className="absolute bottom-4 right-4 flex space-x-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handlePlayPause}
-            className="bg-black bg-opacity-50 text-white hover:bg-opacity-70"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsMuted(!isMuted)}
-            className="bg-black bg-opacity-50 text-white hover:bg-opacity-70"
-          >
-            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </Button>
-        </div>
-      )}
 
       {/* Banner Indicators */}
       {banners.length > 1 && (
