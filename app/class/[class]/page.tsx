@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Star, Shield, Zap, Target, Users, Sword, ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import { ProductImage } from "@/components/ui/product-image"
 
 export default async function ClassPage({ params }: { params: Promise<{ class: string }> }) {
   const { class: classParam } = await params
@@ -496,22 +497,68 @@ export default async function ClassPage({ params }: { params: Promise<{ class: s
            {(classParam === 'mage' || classParam === 'tamer' || classParam === 'melee' || classParam === 'ranged' || classParam === 'thief' || classParam === 'crafter') && 'items' in currentClass && Array.isArray(currentClass.items) && (
              <div className="mb-12">
                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{currentClass.name} Items</h2>
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                  {currentClass.items.map((item: { name: string; price: number }, index: number) => (
-                   <Link key={index} href={`/product/${createProductSlug(item.name)}`} className="block">
-                     <Card className="bg-white/80 backdrop-blur-sm border border-amber-200 hover:shadow-lg transition-shadow cursor-pointer">
-                       <CardContent className="p-4">
-                         <div className="flex justify-between items-start mb-3">
-                           <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 flex-1 mr-2">{item.name}</h3>
-                           <Badge className="bg-amber-600 text-white text-xs">${item.price}</Badge>
+                   <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                     <CardContent className="p-3">
+                       <Link href={`/product/${createProductSlug(item.name)}`}>
+                         <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+                           <ProductImage
+                             src={`/uo/${classParam.toLowerCase()}.png`}
+                             alt={item.name}
+                             fill
+                             className="object-cover"
+                           />
+                           
+                           {/* Hover overlay with item description */}
+                           <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                             <div className="text-white text-center max-w-full">
+                               <p className="text-xs font-sans">
+                                 {currentClass.name} Item
+                               </p>
+                             </div>
+                           </div>
+                           
+                           {/* Class badge */}
+                           <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                             {currentClass.name}
+                           </Badge>
                          </div>
-                         <Button className="w-full bg-amber-600 hover:bg-amber-700 text-sm">
-                           <ShoppingCart className="h-4 w-4 mr-2" />
-                           Add to Cart
+                         
+                         <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                           {item.name}
+                         </h3>
+                         
+                         <div className="flex items-center justify-between mb-3">
+                           <div className="flex flex-col">
+                             <span className="text-sm font-bold text-amber-600">
+                               ${item.price.toFixed(2)}
+                             </span>
+                           </div>
+                           
+                           {/* Rating placeholder */}
+                           <div className="flex items-center space-x-1">
+                             <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                             <span className="text-xs font-medium">4.5</span>
+                           </div>
+                         </div>
+                       </Link>
+
+                       {/* Add to Cart Button */}
+                       <div className="flex items-center gap-2">
+                         <Button 
+                           size="sm"
+                           className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                           asChild
+                         >
+                           <Link href={`/product/${createProductSlug(item.name)}`}>
+                             <ShoppingCart className="h-3 w-3 mr-1" />
+                             View Details
+                           </Link>
                          </Button>
-                       </CardContent>
-                     </Card>
-                   </Link>
+                       </div>
+                     </CardContent>
+                   </Card>
                  ))}
                </div>
              </div>
