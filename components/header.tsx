@@ -64,7 +64,10 @@ export function Header() {
 
   // Helper function to convert category name to URL
   const categoryToUrl = (categoryName: string) => {
-    return categoryName.replace(/\s+/g, '_')
+    return categoryName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join('-')
   }
 
   // Helper function to convert slot name to category URL
@@ -85,6 +88,16 @@ export function Header() {
       "Cloaks Quivers": "Cloaks_Quivers"
     }
     return slotToCategoryMap[slotName] || slotName.replace(/\s+/g, '_')
+  }
+
+  // Helper function to convert scroll name to URL with proper capitalization
+  const scrollToUrl = (scrollName: string) => {
+    const scrollToUrlMap: { [key: string]: string } = {
+      "Alacrity Scrolls": "Alacrity-Scrolls",
+      "Power Scrolls": "Power-Scrolls",
+      "Transcendence Scrolls": "Transcendence-Scrolls"
+    }
+    return scrollToUrlMap[scrollName] || scrollName.replace(/\s+/g, '-')
   }
 
   const handleMouseEnter = (dropdown: string) => {
@@ -156,8 +169,8 @@ export function Header() {
 
   const scrollItems = [
     "Alacrity Scrolls",
-    "Power Scrolls", 
-    "Transcendence Scrolls"
+    "Powerscrolls", 
+    "Sot Scrolls"
   ]
 
   const toolItems = [
@@ -334,7 +347,7 @@ export function Header() {
               Gold
             </Link>
 
-            <Link href="/suits" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
+            <Link href="/UO/Custom-Suits" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
               Suits
             </Link>
 
@@ -355,11 +368,11 @@ export function Header() {
                   className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {scrollItems.map((item) => (
-                                              <Link
-                            key={item}
-                            href={`/scrolls/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                          >
+                    <Link
+                      key={item}
+                      href={`/UO/${scrollToUrl(item)}`}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                    >
                       {item}
                     </Link>
                   ))}
@@ -386,7 +399,7 @@ export function Header() {
                   {toolItems.map((item) => (
                                               <Link
                             key={item}
-                            href={`/tools/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                            href={`/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                           >
                       {item}
@@ -617,7 +630,7 @@ export function Header() {
                       <Link href="/UO/Gold">Gold</Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/suits">Suits</Link>
+                      <Link href="/UO/Custom-Suits/">Suits</Link>
                     </Button>
 
                     {/* Scrolls Section */}
@@ -625,7 +638,7 @@ export function Header() {
                       <h3 className="text-sm font-medium text-gray-700 px-2">Scrolls</h3>
                       {scrollItems.map((item) => (
                         <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/scrolls/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <Link href={`/UO/${scrollToUrl(item)}`}>
                             {item}
                           </Link>
                         </Button>
@@ -637,7 +650,7 @@ export function Header() {
                       <h3 className="text-sm font-medium text-gray-700 px-2">Tools</h3>
                       {toolItems.map((item) => (
                         <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/tools/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <Link href={`/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                             {item}
                           </Link>
                         </Button>

@@ -118,7 +118,7 @@ export default function WeaponsPage() {
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       asChild
                     >
-                      <Link href={`/store/weapons`}>
+                      <Link href={`/UO/weapons`}>
                         Browse Weapons
                         <ArrowUp className="h-4 w-4 ml-2" />
                       </Link>
@@ -181,7 +181,7 @@ export default function WeaponsPage() {
               Browse our selection of powerful weapons for every combat style.
             </p>
             <Button size="lg" variant="secondary" asChild>
-              <Link href="/store/weapons">
+              <Link href="/UO/weapons">
                 Browse Weapons
               </Link>
             </Button>

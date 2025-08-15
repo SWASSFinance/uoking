@@ -52,7 +52,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <span className="mx-2">/</span>
               {product.category_slug && (
                 <>
-                  <a href={`/store/${product.category_slug}`} className="hover:text-amber-600">
+                  <a href={`/UO/${product.category_slug}`} className="hover:text-amber-600">
                     {product.category_name}
                   </a>
                   <span className="mx-2">/</span>
@@ -62,48 +62,53 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </nav>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Product Image */}
-            <div className="space-y-6">
-              <ProductImageGallery 
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Product Image - 25% */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-8">
+                              <ProductImageGallery 
                 imageUrl={product.image_url} 
-                productName={product.name} 
+                productName={product.name}
+                stats={stats}
+                description={product.description}
               />
-              
-              {/* Features */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Free Transfer To All Shards</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Debit Card Accepted</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Credit Card Accepted</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Live Chat Support</span>
+                
+                {/* Features */}
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Free Transfer To All Shards</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Debit Card Accepted</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Credit Card Accepted</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Live Chat Support</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Product Details */}
-            <div className="space-y-8">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            {/* Product Details - 75% */}
+            <div className="lg:col-span-3 space-y-6">
+              {/* Product Header */}
+              <div className="bg-white/90 backdrop-blur-sm border-amber-200 rounded-lg p-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
                 
                 {/* Rating */}
                 {reviewCount > 0 && (
-                  <div className="flex items-center space-x-2 mb-4">
+                  <div className="flex items-center space-x-2 mb-3">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className={`h-5 w-5 ${i < Math.floor(avgRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                          className={`h-4 w-4 ${i < Math.floor(avgRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
                         />
                       ))}
                     </div>
@@ -113,95 +118,85 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </div>
                 )}
 
-                {/* Price */}
-                <div className="flex items-center space-x-4 mb-6">
-                  <span className="text-3xl font-bold text-amber-600">${price.toFixed(2)}</span>
-                  {originalPrice && (
-                    <span className="text-xl text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
-                  )}
-                  {salePrice && (
-                    <Badge variant="destructive">Sale</Badge>
-                  )}
-                </div>
-
-                {/* Availability */}
-                <div className="flex items-center space-x-2 mb-6">
-                  <Shield className="h-5 w-5 text-green-500" />
-                  <span className="text-green-600 font-medium">In Stock</span>
+                {/* Price and Availability */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-2xl font-bold text-amber-600">${price.toFixed(2)}</span>
+                    {originalPrice && (
+                      <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+                    )}
+                    {salePrice && (
+                      <Badge variant="destructive">Sale</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Shield className="h-5 w-5 text-green-500" />
+                    <span className="text-green-600 font-medium">In Stock</span>
+                  </div>
                 </div>
 
                 {/* Short Description */}
                 {product.short_description && (
-                  <p className="text-lg text-gray-700 mb-6">{product.short_description}</p>
+                  <pre className="whitespace-pre-wrap font-sans text-gray-700">{product.short_description}</pre>
                 )}
               </div>
 
-              {/* Stats */}
-              {stats.length > 0 && (
+              {/* Stats and Game Info Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Stats */}
+                {stats.length > 0 && (
+                  <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2 text-lg">
+                        <Star className="h-5 w-5 text-amber-500" />
+                        <span>Item Statistics</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {stats.map((stat: any, index: number) => (
+                          <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                            <span className="text-gray-600">{stat.name}</span>
+                            <span className="font-semibold text-amber-600">{stat.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Game Info */}
                 <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Star className="h-5 w-5 text-amber-500" />
-                      <span>Item Statistics</span>
-                    </CardTitle>
+                    <CardTitle className="text-lg">Game Information</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 gap-3">
-                      {stats.map((stat: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                          <span className="text-gray-600">{stat.name}</span>
-                          <span className="font-semibold text-amber-600">{stat.value}</span>
-                        </div>
-                      ))}
-                    </div>
+                  <CardContent className="space-y-3">
+                    {product.spawn_location && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Spawn Location:</span>
+                        <span className="font-medium">{product.spawn_location}</span>
+                      </div>
+                    )}
+                    {product.drop_rate && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Drop Rate:</span>
+                        <span className="font-medium">{product.drop_rate}</span>
+                      </div>
+                    )}
+                    {product.class_name && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Recommended Class:</span>
+                        <span className="font-medium">{product.class_name}</span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
-              )}
-
-              {/* Game Info */}
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                <CardHeader>
-                  <CardTitle>Game Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {product.spawn_location && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Spawn Location:</span>
-                      <span className="font-medium">{product.spawn_location}</span>
-                    </div>
-                  )}
-                  {product.drop_rate && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Drop Rate:</span>
-                      <span className="font-medium">{product.drop_rate}</span>
-                    </div>
-                  )}
-                  {product.class_name && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Recommended Class:</span>
-                      <span className="font-medium">{product.class_name}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              </div>
 
               {/* Purchase Options */}
               <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {product.requires_character_name && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Character Name *
-                        </label>
-                        <input 
-                          type="text" 
-                          placeholder="Enter your character name"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                        />
-                      </div>
-                    )}
-
                     <div className="flex space-x-4">
                       <Button size="lg" className="flex-1 bg-amber-600 hover:bg-amber-700">
                         <ShoppingCart className="h-5 w-5 mr-2" />
@@ -244,7 +239,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-gray max-w-none">
-                      <p>{product.description}</p>
+                      <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">{product.description}</pre>
                     </div>
                   </CardContent>
                 </Card>

@@ -135,7 +135,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
                 {deal.name}
               </h3>
               <p className="text-gray-600 text-sm mb-4">
-                {deal.short_description}
+                <pre className="whitespace-pre-wrap font-sans">{deal.short_description}</pre>
               </p>
             </div>
 

@@ -18,6 +18,7 @@ interface Product {
   avg_rating: number
   review_count: number
   category?: string
+  stats?: any[]
 }
 
 export async function FeaturedProducts() {
@@ -41,13 +42,25 @@ export async function FeaturedProducts() {
               <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
                 <CardContent className="p-3">
                   <Link href={`/product/${product.slug}`}>
-                    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden">
+                    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
                       <ProductImage
                         src={product.image_url}
                         alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="object-cover"
                       />
+                      
+                      {/* Short Description Overlay */}
+                      {product.short_description && (
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                          <div className="text-white text-center max-w-full">
+                            <pre className="text-xs whitespace-pre-wrap font-sans text-left">
+                              {product.short_description}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+                      
                       {product.featured && (
                         <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
                           Featured
@@ -61,9 +74,9 @@ export async function FeaturedProducts() {
                     
                     <div className="min-h-[3rem] mb-3">
                       {product.short_description && (
-                        <p className="text-xs text-gray-600 line-clamp-2">
+                        <pre className="text-xs text-gray-600 line-clamp-2 whitespace-pre-wrap font-sans">
                           {product.short_description}
-                        </p>
+                        </pre>
                       )}
                     </div>
                     

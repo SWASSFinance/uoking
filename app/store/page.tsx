@@ -94,7 +94,7 @@ export default async function StorePage() {
               const IconComponent = categoryIcons[category.slug] || ShoppingBag;
               
               return (
-                <Link key={category.id} href={`/store/${category.slug}`}>
+                <Link key={category.id} href={`/UO/${category.slug}`}>
                   <Card className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-amber-300 cursor-pointer overflow-hidden">
                     <CardHeader className="text-center bg-gradient-to-r from-amber-50 to-orange-50 group-hover:from-amber-100 group-hover:to-orange-100 transition-all duration-300">
                       <div className="flex justify-center mb-4">
@@ -113,9 +113,10 @@ export default async function StorePage() {
                     </CardHeader>
                     
                     <CardContent className="p-6">
-                      <p className="text-gray-600 text-center mb-4 line-clamp-2">
-                        {category.description}
-                      </p>
+                      <div 
+                        className="text-gray-600 text-center mb-4 line-clamp-2"
+                        dangerouslySetInnerHTML={{ __html: category.description }}
+                      />
                       
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-2">
