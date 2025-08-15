@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-
+import { Play, Volume2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface Banner {
@@ -25,6 +25,11 @@ interface VideoBannerProps {
 
 export function VideoBanner({ banners }: VideoBannerProps) {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(true) // Start playing immediately
+  const [showPlayButton, setShowPlayButton] = useState(false) // Don't show play button initially
+  const [hasUserInteracted, setHasUserInteracted] = useState(true) // Assume user has interacted
+  const [isMuted, setIsMuted] = useState(true) // Start muted
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   const currentBanner = banners[currentBannerIndex]
 
@@ -38,30 +43,118 @@ export function VideoBanner({ banners }: VideoBannerProps) {
     }
   }, [banners.length])
 
-  const getYouTubeEmbedUrl = (url: string) => {
+  // Listen for sound enable event
+  useEffect(() => {
+    const handleEnableSound = () => {
+      setIsMuted(false)
+      setHasUserInteracted(true)
+      
+      // Try to enable audio context if needed
+      if (typeof window !== 'undefined' && window.AudioContext) {
+        const audioContext = new (window as any).AudioContext()
+        if (audioContext.state === 'suspended') {
+          audioContext.resume()
+        }
+      }
+
+      // Update button text
+      const button = document.getElementById('enable-sound-btn')
+      if (button) {
+        button.innerHTML = `
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+          </svg>
+          <span>Sound On</span>
+        `
+      }
+    }
+
+    window.addEventListener('enableVideoSound', handleEnableSound)
+    return () => window.removeEventListener('enableVideoSound', handleEnableSound)
+  }, [])
+
+  const getYouTubeEmbedUrl = (url: string, muted: boolean = true) => {
     if (!url) return ''
-    // Convert various YouTube URL formats to embed URL
-    return url
-      .replace('youtu.be/', 'youtube.com/embed/')
-      .replace('watch?v=', 'embed/')
-      .replace('youtube.com/', 'youtube.com/embed/')
+    
+    // Extract video ID from various YouTube URL formats
+    let videoId = ''
+    
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]
+    } else if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]
+    } else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('embed/')[1]
+    }
+    
+    // Remove any additional parameters
+    if (videoId.includes('&')) {
+      videoId = videoId.split('&')[0]
+    }
+    
+    // Use muted state from component
+    const muteParam = muted ? '&mute=1' : '&mute=0'
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1${muteParam}&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&version=3&playerapiid=ytplayer&iv_load_policy=3&disablekb=1&fs=0&color=white&theme=dark&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`
   }
+
+  const handlePlayWithSound = () => {
+    setIsPlaying(true)
+    setShowPlayButton(false)
+    setHasUserInteracted(true)
+    
+    // Try to enable audio context if needed
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window as any).AudioContext()
+      if (audioContext.state === 'suspended') {
+        audioContext.resume()
+      }
+    }
+  }
+
+  // Auto-start video after a short delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPlaying(true)
+      setShowPlayButton(false)
+    }, 1000) // Start after 1 second
+
+    return () => clearTimeout(timer)
+  }, [])
 
   if (!currentBanner) {
     return null
   }
 
   return (
-    <div className="relative w-full h-[600px] overflow-hidden bg-black">
+    <div className="relative w-full h-full overflow-hidden bg-black">
       {/* YouTube Video Background */}
       {currentBanner.video_url && (
-        <div className="absolute inset-0 w-full h-full">
-          <iframe
-            src={`${getYouTubeEmbedUrl(currentBanner.video_url)}?autoplay=1&mute=0&loop=1&playlist=${currentBanner.video_url.split('/').pop()}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
-            title="YouTube video player"
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <div 
             className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
+            style={{
+              transform: 'scale(1.1)',
+              transformOrigin: 'center center'
+            }}
+          >
+            <iframe
+              ref={iframeRef}
+              key={`${currentBanner.video_url}-${isMuted}`}
+              src={getYouTubeEmbedUrl(currentBanner.video_url, isMuted)}
+              title="YouTube video player"
+              className="w-full h-full"
+              style={{
+                pointerEvents: 'none'
+              }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          
+          {/* Invisible overlay to block YouTube interactions */}
+          <div 
+            className="absolute inset-0 z-10"
+            style={{ pointerEvents: 'none' }}
           />
         </div>
       )}
@@ -74,42 +167,9 @@ export function VideoBanner({ banners }: VideoBannerProps) {
         />
       )}
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-30" />
-
-      {/* Content */}
-      <div className="relative z-10 flex items-center justify-center h-full">
-        <div className="text-center text-white px-4 max-w-4xl">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">
-            {currentBanner.title}
-          </h1>
-          {currentBanner.subtitle && (
-            <h2 className="text-2xl md:text-3xl font-semibold mb-6 drop-shadow-lg">
-              {currentBanner.subtitle}
-            </h2>
-          )}
-          {currentBanner.description && (
-            <p className="text-lg md:text-xl mb-8 drop-shadow-lg max-w-2xl mx-auto">
-              {currentBanner.description}
-            </p>
-          )}
-          {currentBanner.button_text && currentBanner.button_url && (
-            <Button 
-              size="lg" 
-              className="bg-amber-600 hover:bg-amber-700 text-white text-lg px-8 py-4"
-              asChild
-            >
-              <Link href={currentBanner.button_url}>
-                {currentBanner.button_text}
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Banner Indicators */}
       {banners.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
           {banners.map((_, index) => (
             <button
               key={index}
