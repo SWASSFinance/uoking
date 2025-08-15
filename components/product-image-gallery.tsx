@@ -24,9 +24,9 @@ export function ProductImageGallery({ imageUrl, productName }: ProductImageGalle
 
   return (
     <>
-      <div className="relative group bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="relative group bg-white rounded-lg shadow-lg overflow-hidden max-w-md mx-auto">
         {/* Main Image */}
-        <div className="relative aspect-square">
+        <div className="relative aspect-square max-h-96">
           <Image
             src={imageSrc}
             alt={productName}

@@ -189,21 +189,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {product.requires_shard && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Select Shard *
-                        </label>
-                        <select className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-                          <option value="">Choose your shard...</option>
-                          <option value="Arirang">Arirang</option>
-                          <option value="Ultima">Ultima</option>
-                          <option value="Tokuno">Tokuno</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                    )}
-
                     {product.requires_character_name && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
