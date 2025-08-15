@@ -10,7 +10,8 @@ import {
   ShoppingCart,
   LogOut,
   FolderOpen,
-  Tag
+  Tag,
+  Video
 } from "lucide-react"
 
 const adminNavItems = [
@@ -28,6 +29,11 @@ const adminNavItems = [
     name: "Categories",
     href: "/admin/categories",
     icon: FolderOpen
+  },
+  {
+    name: "Banners",
+    href: "/admin/banners",
+    icon: Video
   },
   {
     name: "Orders",

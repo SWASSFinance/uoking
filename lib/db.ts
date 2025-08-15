@@ -874,4 +874,121 @@ export async function getDashboardStats() {
   }
 }
 
+// Banner functions
+export async function getAllBanners() {
+  try {
+    const result = await query(`
+      SELECT * FROM banners 
+      ORDER BY sort_order ASC, created_at DESC
+    `)
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching all banners:', error)
+    throw error
+  }
+}
+
+export async function getActiveBanners(position?: string) {
+  try {
+    let whereClause = 'is_active = true'
+    const params: any[] = []
+    
+    if (position) {
+      whereClause += ' AND position = $1'
+      params.push(position)
+    }
+    
+    const result = await query(`
+      SELECT * FROM banners 
+      WHERE ${whereClause}
+      ORDER BY sort_order ASC, created_at DESC
+    `, params)
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching active banners:', error)
+    throw error
+  }
+}
+
+export async function createBanner(bannerData: any) {
+  try {
+    const result = await query(`
+      INSERT INTO banners (
+        title, subtitle, description, video_url, image_url, 
+        button_text, button_url, position, is_active, sort_order,
+        created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *
+    `, [
+      bannerData.title,
+      bannerData.subtitle || '',
+      bannerData.description || '',
+      bannerData.video_url || '',
+      bannerData.image_url || '',
+      bannerData.button_text || '',
+      bannerData.button_url || '',
+      bannerData.position || 'homepage',
+      bannerData.is_active !== false,
+      bannerData.sort_order || 0,
+      bannerData.created_at || new Date().toISOString(),
+      bannerData.updated_at || new Date().toISOString()
+    ])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error creating banner:', error)
+    throw error
+  }
+}
+
+export async function updateBanner(id: string, bannerData: any) {
+  try {
+    const result = await query(`
+      UPDATE banners SET 
+        title = $1,
+        subtitle = $2,
+        description = $3,
+        video_url = $4,
+        image_url = $5,
+        button_text = $6,
+        button_url = $7,
+        position = $8,
+        is_active = $9,
+        sort_order = $10,
+        updated_at = NOW()
+      WHERE id = $11
+      RETURNING *
+    `, [
+      bannerData.title,
+      bannerData.subtitle || '',
+      bannerData.description || '',
+      bannerData.video_url || '',
+      bannerData.image_url || '',
+      bannerData.button_text || '',
+      bannerData.button_url || '',
+      bannerData.position || 'homepage',
+      bannerData.is_active !== false,
+      bannerData.sort_order || 0,
+      id
+    ])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating banner:', error)
+    throw error
+  }
+}
+
+export async function deleteBanner(id: string) {
+  try {
+    const result = await query(`
+      DELETE FROM banners 
+      WHERE id = $1
+      RETURNING id
+    `, [id])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error deleting banner:', error)
+    throw error
+  }
+}
+
 export default pool; 
