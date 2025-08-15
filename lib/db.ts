@@ -488,7 +488,7 @@ export async function searchProducts(searchTerm: string, limit = 20) {
         ts_rank(
           to_tsvector('english', p.name || ' ' || COALESCE(p.description, '') || ' ' || COALESCE(p.short_description, '')),
           plainto_tsquery('english', $1)
-        ) as rank
+        ) as search_rank
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN classes cl ON p.class_id = cl.id
@@ -502,7 +502,7 @@ export async function searchProducts(searchTerm: string, limit = 20) {
           OR p.description ILIKE $2
         )
       GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
-      ORDER BY rank DESC, p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
+      ORDER BY search_rank DESC, p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       LIMIT $3
     `, [searchTerm, `%${searchTerm}%`, limit]);
     return result.rows;

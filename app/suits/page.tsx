@@ -213,7 +213,7 @@ export default function SuitsPage() {
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       asChild
                     >
-                      <Link href={`/suits/${suit.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/suits/${suit.name.toLowerCase().replace(/\s+/g, '-')}`}>
                         View Details
                         <ArrowUp className="h-4 w-4 ml-2" />
                       </Link>
@@ -247,7 +247,7 @@ export default function SuitsPage() {
                     <p className="text-sm text-gray-600 mb-2">{suit.description}</p>
                     <div className="text-lg font-bold text-amber-600 mb-4">{suit.price}</div>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/suits/${suit.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/suits/${suit.name.toLowerCase().replace(/\s+/g, '-')}`}>
                         View Details
                       </Link>
                     </Button>

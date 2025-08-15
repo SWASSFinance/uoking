@@ -140,7 +140,7 @@ export default function ToolsPage() {
                       size="sm"
                       asChild
                     >
-                      <Link href={`/tools/${item.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/tools/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
                         Access Tool
                       </Link>
                     </Button>

@@ -1,24 +1,87 @@
+"use client"
+
+import { useState, useEffect } from 'react'
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { ProductImage } from "@/components/ui/product-image"
 import { Sword, ArrowUp, Star, Target, Zap, ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { searchProducts } from "@/lib/db"
+import { useToast } from "@/hooks/use-toast"
+import { useCart } from "@/contexts/cart-context"
 
-export default async function PropertyPage({ params }: { params: Promise<{ property: string }> }) {
-  const { property } = await params
-  
-  // Convert URL slug back to property name (e.g., "damage-increase" -> "Damage Increase")
-  const propertyName = property
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+interface PropertyPageProps {
+  params: Promise<{ property: string }>
+}
 
-  // Search for products containing the property name
-  const products = await searchProducts(propertyName, 50)
+interface Product {
+  id: string | number
+  name: string
+  slug: string
+  price: string
+  sale_price?: string
+  image_url?: string
+  short_description?: string
+  featured: boolean
+  avg_rating: number
+  review_count: number
+  category?: string
+}
+
+export default function PropertyPage({ params }: PropertyPageProps) {
+  const [propertyName, setPropertyName] = useState('')
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
+  const { addItem } = useCart()
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { property } = await params
+        
+        // Convert URL slug back to property name (e.g., "damage-increase" -> "Damage Increase")
+        const propertyNameValue = property
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+
+        setPropertyName(propertyNameValue)
+
+        // Search for products containing the property name
+        const response = await fetch(`/api/products?search=${encodeURIComponent(propertyNameValue)}&limit=50`)
+        if (response.ok) {
+          const productsData = await response.json()
+          setProducts(productsData)
+        }
+      } catch (error) {
+        console.error('Error loading property data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [params])
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: String(product.id),
+      name: product.name,
+      price: parseFloat(product.sale_price || product.price),
+      image_url: product.image_url || '',
+      category: product.category || ''
+    })
+    
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+      variant: "default",
+    })
+  }
 
   // Function to convert item name to URL-friendly slug
   const createProductSlug = (itemName: string) => {
@@ -121,6 +184,23 @@ export default async function PropertyPage({ params }: { params: Promise<{ prope
   const currentProperty = propertyInfo[propertyName as keyof typeof propertyInfo]
   const IconComponent = currentProperty?.icon || Sword
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <Header />
+        <main className="py-16 px-4">
+          <div className="container mx-auto">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading products...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <Header />
@@ -136,95 +216,94 @@ export default async function PropertyPage({ params }: { params: Promise<{ prope
             />
           </div>
 
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-4">
-              <div className={`p-4 rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'}`}>
-                <IconComponent className="h-12 w-12 text-white" />
+          {/* Hero Section - Compact */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <div className={`p-2 rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'}`}>
+                <IconComponent className="h-8 w-8 text-white" />
+              </div>
+              <div className="text-left">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {propertyName} Property
+                </h1>
+                {currentProperty?.category && (
+                  <Badge className="mt-1 bg-amber-500 text-white text-xs">{currentProperty.category}</Badge>
+                )}
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              {propertyName} Property
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               {currentProperty?.description || `Items with ${propertyName} property`}
             </p>
-            {currentProperty?.category && (
-              <Badge className="mt-4 bg-amber-500 text-white">{currentProperty.category}</Badge>
-            )}
           </div>
 
-          {/* Property Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <Card className="border-amber-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">What is {propertyName}?</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-600">
+          {/* Property Details - Compact Version */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* What is Property */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <Star className="h-5 w-5 text-amber-500 mr-2" />
+                  What is {propertyName}?
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   {propertyName} is a property that enhances your character's abilities in Ultima Online. 
                   It's one of the most sought-after properties for optimizing your build.
                 </p>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-900">Key Benefits:</h4>
-                  <ul className="space-y-1 text-gray-600">
-                    <li className="flex items-start">
-                      <Star className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
-                      Enhances your character's performance
-                    </li>
-                    <li className="flex items-start">
-                      <Star className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
-                      Works with various equipment types
-                    </li>
-                    <li className="flex items-start">
-                      <Star className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
-                      Stacks with other properties
-                    </li>
-                    <li className="flex items-start">
-                      <Star className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
-                      Essential for optimized builds
-                    </li>
-                  </ul>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div className="flex items-center">
+                    <Star className="h-3 w-3 text-amber-400 mr-1" />
+                    Enhances performance
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-3 w-3 text-amber-400 mr-1" />
+                    Works with various equipment
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-3 w-3 text-amber-400 mr-1" />
+                    Stacks with other properties
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className="border-amber-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">How to Get {propertyName}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <Target className="h-5 w-5 text-blue-500 mr-3 mt-0.5" />
-                    <div>
-                      <h5 className="font-semibold text-gray-900">Equipment</h5>
-                      <p className="text-sm text-gray-600">Find items with {propertyName} property</p>
-                    </div>
+              {/* How to Get Property */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <Target className="h-5 w-5 text-blue-500 mr-2" />
+                  How to Get {propertyName}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center text-gray-600">
+                    <Target className="h-4 w-4 text-blue-400 mr-2" />
+                    Find items with {propertyName}
                   </div>
-                  <div className="flex items-start">
-                    <Zap className="h-5 w-5 text-purple-500 mr-3 mt-0.5" />
-                    <div>
-                      <h5 className="font-semibold text-gray-900">Enhancement</h5>
-                      <p className="text-sm text-gray-600">Use enhancement materials to add the property</p>
-                    </div>
+                  <div className="flex items-center text-gray-600">
+                    <Zap className="h-4 w-4 text-purple-400 mr-2" />
+                    Use enhancement materials
                   </div>
-                  <div className="flex items-start">
-                    <Sword className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <div>
-                      <h5 className="font-semibold text-gray-900">Crafting</h5>
-                      <p className="text-sm text-gray-600">Craft items with {propertyName}</p>
-                    </div>
+                  <div className="flex items-center text-gray-600">
+                    <Sword className="h-4 w-4 text-green-400 mr-2" />
+                    Craft items with {propertyName}
                   </div>
                 </div>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white" asChild>
+              </div>
+
+              {/* Quick Action */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <ShoppingCart className="h-5 w-5 text-amber-500 mr-2" />
+                  Ready to Shop?
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Browse our selection of equipment with {propertyName} properties.
+                </p>
+                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm" asChild>
                   <Link href="/store">
                     Browse Equipment
                     <ArrowUp className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Items with this Property */}
@@ -233,27 +312,93 @@ export default async function PropertyPage({ params }: { params: Promise<{ prope
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                 Items with {propertyName}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {products.map((product) => (
-                  <Link key={product.id} href={`/product/${product.slug}`} className="block">
-                    <Card className="bg-white/80 backdrop-blur-sm border border-amber-200 hover:shadow-lg transition-shadow cursor-pointer">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 flex-1 mr-2">{product.name}</h3>
-                          <Badge className="bg-amber-600 text-white text-xs">
-                            ${product.sale_price || product.price}
-                          </Badge>
+                  <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                    <CardContent className="p-3">
+                      <Link href={`/product/${product.slug}`}>
+                        <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden">
+                          <ProductImage
+                            src={product.image_url}
+                            alt={product.name}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                          {product.featured && (
+                            <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                              Featured
+                            </Badge>
+                          )}
                         </div>
-                        {product.short_description && (
-                          <p className="text-gray-600 text-xs mb-3 line-clamp-2">{product.short_description}</p>
-                        )}
-                        <Button className="w-full bg-amber-600 hover:bg-amber-700 text-sm">
-                          <ShoppingCart className="h-4 w-4 mr-2" />
+                        
+                        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                          {product.name}
+                        </h3>
+                        
+                        <div className="min-h-[3rem] mb-3">
+                          {product.short_description && (
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {product.short_description}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex flex-col">
+                            {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm font-bold text-amber-600">
+                                  ${parseFloat(product.sale_price).toFixed(2)}
+                                </span>
+                                <span className="text-xs text-gray-500 line-through">
+                                  ${parseFloat(product.price).toFixed(2)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm font-bold text-amber-600">
+                                ${parseFloat(product.price).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {product.avg_rating > 0 && (
+                            <div className="flex items-center space-x-1">
+                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                              <span className="text-xs font-medium">
+                                {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+
+                      {/* Quantity and Add to Cart Section */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          id={`qty-${product.id}`}
+                          type="number"
+                          min="1"
+                          defaultValue="1"
+                          className="w-12 h-8 text-center text-sm border border-gray-300 rounded-md bg-white text-black font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                        />
+                        
+                        <Button 
+                          onClick={() => {
+                            const input = document.getElementById(`qty-${product.id}`) as HTMLInputElement
+                            const quantity = parseInt(input?.value) || 1
+                            for (let i = 0; i < quantity; i++) {
+                              handleAddToCart(product)
+                            }
+                          }}
+                          size="sm"
+                          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                        >
+                          <ShoppingCart className="h-3 w-3 mr-1" />
                           Add to Cart
                         </Button>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>

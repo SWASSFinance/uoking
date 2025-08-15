@@ -133,7 +133,7 @@ export default function WeaponsPage() {
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       asChild
                     >
-                      <Link href={`/product/${weapon.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/product/${weapon.name.toLowerCase().replace(/\s+/g, '-')}`}>
                         View Details
                         <ArrowUp className="h-4 w-4 ml-2" />
                       </Link>

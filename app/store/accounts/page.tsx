@@ -133,7 +133,7 @@ export default function AccountsPage() {
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       asChild
                     >
-                      <Link href={`/product/${account.name.toLowerCase().replace(' ', '-')}`}>
+                      <Link href={`/product/${account.name.toLowerCase().replace(/\s+/g, '-')}`}>
                         View Details
                         <ArrowUp className="h-4 w-4 ml-2" />
                       </Link>

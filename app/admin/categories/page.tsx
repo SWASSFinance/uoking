@@ -76,24 +76,39 @@ export default function CategoriesAdminPage() {
       const url = editingCategory ? `/api/admin/categories/${editingCategory.id}` : '/api/admin/categories'
       const method = editingCategory ? 'PUT' : 'POST'
       
+      // Clean up the data before sending
+      const cleanData = {
+        ...categoryData,
+        parent_id: categoryData.parent_id === 'none' ? null : categoryData.parent_id,
+        sort_order: parseInt(categoryData.sort_order?.toString() || '0'),
+        is_active: Boolean(categoryData.is_active)
+      }
+      
+      console.log('Saving category data:', cleanData)
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(categoryData),
+        body: JSON.stringify(cleanData),
       })
 
       if (response.ok) {
+        const result = await response.json()
+        console.log('Category saved successfully:', result)
+        alert(editingCategory ? 'Category updated successfully!' : 'Category created successfully!')
         fetchCategories()
         setEditingCategory(null)
         setShowForm(false)
       } else {
         const errorData = await response.json()
         console.error('Error saving category:', errorData)
+        alert(`Error saving category: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error saving category:', error)
+      alert('Error saving category. Please try again.')
     }
   }
 
@@ -133,6 +148,7 @@ export default function CategoriesAdminPage() {
     onSave: (data: Partial<Category>) => void, 
     onCancel: () => void 
   }) => {
+    const [isSaving, setIsSaving] = useState(false)
     const [formData, setFormData] = useState<{
       name: string
       slug: string
@@ -148,16 +164,21 @@ export default function CategoriesAdminPage() {
       slug: category?.slug || '',
       description: category?.description || '',
       image_url: category?.image_url || '',
-      parent_id: category?.parent_id || 'none',
+      parent_id: category?.parent_id || null,
       sort_order: category?.sort_order || 0,
       is_active: category?.is_active !== false,
       meta_title: category?.meta_title || '',
       meta_description: category?.meta_description || ''
     })
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
-      onSave(formData)
+      setIsSaving(true)
+      try {
+        await onSave(formData)
+      } finally {
+        setIsSaving(false)
+      }
     }
 
 
@@ -268,8 +289,15 @@ export default function CategoriesAdminPage() {
                 <div className="md:col-span-2">
                   <Label className="text-black font-semibold">Category Image</Label>
                   <div className="mt-2">
+                    <ImageUpload
+                      value={formData.image_url}
+                      onChange={(url) => setFormData({...formData, image_url: url})}
+                      label=""
+                      className="w-full"
+                    />
                     {formData.image_url && (
-                      <div className="mb-4">
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-600 mb-2">Current image:</p>
                         <div className="relative w-32 h-32 border border-gray-300 rounded-lg overflow-hidden">
                           <ProductImage
                             src={formData.image_url}
@@ -280,12 +308,6 @@ export default function CategoriesAdminPage() {
                         </div>
                       </div>
                     )}
-                    <ImageUpload
-                      value={formData.image_url}
-                      onChange={(url) => setFormData({...formData, image_url: url})}
-                      label="Category Image"
-                      className="w-full"
-                    />
                   </div>
                 </div>
 
@@ -306,9 +328,9 @@ export default function CategoriesAdminPage() {
                 <Button type="button" variant="outline" onClick={onCancel} className="border-gray-300 text-black hover:bg-gray-100">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isSaving}>
                   <Save className="h-4 w-4 mr-2" />
-                  {category ? 'Update Category' : 'Create Category'}
+                  {isSaving ? 'Saving...' : (category ? 'Update Category' : 'Create Category')}
                 </Button>
               </div>
             </form>

@@ -217,11 +217,11 @@ export function Header() {
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {classItems.map((item) => (
-                    <Link
-                      key={item}
-                      href={`/class/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                    >
+                                              <Link
+                            key={item}
+                            href={`/class/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                          >
                       {item}
                     </Link>
                   ))}
@@ -248,7 +248,7 @@ export function Header() {
                   {propItems.map((item) => (
                     <Link
                       key={item}
-                      href={`/prop/${item.toLowerCase().replace(' ', '-')}`}
+                      href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
@@ -355,11 +355,11 @@ export function Header() {
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {scrollItems.map((item) => (
-                    <Link
-                      key={item}
-                      href={`/scrolls/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                    >
+                                              <Link
+                            key={item}
+                            href={`/scrolls/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                          >
                       {item}
                     </Link>
                   ))}
@@ -384,11 +384,11 @@ export function Header() {
                   className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {toolItems.map((item) => (
-                    <Link
-                      key={item}
-                      href={`/tools/${item.toLowerCase().replace(' ', '-')}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                    >
+                                              <Link
+                            key={item}
+                            href={`/tools/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                          >
                       {item}
                     </Link>
                   ))}
@@ -565,7 +565,7 @@ export function Header() {
                       <h3 className="text-sm font-medium text-gray-700 px-2">Class</h3>
                       {classItems.map((item) => (
                         <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/class/${item.toLowerCase().replace(' ', '-')}`}>
+                          <Link href={`/class/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                             {item}
                           </Link>
                         </Button>
@@ -577,7 +577,7 @@ export function Header() {
                       <h3 className="text-sm font-medium text-gray-700 px-2">Prop</h3>
                       {propItems.map((item) => (
                         <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/prop/${item.toLowerCase().replace(' ', '-')}`}>
+                          <Link href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                             {item}
                           </Link>
                         </Button>
@@ -625,7 +625,7 @@ export function Header() {
                       <h3 className="text-sm font-medium text-gray-700 px-2">Scrolls</h3>
                       {scrollItems.map((item) => (
                         <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/scrolls/${item.toLowerCase().replace(' ', '-')}`}>
+                          <Link href={`/scrolls/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                             {item}
                           </Link>
                         </Button>
@@ -637,7 +637,7 @@ export function Header() {
                       <h3 className="text-sm font-medium text-gray-700 px-2">Tools</h3>
                       {toolItems.map((item) => (
                         <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/tools/${item.toLowerCase().replace(' ', '-')}`}>
+                          <Link href={`/tools/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                             {item}
                           </Link>
                         </Button>
