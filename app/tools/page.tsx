@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { Map, Search, Calculator, Shield, Clock, Users, DollarSign, Gift } from "lucide-react"
+import { Map, Search, Calculator, Shield, Clock, Users, DollarSign, Gift, ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import { ProductImage } from "@/components/ui/product-image"
 
 const toolItems = [
   {
@@ -104,46 +105,68 @@ export default function ToolsPage() {
           </div>
 
           {/* Tools Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {toolItems.map((item) => {
               const IconComponent = item.icon
               return (
-                <Card key={item.name} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-full ${item.color} text-white`}>
-                        <IconComponent className="h-6 w-6" />
+                <Card key={item.name} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                  <CardContent className="p-3">
+                    <Link href={`/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+                        <ProductImage
+                          src={`/uo/tools.png`}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                        
+                        {/* Hover overlay with tool description */}
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                          <div className="text-white text-center max-w-full">
+                            <p className="text-xs font-sans">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Status badge */}
+                        <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                          {item.status}
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="text-sm">
-                        {item.status}
-                      </Badge>
+                      
+                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                        {item.name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">
+                            Tool
+                          </span>
+                        </div>
+                        
+                        {/* Rating placeholder */}
+                        <div className="flex items-center space-x-1">
+                          <Search className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span className="text-xs font-medium">Free</span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Access Tool Button */}
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm"
+                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                        asChild
+                      >
+                        <Link href={`/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          Access Tool
+                        </Link>
+                      </Button>
                     </div>
-                    <CardTitle className="text-lg font-bold text-gray-900">
-                      {item.name}
-                    </CardTitle>
-                    <p className="text-gray-600 text-sm">{item.description}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900 text-sm">Features:</h4>
-                      <ul className="space-y-1">
-                        {item.features.map((feature) => (
-                          <li key={feature} className="text-xs text-gray-600 flex items-center">
-                            <Search className="h-3 w-3 text-amber-500 mr-2" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <Button 
-                      className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                      size="sm"
-                      asChild
-                    >
-                      <Link href={`/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
-                        Access Tool
-                      </Link>
-                    </Button>
                   </CardContent>
                 </Card>
               )

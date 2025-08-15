@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { Scroll, ArrowUp, Star, Zap } from "lucide-react"
+import { Scroll, ArrowUp, Star, Zap, ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import { ProductImage } from "@/components/ui/product-image"
 
 const scrollItems = [
   {
@@ -64,46 +65,68 @@ export default function ScrollsPage() {
           </div>
 
           {/* Scrolls Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {scrollItems.map((item) => {
               const IconComponent = item.icon
               return (
-                <Card key={item.name} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-full ${item.color} text-white`}>
-                        <IconComponent className="h-6 w-6" />
+                <Card key={item.name} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                  <CardContent className="p-3">
+                    <Link href={`/product/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+                        <ProductImage
+                          src={`/uo/scrolls.png`}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                        
+                        {/* Hover overlay with scroll description */}
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                          <div className="text-white text-center max-w-full">
+                            <p className="text-xs font-sans">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Scroll badge */}
+                        <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                          Scroll
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="text-sm">
-                        {item.price}
-                      </Badge>
+                      
+                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                        {item.name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-amber-600">
+                            {item.price}
+                          </span>
+                        </div>
+                        
+                        {/* Rating placeholder */}
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span className="text-xs font-medium">4.5</span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Add to Cart Button */}
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm"
+                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                        asChild
+                      >
+                        <Link href={`/product/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          View Details
+                        </Link>
+                      </Button>
                     </div>
-                    <CardTitle className="text-xl font-bold text-gray-900">
-                      {item.name}
-                    </CardTitle>
-                    <p className="text-gray-600">{item.description}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900">Features:</h4>
-                      <ul className="space-y-1">
-                        {item.features.map((feature) => (
-                          <li key={feature} className="text-sm text-gray-600 flex items-center">
-                            <Star className="h-3 w-3 text-amber-500 mr-2" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <Button 
-                      className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                      asChild
-                    >
-                      <Link href={`/product/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
-                        View Details
-                        <ArrowUp className="h-4 w-4 ml-2" />
-                      </Link>
-                    </Button>
                   </CardContent>
                 </Card>
               )

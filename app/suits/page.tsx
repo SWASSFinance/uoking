@@ -18,9 +18,11 @@ import {
   Eye,
   BookOpen,
   Users,
-  CheckCircle
+  CheckCircle,
+  ShoppingCart
 } from "lucide-react"
 import Link from "next/link"
+import { ProductImage } from "@/components/ui/product-image"
 
 const suitData = [
   {
@@ -165,59 +167,68 @@ export default function SuitsPage() {
           </div>
 
           {/* Suits Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {suitData.map((suit) => {
               const IconComponent = suit.icon
               return (
-                <Card key={suit.name} className="group hover:shadow-xl transition-all duration-300 border-amber-200">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className={`p-2 rounded-full ${suit.color} text-white`}>
-                        <IconComponent className="h-5 w-5" />
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {suit.category}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg font-bold text-gray-900">
-                      {suit.name}
-                    </CardTitle>
-                    <p className="text-gray-600 text-sm">{suit.description}</p>
-                    <div className="text-2xl font-bold text-amber-600">
-                      {suit.price}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900 text-sm">Includes:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {suit.items.map((item) => (
-                          <Badge key={item} variant="outline" className="text-xs">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900 text-sm">Features:</h4>
-                      <div className="space-y-1">
-                        {suit.features.map((feature) => (
-                          <div key={feature} className="flex items-center space-x-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            <span className="text-xs text-gray-700">{feature}</span>
+                <Card key={suit.name} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                  <CardContent className="p-3">
+                    <Link href={`/suits/${suit.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+                        <ProductImage
+                          src={`/uo/suits.png`}
+                          alt={suit.name}
+                          fill
+                          className="object-cover"
+                        />
+                        
+                        {/* Hover overlay with suit description */}
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                          <div className="text-white text-center max-w-full">
+                            <p className="text-xs font-sans">
+                              {suit.description}
+                            </p>
                           </div>
-                        ))}
+                        </div>
+                        
+                        {/* Category badge */}
+                        <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                          {suit.category}
+                        </Badge>
                       </div>
+                      
+                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                        {suit.name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-amber-600">
+                            {suit.price}
+                          </span>
+                        </div>
+                        
+                        {/* Rating placeholder */}
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span className="text-xs font-medium">4.5</span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Add to Cart Button */}
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm"
+                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                        asChild
+                      >
+                        <Link href={`/suits/${suit.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          View Details
+                        </Link>
+                      </Button>
                     </div>
-                    <Button 
-                      className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                      asChild
-                    >
-                      <Link href={`/suits/${suit.name.toLowerCase().replace(/\s+/g, '-')}`}>
-                        View Details
-                        <ArrowUp className="h-4 w-4 ml-2" />
-                      </Link>
-                    </Button>
                   </CardContent>
                 </Card>
               )
