@@ -121,7 +121,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
               alt={deal.name}
               width={300}
               height={300}
-              className="rounded-lg object-cover w-full h-48"
+              className="rounded-lg object-contain w-full max-h-64"
             />
             <Badge className="absolute top-2 left-2 bg-red-600 text-white">
               -{deal.discount_percentage}%
