@@ -31,11 +31,6 @@ const adminNavItems = [
     icon: FolderOpen
   },
   {
-    name: "Banners",
-    href: "/admin/banners",
-    icon: Video
-  },
-  {
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart
