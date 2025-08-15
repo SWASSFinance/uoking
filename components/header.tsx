@@ -182,7 +182,7 @@ export function Header() {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -214,7 +214,7 @@ export function Header() {
               </button>
               {activeDropdown === 'class' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {classItems.map((item) => (
                                               <Link
@@ -243,7 +243,7 @@ export function Header() {
               </button>
               {activeDropdown === 'prop' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {propItems.map((item) => (
                     <Link
@@ -272,7 +272,7 @@ export function Header() {
               </button>
               {activeDropdown === 'slot' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {slotItems.map((item) => (
                     <Link
@@ -301,7 +301,7 @@ export function Header() {
               </button>
               {activeDropdown === 'store' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-96 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-96 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   <div className="grid grid-cols-3 gap-1 p-2">
                     {categoriesLoading ? (
@@ -352,7 +352,7 @@ export function Header() {
               </button>
               {activeDropdown === 'scrolls' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {scrollItems.map((item) => (
                                               <Link
@@ -381,7 +381,7 @@ export function Header() {
               </button>
               {activeDropdown === 'tools' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   {toolItems.map((item) => (
                                               <Link

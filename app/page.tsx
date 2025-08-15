@@ -23,7 +23,7 @@ export default async function HomePage() {
           <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center">
             <div className="text-center text-white">
               <h1 className="text-5xl md:text-7xl font-bold mb-4">Welcome to UO KING</h1>
-              <p className="text-xl md:text-2xl">Your Ultimate Ultima Online Resource</p>
+           
             </div>
           </div>
         )}

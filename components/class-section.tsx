@@ -4,31 +4,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Star } from "lucide-react"
 import Link from "next/link"
-import { getClasses } from "@/lib/db"
 
 // High-tech SVG icons for each class
 const ClassIconSVG = ({ className, type }: { className: string, type: string }) => {
   const icons: { [key: string]: React.ReactElement } = {
-    'warrior': (
+    'getting-started': (
       <svg viewBox="0 0 100 100" className={className}>
         <defs>
-          <linearGradient id="swordGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#d97706" />
+          <linearGradient id="startGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#059669" />
           </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
         </defs>
-        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#swordGrad)" strokeWidth="2" opacity="0.3"/>
-        <path d="M30 20 L70 20 L75 25 L75 35 L70 40 L30 40 L25 35 L25 25 Z" fill="url(#swordGrad)" filter="url(#glow)"/>
-        <rect x="47" y="40" width="6" height="30" fill="url(#swordGrad)"/>
-        <rect x="42" y="70" width="16" height="8" rx="2" fill="url(#swordGrad)"/>
-        <circle cx="50" cy="30" r="3" fill="#fff" opacity="0.8"/>
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#startGrad)" strokeWidth="2" opacity="0.3"/>
+        <circle cx="50" cy="50" r="20" fill="url(#startGrad)" opacity="0.8"/>
+        <path d="M50 30 L50 70 M30 50 L70 50" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
       </svg>
     ),
     'mage': (
@@ -66,7 +56,29 @@ const ClassIconSVG = ({ className, type }: { className: string, type: string }) 
         <path d="M35 60 Q50 45 65 60" stroke="#fbbf24" strokeWidth="2" fill="none"/>
       </svg>
     ),
-    'archer': (
+    'melee': (
+      <svg viewBox="0 0 100 100" className={className}>
+        <defs>
+          <linearGradient id="swordGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#d97706" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#swordGrad)" strokeWidth="2" opacity="0.3"/>
+        <path d="M30 20 L70 20 L75 25 L75 35 L70 40 L30 40 L25 35 L25 25 Z" fill="url(#swordGrad)" filter="url(#glow)"/>
+        <rect x="47" y="40" width="6" height="30" fill="url(#swordGrad)"/>
+        <rect x="42" y="70" width="16" height="8" rx="2" fill="url(#swordGrad)"/>
+        <circle cx="50" cy="30" r="3" fill="#fff" opacity="0.8"/>
+      </svg>
+    ),
+    'ranged': (
       <svg viewBox="0 0 100 100" className={className}>
         <defs>
           <linearGradient id="bowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -82,48 +94,54 @@ const ClassIconSVG = ({ className, type }: { className: string, type: string }) 
         <circle cx="30" cy="65" r="2" fill="#10b981"/>
       </svg>
     ),
-    'paladin': (
+    'thief': (
       <svg viewBox="0 0 100 100" className={className}>
         <defs>
-          <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fbbf24" />
-            <stop offset="100%" stopColor="#f59e0b" />
-          </linearGradient>
-        </defs>
-        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#shieldGrad)" strokeWidth="2" opacity="0.3"/>
-        <path d="M50 20 L65 30 L65 55 Q65 70 50 75 Q35 70 35 55 L35 30 Z" fill="url(#shieldGrad)"/>
-        <path d="M47 30 L47 40 L42 40 L50 48 L58 40 L53 40 L53 30 Z" fill="#fff"/>
-        <circle cx="50" cy="60" r="4" fill="#fff" opacity="0.8"/>
-      </svg>
-    ),
-    'necromancer': (
-      <svg viewBox="0 0 100 100" className={className}>
-        <defs>
-          <linearGradient id="skullGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="daggerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#6b7280" />
             <stop offset="100%" stopColor="#374151" />
           </linearGradient>
         </defs>
-        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#skullGrad)" strokeWidth="2" opacity="0.3"/>
-        <ellipse cx="50" cy="45" rx="18" ry="20" fill="url(#skullGrad)"/>
-        <circle cx="42" cy="40" r="4" fill="#dc2626"/>
-        <circle cx="58" cy="40" r="4" fill="#dc2626"/>
-        <polygon points="50,48 48,55 52,55" fill="#374151"/>
-        <path d="M42 58 L46 62 L50 58 L54 62 L58 58" stroke="#374151" strokeWidth="2" fill="none"/>
-        <path d="M35 65 Q50 55 65 65" stroke="#7c3aed" strokeWidth="2" fill="none" opacity="0.7"/>
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#daggerGrad)" strokeWidth="2" opacity="0.3"/>
+        <path d="M45 20 L55 20 L60 25 L60 35 L55 40 L45 40 L40 35 L40 25 Z" fill="url(#daggerGrad)"/>
+        <rect x="48" y="40" width="4" height="25" fill="url(#daggerGrad)"/>
+        <rect x="46" y="65" width="8" height="6" rx="1" fill="url(#daggerGrad)"/>
+        <circle cx="50" cy="30" r="2" fill="#fff" opacity="0.8"/>
+      </svg>
+    ),
+    'crafter': (
+      <svg viewBox="0 0 100 100" className={className}>
+        <defs>
+          <linearGradient id="hammerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fbbf24" />
+            <stop offset="100%" stopColor="#f59e0b" />
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#hammerGrad)" strokeWidth="2" opacity="0.3"/>
+        <rect x="40" y="25" width="20" height="8" fill="url(#hammerGrad)"/>
+        <rect x="45" y="33" width="10" height="25" fill="url(#hammerGrad)"/>
+        <rect x="35" y="58" width="30" height="8" fill="url(#hammerGrad)"/>
+        <circle cx="50" cy="30" r="2" fill="#fff" opacity="0.8"/>
       </svg>
     )
   };
   
-  return icons[type] || icons['warrior'];
+  return icons[type] || icons['getting-started'];
 }
 
-export async function ClassSection() {
-  // Fetch classes from database
-  const classes = await getClasses();
+export function ClassSection() {
+  // Use the same class structure as the header navigation (excluding Getting Started)
+  const classItems = [
+    { name: "Mage", slug: "mage", description: "Magical weapons, armor, and equipment for spellcasters" },
+    { name: "Tamer", slug: "tamer", description: "Equipment for animal taming and creature control" },
+    { name: "Melee", slug: "melee", description: "Weapons and armor for close combat warriors" },
+    { name: "Ranged", slug: "ranged", description: "Bows, crossbows, and ranged combat equipment" },
+    { name: "Thief", slug: "thief", description: "Stealth equipment and tools for thieves and assassins" },
+    { name: "Crafter", slug: "crafter", description: "Tools and materials for crafting and gathering" }
+  ];
 
   return (
-    <section className="py-16 px-4 bg-white">
+    <section className="py-16 px-4">
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
@@ -136,9 +154,9 @@ export async function ClassSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classes.map((classData: any) => {
+          {classItems.map((classData) => {
             return (
-              <Link key={classData.id} href={`/class/${classData.slug}`}>
+              <Link key={classData.slug} href={`/class/${classData.slug}`}>
                 <Card className="group hover:shadow-2xl hover:scale-105 transition-all duration-500 overflow-hidden border-0 cursor-pointer bg-gradient-to-b from-gray-50 to-white">
                   {/* Top Icon Section with High-tech Gradient */}
                   <div className="relative h-40 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 flex items-center justify-center overflow-hidden">
@@ -158,7 +176,7 @@ export async function ClassSection() {
                     </div>
                     
                     {/* Shop Category Badge */}
-                    <Badge className="absolute top-3 right-3 bg-amber-500/90 text-black text-xs font-semibold backdrop-blur-sm">
+                    <Badge className="absolute top-3 right-3 bg-amber-500 text-black text-xs font-semibold">
                       Shop Items
                     </Badge>
                     
@@ -214,18 +232,12 @@ export async function ClassSection() {
           })}
         </div>
 
-        {classes.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No item categories available at the moment.</p>
-          </div>
-        )}
-
         <div className="text-center mt-12">
           <Link href="/class">
             <Button 
               variant="outline" 
               size="lg" 
-              className="px-8 bg-white border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white"
+              className="px-8 bg-white/90 backdrop-blur-sm border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white"
             >
               Browse All Categories
             </Button>

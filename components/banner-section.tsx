@@ -41,9 +41,7 @@ export function BannerSection({ banners }: BannerSectionProps) {
         <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl">
           Welcome to UO KING
         </h1>
-        <p className="text-xl md:text-2xl mb-8 drop-shadow-xl">
-          Your Ultimate Ultima Online Resource
-        </p>
+     
         {banners.length > 0 && banners[0]?.button_text && (
           <a
             href={banners[0].button_url || '#'}
