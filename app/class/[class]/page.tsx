@@ -6,9 +6,14 @@ import { Badge } from "@/components/ui/badge"
 import { Crown, Star, Shield, Zap, Target, Users, Sword, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import { ProductImage } from "@/components/ui/product-image"
+import { getProductsByClass } from "@/lib/db"
 
 export default async function ClassPage({ params }: { params: Promise<{ class: string }> }) {
   const { class: classParam } = await params
+  
+  // Fetch real products for this class
+  let products = await getProductsByClass(classParam)
+  
   // Function to convert item name to URL-friendly slug
   const createProductSlug = (itemName: string) => {
     return itemName
@@ -456,6 +461,20 @@ export default async function ClassPage({ params }: { params: Promise<{ class: s
 
   const currentClass = classData[classParam as keyof typeof classData]
   const IconComponent = currentClass?.icon || Crown
+  
+  // If no products found in database, use hardcoded items as fallback
+  if (!products || products.length === 0) {
+    products = currentClass?.items?.map((item: any, index: number) => ({
+      id: index,
+      name: item.name,
+      slug: createProductSlug(item.name),
+      price: item.price.toString(),
+      image_url: `/uo/${classParam.toLowerCase()}.png`,
+      short_description: `${currentClass.name} Item`,
+      avg_rating: 4.5,
+      featured: false
+    })) || []
+  }
 
   if (!currentClass) {
     return (
@@ -493,70 +512,100 @@ export default async function ClassPage({ params }: { params: Promise<{ class: s
             )}
           </div>
 
-                     {/* Class Items Grid - Show for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes */}
-           {(classParam === 'mage' || classParam === 'tamer' || classParam === 'melee' || classParam === 'ranged' || classParam === 'thief' || classParam === 'crafter') && 'items' in currentClass && Array.isArray(currentClass.items) && (
+                                          {/* Class Items Grid - Show for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes */}
+           {(classParam === 'mage' || classParam === 'tamer' || classParam === 'melee' || classParam === 'ranged' || classParam === 'thief' || classParam === 'crafter') && products && products.length > 0 && (
              <div className="mb-12">
                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{currentClass.name} Items</h2>
                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                 {currentClass.items.map((item: { name: string; price: number }, index: number) => (
-                   <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                 {products.map((product: any) => (
+                   <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
                      <CardContent className="p-3">
-                       <Link href={`/product/${createProductSlug(item.name)}`}>
+                       <Link href={`/product/${product.slug}`}>
                          <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
                            <ProductImage
-                             src={`/uo/${classParam.toLowerCase()}.png`}
-                             alt={item.name}
+                             src={product.image_url}
+                             alt={product.name}
                              fill
                              className="object-cover"
                            />
                            
-                           {/* Hover overlay with item description */}
-                           <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
-                             <div className="text-white text-center max-w-full">
-                               <p className="text-xs font-sans">
-                                 {currentClass.name} Item
-                               </p>
+                           {/* Short Description Overlay */}
+                           {product.short_description && (
+                             <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                               <div className="text-white text-center max-w-full">
+                                 <pre className="text-xs whitespace-pre-wrap font-sans text-left">
+                                   {product.short_description}
+                                 </pre>
+                               </div>
                              </div>
-                           </div>
+                           )}
+                           
+                           {product.featured && (
+                             <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                               Featured
+                             </Badge>
+                           )}
                            
                            {/* Class badge */}
-                           <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                           <Badge className="absolute top-1 right-1 bg-blue-500 text-xs">
                              {currentClass.name}
                            </Badge>
                          </div>
                          
                          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
-                           {item.name}
+                           {product.name}
                          </h3>
+                         
+                         <div className="min-h-[3rem] mb-3">
+                           {product.short_description && (
+                             <pre className="text-xs text-gray-600 line-clamp-2 whitespace-pre-wrap font-sans">
+                               {product.short_description}
+                             </pre>
+                           )}
+                         </div>
                          
                          <div className="flex items-center justify-between mb-3">
                            <div className="flex flex-col">
-                             <span className="text-sm font-bold text-amber-600">
-                               ${item.price.toFixed(2)}
-                             </span>
+                             {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
+                               <div className="flex items-center space-x-2">
+                                 <span className="text-sm font-bold text-amber-600">
+                                   ${parseFloat(product.sale_price).toFixed(2)}
+                                 </span>
+                                 <span className="text-xs text-gray-500 line-through">
+                                   ${parseFloat(product.price).toFixed(2)}
+                                 </span>
+                               </div>
+                             ) : (
+                               <span className="text-sm font-bold text-amber-600">
+                                 ${parseFloat(product.price).toFixed(2)}
+                               </span>
+                             )}
                            </div>
                            
-                           {/* Rating placeholder */}
-                           <div className="flex items-center space-x-1">
-                             <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                             <span className="text-xs font-medium">4.5</span>
-                           </div>
+                           {product.avg_rating > 0 && (
+                             <div className="flex items-center space-x-1">
+                               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                               <span className="text-xs font-medium">
+                                 {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
+                               </span>
+                             </div>
+                           )}
                          </div>
                        </Link>
 
-                                           {/* Add to Cart Button */}
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        size="sm"
-                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                        asChild
-                      >
-                        <Link href={`/product/${createProductSlug(item.name)}`}>
-                          <ShoppingCart className="h-3 w-3 mr-1" />
-                          Add to Cart
-                        </Link>
-                      </Button>
-                    </div>
+                       {/* Add to Cart Button */}
+                       <div className="flex items-center gap-2">
+                         <Button 
+                           size="sm"
+                           className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                           asChild
+                         >
+                           <Link href={`/product/${product.slug}`}>
+                             <ShoppingCart className="h-3 w-3 mr-1" />
+                             Add to Cart
+                           </Link>
+                         </Button>
+                       </div>
                      </CardContent>
                    </Card>
                  ))}
