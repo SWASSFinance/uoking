@@ -544,19 +544,19 @@ export default async function ClassPage({ params }: { params: Promise<{ class: s
                          </div>
                        </Link>
 
-                       {/* Add to Cart Button */}
-                       <div className="flex items-center gap-2">
-                         <Button 
-                           size="sm"
-                           className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                           asChild
-                         >
-                           <Link href={`/product/${createProductSlug(item.name)}`}>
-                             <ShoppingCart className="h-3 w-3 mr-1" />
-                             View Details
-                           </Link>
-                         </Button>
-                       </div>
+                                           {/* Add to Cart Button */}
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm"
+                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                        asChild
+                      >
+                        <Link href={`/product/${createProductSlug(item.name)}`}>
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          Add to Cart
+                        </Link>
+                      </Button>
+                    </div>
                      </CardContent>
                    </Card>
                  ))}
