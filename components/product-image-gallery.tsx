@@ -8,11 +8,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 interface ProductImageGalleryProps {
   imageUrl?: string | null
   productName: string
-  stats?: any[]
   description?: string
 }
 
-export function ProductImageGallery({ imageUrl, productName, stats, description }: ProductImageGalleryProps) {
+export function ProductImageGallery({ imageUrl, productName, description }: ProductImageGalleryProps) {
   const [isZoomed, setIsZoomed] = useState(false)
   const [imageError, setImageError] = useState(false)
   
@@ -43,20 +42,7 @@ export function ProductImageGallery({ imageUrl, productName, stats, description 
             <div className="text-white text-center max-w-full">
               <h3 className="font-bold text-lg mb-3">{productName}</h3>
               
-              {/* Stats */}
-              {stats && stats.length > 0 && (
-                <div className="mb-3">
-                  <h4 className="font-semibold mb-2">Item Statistics:</h4>
-                  <div className="text-sm space-y-1">
-                    {stats.map((stat: any, index: number) => (
-                      <div key={index} className="flex justify-between">
-                        <span>{stat.name}:</span>
-                        <span className="font-semibold">{stat.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+
               
               {/* Description */}
               {description && (

@@ -40,6 +40,7 @@ interface User {
   created_at: string
   updated_at: string
   last_login_at?: string
+  referral_cash?: number
 }
 
 export default function UsersAdminPage() {
@@ -146,7 +147,8 @@ export default function UsersAdminPage() {
       character_names: user?.character_names || [],
       status: user?.status || 'active',
       email_verified: user?.email_verified || false,
-      is_admin: user?.is_admin || false
+      is_admin: user?.is_admin || false,
+      referral_cash: user?.referral_cash || 0
     })
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -302,6 +304,27 @@ export default function UsersAdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* Cashback Management */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Cashback Management</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="referral_cash" className="text-gray-700">Cashback Balance ($)</Label>
+                  <Input
+                    id="referral_cash"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.referral_cash}
+                    onChange={(e) => setFormData({...formData, referral_cash: parseFloat(e.target.value) || 0})}
+                    placeholder="0.00"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Current cashback balance for this user</p>
+                </div>
+              </div>
+            </div>
             
             <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
               <Button type="button" variant="outline" onClick={onCancel} className="border-gray-300 text-gray-700">
@@ -412,6 +435,7 @@ export default function UsersAdminPage() {
                       <TableHead className="text-black font-semibold">Contact</TableHead>
                       <TableHead className="text-black font-semibold">Gaming Info</TableHead>
                       <TableHead className="text-black font-semibold">Status</TableHead>
+                      <TableHead className="text-black font-semibold">Cashback</TableHead>
                       <TableHead className="text-black font-semibold">Account</TableHead>
                       <TableHead className="text-black font-semibold">Actions</TableHead>
                     </TableRow>
@@ -477,6 +501,18 @@ export default function UsersAdminPage() {
                             {user.email_verified && (
                               <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
                             )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm text-gray-700">
+                              <span className="font-semibold text-green-600">
+                                ${(user.referral_cash || 0).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Cashback Balance
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>

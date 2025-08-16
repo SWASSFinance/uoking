@@ -21,7 +21,6 @@ import {
   ArrowLeft, 
   CreditCard,
   Package,
-  Truck,
   Shield,
   DollarSign,
   AlertCircle,
@@ -44,6 +43,10 @@ export default function CartPage() {
   const [cashbackBalance, setCashbackBalance] = useState(0)
   const [cashbackToUse, setCashbackToUse] = useState(0)
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
+  const [selectedShard, setSelectedShard] = useState('')
+  const [characterName, setCharacterName] = useState('')
+  const [shards, setShards] = useState<any[]>([])
+  const [isLoadingShards, setIsLoadingShards] = useState(false)
 
   // Fetch cashback balance when user is authenticated
   useEffect(() => {
@@ -62,6 +65,22 @@ export default function CartPage() {
         })
     }
   }, [session])
+
+  // Fetch shards
+  useEffect(() => {
+    setIsLoadingShards(true)
+    fetch('/api/shard')
+      .then(res => res.json())
+      .then(data => {
+        setShards(data)
+      })
+      .catch(error => {
+        console.error('Error fetching shards:', error)
+      })
+      .finally(() => {
+        setIsLoadingShards(false)
+      })
+  }, [])
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     setIsUpdating(itemId)
@@ -191,6 +210,24 @@ export default function CartPage() {
       return
     }
 
+    if (!selectedShard) {
+      toast({
+        title: "Shard Required",
+        description: "Please select a shard for delivery.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!characterName.trim()) {
+      toast({
+        title: "Character Name Required",
+        description: "Please enter your character name for delivery.",
+        variant: "destructive",
+      })
+      return
+    }
+
     // Validate cashback amount
     if (cashbackToUse > cashbackBalance) {
       toast({
@@ -212,7 +249,7 @@ export default function CartPage() {
 
     setIsCheckingOut(true)
     try {
-      const success = await syncToServer(cashbackToUse)
+      const success = await syncToServer(cashbackToUse, selectedShard, characterName.trim())
       if (success) {
         toast({
           title: "Order Created!",
@@ -495,6 +532,52 @@ export default function CartPage() {
                     </div>
                   )}
 
+                  {/* Shard Selection Section */}
+                  <div className="space-y-3 border-t pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Package className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-gray-700">Delivery Information</span>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Select Shard *
+                        </label>
+                        <select
+                          value={selectedShard}
+                          onChange={(e) => setSelectedShard(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          required
+                          disabled={isLoadingShards}
+                        >
+                          <option value="">
+                            {isLoadingShards ? "Loading shards..." : "Choose your shard..."}
+                          </option>
+                          {shards.map((shard) => (
+                            <option key={shard.id} value={shard.slug}>
+                              {shard.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Character Name *
+                        </label>
+                        <Input
+                          type="text"
+                          placeholder="Enter your character name"
+                          value={characterName}
+                          onChange={(e) => setCharacterName(e.target.value)}
+                          className="w-full"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Summary Details */}
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
@@ -520,14 +603,7 @@ export default function CartPage() {
                       </div>
                     )}
                     
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Shipping</span>
-                      <span className="font-medium text-green-600">Free</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tax</span>
-                      <span className="font-medium">$0.00</span>
-                    </div>
+
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
@@ -540,7 +616,7 @@ export default function CartPage() {
                   {/* Checkout Button */}
                   <Button
                     onClick={handleCheckout}
-                    disabled={isCheckingOut || cart.items.length === 0}
+                    disabled={isCheckingOut || cart.items.length === 0 || !selectedShard || !characterName.trim()}
                     className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 text-lg font-semibold"
                   >
                     {isCheckingOut ? (
@@ -580,13 +656,7 @@ export default function CartPage() {
 
               {/* Features */}
               <div className="mt-6 space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                  <Truck className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="font-medium text-green-800">Fast Delivery</p>
-                    <p className="text-sm text-green-600">Same day delivery available</p>
-                  </div>
-                </div>
+
                 
                 <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
                   <Shield className="h-5 w-5 text-blue-600" />

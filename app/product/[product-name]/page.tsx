@@ -31,8 +31,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  // Parse stats if they exist
-  const stats = product.stats || [];
+
+
   const salePrice = product.sale_price ? parseFloat(product.sale_price) : null;
   const regularPrice = parseFloat(product.price);
   const price = salePrice || regularPrice;
@@ -69,7 +69,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                               <ProductImageGallery 
                 imageUrl={product.image_url} 
                 productName={product.name}
-                stats={stats}
                 description={product.description}
               />
                 
@@ -141,57 +140,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 )}
               </div>
 
-              {/* Stats and Game Info Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Stats */}
-                {stats.length > 0 && (
-                  <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2 text-lg">
-                        <Star className="h-5 w-5 text-amber-500" />
-                        <span>Item Statistics</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {stats.map((stat: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                            <span className="text-gray-600">{stat.name}</span>
-                            <span className="font-semibold text-amber-600">{stat.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Game Info */}
-                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Game Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {product.spawn_location && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Spawn Location:</span>
-                        <span className="font-medium">{product.spawn_location}</span>
-                      </div>
-                    )}
-                    {product.drop_rate && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Drop Rate:</span>
-                        <span className="font-medium">{product.drop_rate}</span>
-                      </div>
-                    )}
-                    {product.class_name && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Recommended Class:</span>
-                        <span className="font-medium">{product.class_name}</span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Game Info */}
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-lg">Game Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {product.spawn_location && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Spawn Location:</span>
+                      <span className="font-medium">{product.spawn_location}</span>
+                    </div>
+                  )}
+                  {product.drop_rate && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Drop Rate:</span>
+                      <span className="font-medium">{product.drop_rate}</span>
+                    </div>
+                  )}
+                  {product.class_name && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Recommended Class:</span>
+                      <span className="font-medium">{product.class_name}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Purchase Options */}
               <Card className="bg-white/90 backdrop-blur-sm border-amber-200">

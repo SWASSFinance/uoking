@@ -14,7 +14,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { cart, cashbackAmount = 0 }: { cart: Cart, cashbackAmount?: number } = await request.json()
+    const { cart, cashbackAmount = 0, shard = '', characterName = '' }: { 
+      cart: Cart, 
+      cashbackAmount?: number,
+      shard?: string,
+      characterName?: string 
+    } = await request.json()
 
     if (!cart.items || cart.items.length === 0) {
       return NextResponse.json(
@@ -56,6 +61,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate shard and character name
+    if (!shard || !shard.trim()) {
+      return NextResponse.json(
+        { error: 'Shard selection is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!characterName || !characterName.trim()) {
+      return NextResponse.json(
+        { error: 'Character name is required' },
+        { status: 400 }
+      )
+    }
+
     // Generate order number
     const orderNumber = `UOK-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
 
@@ -76,11 +96,13 @@ export async function POST(request: NextRequest) {
         currency,
         payment_status,
         delivery_status,
+        delivery_shard,
+        delivery_character,
         created_at, 
         updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
       RETURNING id
-    `, [userId, orderNumber, 'pending', subtotal, discountAmount, totalAmount, 'USD', 'pending', 'pending'])
+    `, [userId, orderNumber, 'pending', subtotal, discountAmount, totalAmount, 'USD', 'pending', 'pending', shard.trim(), characterName.trim()])
 
     if (!orderResult.rows || orderResult.rows.length === 0) {
       return NextResponse.json(

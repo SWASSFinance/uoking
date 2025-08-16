@@ -9,7 +9,7 @@ interface CartContextType {
   removeItem: (itemId: string) => void
   updateQuantity: (itemId: string, quantity: number) => void
   clearCart: () => void
-  syncToServer: (cashbackAmount?: number) => Promise<boolean>
+  syncToServer: (cashbackAmount?: number, shard?: string, characterName?: string) => Promise<boolean>
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -56,8 +56,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart(updatedCart)
   }
 
-  const syncToServer = async (cashbackAmount?: number): Promise<boolean> => {
-    const success = await clientCart.syncToServer(cashbackAmount)
+  const syncToServer = async (cashbackAmount?: number, shard?: string, characterName?: string): Promise<boolean> => {
+    const success = await clientCart.syncToServer(cashbackAmount, shard, characterName)
     if (success) {
       setCart({ items: [], total: 0, itemCount: 0 })
     }

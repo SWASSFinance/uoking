@@ -11,7 +11,8 @@ import {
   LogOut,
   FolderOpen,
   Tag,
-  Video
+  Video,
+  Globe
 } from "lucide-react"
 
 const adminNavItems = [
@@ -44,6 +45,11 @@ const adminNavItems = [
     name: "Users",
     href: "/admin/users",
     icon: Users
+  },
+  {
+    name: "Shards",
+    href: "/admin/shard",
+    icon: Globe
   },
   {
     name: "Settings",

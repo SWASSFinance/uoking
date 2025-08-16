@@ -848,9 +848,25 @@ export async function deleteCategory(id: string) {
 export async function getAllUsers() {
   try {
     const result = await query(`
-      SELECT id, email, username, first_name, last_name, discord_username, main_shard, character_names, status, email_verified, is_admin, created_at, updated_at, last_login_at
-      FROM users 
-      ORDER BY created_at DESC
+      SELECT 
+        u.id, 
+        u.email, 
+        u.username, 
+        u.first_name, 
+        u.last_name, 
+        u.discord_username, 
+        u.main_shard, 
+        u.character_names, 
+        u.status, 
+        u.email_verified, 
+        u.is_admin, 
+        u.created_at, 
+        u.updated_at, 
+        u.last_login_at,
+        COALESCE(up.referral_cash, 0) as referral_cash
+      FROM users u
+      LEFT JOIN user_points up ON u.id = up.user_id
+      ORDER BY u.created_at DESC
     `)
     return result.rows
   } catch (error) {
@@ -1016,6 +1032,103 @@ export async function deleteBanner(id: string) {
     return result.rows[0]
   } catch (error) {
     console.error('Error deleting banner:', error)
+    throw error
+  }
+}
+
+// Shard functions
+export async function getShards() {
+  try {
+    const result = await query(`
+      SELECT * FROM shards 
+      WHERE is_active = true 
+      ORDER BY sort_order ASC, name ASC
+    `)
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching shards:', error)
+    throw error
+  }
+}
+
+export async function getAllShards() {
+  try {
+    const result = await query(`
+      SELECT * FROM shards 
+      ORDER BY sort_order ASC, name ASC
+    `)
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching all shards:', error)
+    throw error
+  }
+}
+
+export async function getShardById(id: string) {
+  try {
+    const result = await query('SELECT * FROM shards WHERE id = $1', [id])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error fetching shard:', error)
+    throw error
+  }
+}
+
+export async function createShard(shardData: any) {
+  try {
+    const result = await query(`
+      INSERT INTO shards (
+        name, slug, is_active, sort_order, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, NOW(), NOW())
+      RETURNING *
+    `, [
+      shardData.name,
+      shardData.slug || shardData.name.toLowerCase().replace(/\s+/g, '-'),
+      shardData.is_active !== false,
+      shardData.sort_order || 0
+    ])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error creating shard:', error)
+    throw error
+  }
+}
+
+export async function updateShard(id: string, shardData: any) {
+  try {
+    const result = await query(`
+      UPDATE shards SET 
+        name = $1,
+        slug = $2,
+        is_active = $3,
+        sort_order = $4,
+        updated_at = NOW()
+      WHERE id = $5
+      RETURNING *
+    `, [
+      shardData.name,
+      shardData.slug || shardData.name.toLowerCase().replace(/\s+/g, '-'),
+      shardData.is_active !== false,
+      shardData.sort_order || 0,
+      id
+    ])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating shard:', error)
+    throw error
+  }
+}
+
+export async function deleteShard(id: string) {
+  try {
+    const result = await query(`
+      DELETE FROM shards 
+      WHERE id = $1
+      RETURNING id
+    `, [id])
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error deleting shard:', error)
     throw error
   }
 }

@@ -111,7 +111,7 @@ export const clientCart = {
   },
 
   // Sync cart to server (for checkout)
-  syncToServer: async (cashbackAmount?: number): Promise<boolean> => {
+  syncToServer: async (cashbackAmount?: number, shard?: string, characterName?: string): Promise<boolean> => {
     try {
       const cart = clientCart.getCart()
       const response = await fetch('/api/cart/sync', {
@@ -119,7 +119,12 @@ export const clientCart = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cart, cashbackAmount: cashbackAmount || 0 }),
+        body: JSON.stringify({ 
+          cart, 
+          cashbackAmount: cashbackAmount || 0,
+          shard: shard || '',
+          characterName: characterName || ''
+        }),
       })
       
       if (response.ok) {
