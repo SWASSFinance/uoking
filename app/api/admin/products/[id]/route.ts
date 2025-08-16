@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { updateProduct, deleteProduct } from '@/lib/db'
+import { updateProduct, deleteProduct, updateProductCategories } from '@/lib/db'
 
 export async function PUT(
   request: NextRequest,
@@ -24,12 +24,19 @@ export async function PUT(
         .replace(/^-|-$/g, '')
     }
     
-    const productData = {
-      ...body,
+    const { category_ids, ...productData } = body
+    
+    const product = await updateProduct(productId, {
+      ...productData,
       slug
+    })
+    
+    // Update product categories if provided
+    if (category_ids && Array.isArray(category_ids)) {
+      const filteredCategoryIds = category_ids.filter(id => id && id !== '')
+      await updateProductCategories(productId, filteredCategoryIds)
     }
     
-    const product = await updateProduct(productId, productData)
     return NextResponse.json(product)
   } catch (error) {
     console.error('Error updating product:', error)

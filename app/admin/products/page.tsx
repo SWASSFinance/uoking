@@ -39,7 +39,6 @@ interface Product {
   image_url: string
   status: string
   featured: boolean
-  category_id: string
   class_id: string
   type: string
   rank: number
@@ -48,7 +47,8 @@ interface Product {
 
   created_at: string
   updated_at: string
-  category_name?: string
+  category_names?: string
+  category_ids?: string
   class_name?: string
 }
 
@@ -72,6 +72,7 @@ export default function ProductsAdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterCategory, setFilterCategory] = useState("all")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -121,7 +122,7 @@ export default function ProductsAdminPage() {
     }
   }
 
-  const handleSave = async (productData: Partial<Product>) => {
+  const handleSave = async (productData: any) => {
     try {
       const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products'
       const method = editingProduct ? 'PUT' : 'POST'
@@ -164,14 +165,14 @@ export default function ProductsAdminPage() {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesStatus = filterStatus === "all" || product.status === filterStatus
-    const matchesCategory = filterCategory === "all" || product.category_id === filterCategory
+    const matchesCategory = filterCategory === "all" || (product.category_ids && product.category_ids.includes(filterCategory))
     
     return matchesSearch && matchesStatus && matchesCategory
   })
 
   const ProductForm = ({ product, onSave, onCancel }: { 
     product?: Product | null, 
-    onSave: (data: Partial<Product>) => void, 
+    onSave: (data: any) => void, 
     onCancel: () => void 
   }) => {
       const [formData, setFormData] = useState({
@@ -183,7 +184,7 @@ export default function ProductsAdminPage() {
     image_url: product?.image_url || '',
     status: product?.status || 'active',
     featured: product?.featured || false,
-    category_id: product?.category_id || '',
+    category_ids: product?.category_ids ? product.category_ids.split(',') : [],
     class_id: product?.class_id || '',
     type: product?.type || 'item',
     rank: product?.rank || 0,
@@ -242,19 +243,32 @@ export default function ProductsAdminPage() {
 
               
               <div>
-                <Label htmlFor="category" className="text-black font-semibold">Category</Label>
-                <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
-                  <SelectTrigger className="border-gray-300 bg-white text-black">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id} className="text-black">
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="category" className="text-black font-semibold">Categories (Up to 3)</Label>
+                <div className="space-y-2">
+                  {[0, 1, 2].map((index) => (
+                    <Select 
+                      key={index}
+                      value={formData.category_ids[index] || ''} 
+                      onValueChange={(value) => {
+                        const newCategoryIds = [...formData.category_ids]
+                        newCategoryIds[index] = value
+                        setFormData({...formData, category_ids: newCategoryIds})
+                      }}
+                    >
+                      <SelectTrigger className="border-gray-300 bg-white text-black">
+                        <SelectValue placeholder={`Select category ${index + 1}`} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="" className="text-black">None</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id} className="text-black">
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ))}
+                </div>
               </div>
               
               <div>
@@ -545,7 +559,7 @@ export default function ProductsAdminPage() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm text-black">
-                            {product.category_name || 'No Category'}
+                            {product.category_names || 'No Category'}
                           </div>
                           {product.class_name && (
                             <div className="text-xs text-gray-700">

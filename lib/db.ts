@@ -596,11 +596,11 @@ export async function getProductsByCategoryJunction(categoryId: string, filters?
 export async function getProductCategories(productId: string) {
   try {
     const result = await query(`
-      SELECT c.id, c.name, c.slug, pc.is_primary
+      SELECT c.id, c.name, c.slug, pc.sort_order
       FROM product_categories pc
       JOIN categories c ON pc.category_id = c.id
       WHERE pc.product_id = $1
-      ORDER BY pc.is_primary DESC, c.name
+      ORDER BY pc.sort_order, c.name
     `, [productId]);
     
     return result.rows;
@@ -616,13 +616,15 @@ export async function getAllProducts() {
     const result = await query(`
       SELECT 
         p.*,
-        c.name as category_name,
-        c.slug as category_slug,
         cl.name as class_name,
-        cl.slug as class_slug
+        cl.slug as class_slug,
+        STRING_AGG(c.name, ', ' ORDER BY pc.sort_order) as category_names,
+        STRING_AGG(c.id::text, ',' ORDER BY pc.sort_order) as category_ids
       FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN categories c ON pc.category_id = c.id
       LEFT JOIN classes cl ON p.class_id = cl.id
+      GROUP BY p.id, cl.name, cl.slug
       ORDER BY p.created_at DESC
     `)
     return result.rows
@@ -637,9 +639,9 @@ export async function createProduct(productData: any) {
     const result = await query(`
       INSERT INTO products (
         name, slug, description, short_description, price, sale_price, 
-        image_url, status, featured, category_id, class_id, type, rank,
+        image_url, status, featured, class_id, type, rank,
         requires_character_name, requires_shard
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `, [
       productData.name,
@@ -651,7 +653,6 @@ export async function createProduct(productData: any) {
       productData.image_url || '',
       productData.status || 'active',
       productData.featured || false,
-      productData.category_id || null,
       productData.class_id || null,
       productData.type || '',
       productData.rank || 0,
@@ -681,14 +682,13 @@ export async function updateProduct(id: string, productData: any) {
         image_url = $7,
         status = $8,
         featured = $9,
-        category_id = $10,
-        class_id = $11,
-        type = $12,
-        rank = $13,
-        requires_character_name = $14,
-        requires_shard = $15,
+        class_id = $10,
+        type = $11,
+        rank = $12,
+        requires_character_name = $13,
+        requires_shard = $14,
         updated_at = NOW()
-      WHERE id = $16
+      WHERE id = $15
       RETURNING *
     `, [
       productData.name,
@@ -700,7 +700,6 @@ export async function updateProduct(id: string, productData: any) {
       productData.image_url || '',
       productData.status || 'active',
       productData.featured || false,
-      productData.category_id || null,
       productData.class_id || null,
       productData.type || 'item',
       productData.rank || 0,
@@ -714,6 +713,35 @@ export async function updateProduct(id: string, productData: any) {
   } catch (error) {
     console.error('Database update - Error:', error)
     console.error('Database update - Error details:', (error as Error).message)
+    throw error
+  }
+}
+
+
+
+export async function updateProductCategories(productId: string, categoryIds: string[]) {
+  try {
+    // Start a transaction
+    await query('BEGIN')
+    
+    // Delete existing categories for this product
+    await query('DELETE FROM product_categories WHERE product_id = $1', [productId])
+    
+    // Insert new categories
+    for (let i = 0; i < categoryIds.length; i++) {
+      if (categoryIds[i]) {
+        await query(`
+          INSERT INTO product_categories (product_id, category_id, sort_order)
+          VALUES ($1, $2, $3)
+        `, [productId, categoryIds[i], i])
+      }
+    }
+    
+    await query('COMMIT')
+    return true
+  } catch (error) {
+    await query('ROLLBACK')
+    console.error('Error updating product categories:', error)
     throw error
   }
 }
