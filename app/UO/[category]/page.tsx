@@ -30,6 +30,7 @@ interface Product {
   avg_rating: number
   review_count: number
   category?: string
+  category_names?: string
   stats?: any[]
 }
 
@@ -137,7 +138,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       name: product.name,
       price: parseFloat(product.sale_price || product.price),
       image_url: product.image_url || '',
-      category: product.category || ''
+      category: product.category_names ? product.category_names.split(', ')[0] : ''
     })
     
     toast({

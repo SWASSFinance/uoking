@@ -136,7 +136,10 @@ export async function getProducts(filters?: {
     let paramCount = 1;
 
     if (filters?.categoryId) {
-      whereConditions.push(`p.category_id = $${++paramCount}`);
+      whereConditions.push(`EXISTS (
+        SELECT 1 FROM product_categories pc 
+        WHERE pc.product_id = p.id AND pc.category_id = $${++paramCount}
+      )`);
       params.push(filters.categoryId);
     }
 
@@ -170,18 +173,19 @@ export async function getProducts(filters?: {
     const result = await query(`
       SELECT 
         p.*,
-        c.name as category_name,
-        c.slug as category_slug,
+        STRING_AGG(DISTINCT c.name, ', ' ORDER BY pc.sort_order) as category_names,
+        STRING_AGG(DISTINCT c.slug, ', ' ORDER BY pc.sort_order) as category_slugs,
         cl.name as class_name,
         cl.slug as class_slug,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
-        COUNT(pr.id) as review_count
+        COUNT(DISTINCT pr.id) as review_count
       FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN categories c ON pc.category_id = c.id
       LEFT JOIN classes cl ON p.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE ${whereClause}
-      GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
+      GROUP BY p.id, cl.name, cl.slug
       ORDER BY p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       ${limitClause} ${offsetClause}
     `, params);
@@ -303,16 +307,125 @@ export async function createProductReview({
   status?: string
 }) {
   try {
-    const result = await query(`
-      INSERT INTO product_reviews (product_id, user_id, rating, title, content, status)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
-    `, [productId, userId, rating, title, content, status]);
+    await query('BEGIN')
     
-    return result.rows[0];
+    // Check if user already reviewed this product
+    const existingReview = await query(`
+      SELECT id FROM product_reviews 
+      WHERE product_id = $1 AND user_id = $2
+    `, [productId, userId])
+    
+    let pointsEarned = 0
+    let isNewReview = false
+    
+    if (existingReview.rows.length === 0) {
+      // New review - earn points
+      isNewReview = true
+      pointsEarned = 10 // Base points for review
+      
+      if (rating) {
+        pointsEarned += 5 // Bonus points for rating
+      }
+      
+      if (content && content.length > 50) {
+        pointsEarned += 5 // Bonus points for detailed review
+      }
+      
+      // Insert new review
+      const result = await query(`
+        INSERT INTO product_reviews (product_id, user_id, rating, title, content, status)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+      `, [productId, userId, rating, title, content, status])
+      
+      // Update user points
+      await query(`
+        UPDATE users 
+        SET total_points_earned = total_points_earned + $1
+        WHERE id = $2
+      `, [pointsEarned, userId])
+      
+      // Update user_points table
+      await query(`
+        INSERT INTO user_points (user_id, current_points, lifetime_points)
+        VALUES ($1, $2, $2)
+        ON CONFLICT (user_id) 
+        DO UPDATE SET 
+          current_points = user_points.current_points + $2,
+          lifetime_points = user_points.lifetime_points + $2
+      `, [userId, pointsEarned])
+      
+      await query('COMMIT')
+      return { ...result.rows[0], pointsEarned, isNewReview }
+    } else {
+      // Update existing review
+      const result = await query(`
+        UPDATE product_reviews 
+        SET rating = $1, title = $2, content = $3, updated_at = NOW()
+        WHERE product_id = $4 AND user_id = $5
+        RETURNING *
+      `, [rating, title, content, productId, userId])
+      
+      await query('COMMIT')
+      return { ...result.rows[0], pointsEarned: 0, isNewReview: false }
+    }
   } catch (error) {
-    console.error('Error creating product review:', error);
-    throw error;
+    await query('ROLLBACK')
+    console.error('Error creating product review:', error)
+    throw error
+  }
+}
+
+// Get user's reviews
+export async function getUserReviews(userId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        pr.*,
+        p.name as product_name,
+        p.slug as product_slug,
+        p.image_url as product_image
+      FROM product_reviews pr
+      JOIN products p ON pr.product_id = p.id
+      WHERE pr.user_id = $1
+      ORDER BY pr.created_at DESC
+    `, [userId])
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching user reviews:', error)
+    throw error
+  }
+}
+
+// Get user points and statistics
+export async function getUserPoints(userId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        up.*,
+        u.review_count,
+        u.rating_count,
+        u.total_points_earned
+      FROM user_points up
+      JOIN users u ON up.user_id = u.id
+      WHERE up.user_id = $1
+    `, [userId])
+    
+    if (result.rows.length > 0) {
+      return result.rows[0]
+    }
+    
+    // Create user points record if it doesn't exist
+    const createResult = await query(`
+      INSERT INTO user_points (user_id, current_points, lifetime_points, points_spent)
+      VALUES ($1, 0, 0, 0)
+      RETURNING *
+    `, [userId])
+    
+    return createResult.rows[0]
+  } catch (error) {
+    console.error('Error fetching user points:', error)
+    throw error
   }
 }
 
@@ -729,11 +842,11 @@ export async function updateProductCategories(productId: string, categoryIds: st
     
     // Insert new categories
     for (let i = 0; i < categoryIds.length; i++) {
-      if (categoryIds[i]) {
+      if (categoryIds[i] && categoryIds[i].trim() !== '') {
         await query(`
-          INSERT INTO product_categories (product_id, category_id, sort_order)
-          VALUES ($1, $2, $3)
-        `, [productId, categoryIds[i], i])
+          INSERT INTO product_categories (product_id, category_id, sort_order, is_primary)
+          VALUES ($1, $2, $3, $4)
+        `, [productId, categoryIds[i], i, i === 0]) // First category is primary
       }
     }
     

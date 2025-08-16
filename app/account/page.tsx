@@ -41,7 +41,9 @@ import {
   ChevronUp,
   CreditCard,
   Clock,
-  Trash2
+  Trash2,
+  Star,
+  Users
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -94,6 +96,9 @@ interface UserProfile {
   is_admin: boolean
   created_at: string
   last_login_at?: string
+  review_count?: number
+  rating_count?: number
+  total_points_earned?: number
 }
 
 export default function AccountPage() {
@@ -111,6 +116,12 @@ export default function AccountPage() {
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
   const [loadingOrders, setLoadingOrders] = useState<Set<string>>(new Set())
   const [orderDetails, setOrderDetails] = useState<Record<string, Order>>({})
+  const [userReviews, setUserReviews] = useState<any[]>([])
+  const [userPoints, setUserPoints] = useState<any>(null)
+  const [referralStats, setReferralStats] = useState<any>(null)
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false)
+  const [isLoadingPoints, setIsLoadingPoints] = useState(false)
+  const [isLoadingReferrals, setIsLoadingReferrals] = useState(false)
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
@@ -140,6 +151,19 @@ export default function AccountPage() {
       loadUserData()
     }
   }, [session])
+
+  // Load tab-specific data when tab changes
+  useEffect(() => {
+    if (session?.user?.email) {
+      if (activeTab === 'reviews' && userReviews.length === 0) {
+        loadUserReviews()
+      } else if (activeTab === 'points' && !userPoints) {
+        loadUserPoints()
+      } else if (activeTab === 'referrals' && !referralStats) {
+        loadReferralStats()
+      }
+    }
+  }, [activeTab, session])
 
   const loadUserData = async () => {
     try {
@@ -187,6 +211,66 @@ export default function AccountPage() {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const loadUserReviews = async () => {
+    setIsLoadingReviews(true)
+    try {
+      const response = await fetch('/api/user/reviews')
+      if (response.ok) {
+        const data = await response.json()
+        setUserReviews(data.reviews || [])
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load reviews. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingReviews(false)
+    }
+  }
+
+  const loadUserPoints = async () => {
+    setIsLoadingPoints(true)
+    try {
+      const response = await fetch('/api/user/points')
+      if (response.ok) {
+        const data = await response.json()
+        setUserPoints(data.points)
+      }
+    } catch (error) {
+      console.error('Error loading points:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load points. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingPoints(false)
+    }
+  }
+
+  const loadReferralStats = async () => {
+    setIsLoadingReferrals(true)
+    try {
+      const response = await fetch('/api/user/referral-stats')
+      if (response.ok) {
+        const data = await response.json()
+        setReferralStats(data.stats)
+      }
+    } catch (error) {
+      console.error('Error loading referral stats:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load referral stats. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingReferrals(false)
     }
   }
 
@@ -468,7 +552,7 @@ export default function AccountPage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
@@ -500,12 +584,40 @@ export default function AccountPage() {
             <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <MessageCircle className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Reviews</p>
+                    <p className="text-2xl font-bold text-purple-600">{userProfile.review_count || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-amber-600" />
+                    <Gift className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Points</p>
+                    <p className="text-2xl font-bold text-amber-600">{userProfile.total_points_earned || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-cyan-600" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Member Since</p>
-                    <p className="text-2xl font-bold text-amber-600">
+                    <p className="text-2xl font-bold text-cyan-600">
                       {new Date(userProfile.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -516,7 +628,7 @@ export default function AccountPage() {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm border border-amber-200">
+            <TabsList className="grid w-full grid-cols-6 bg-white/80 backdrop-blur-sm border border-amber-200">
               <TabsTrigger value="profile" className="flex items-center space-x-2">
                 <User className="h-4 w-4" />
                 <span>Profile</span>
@@ -524,6 +636,18 @@ export default function AccountPage() {
               <TabsTrigger value="orders" className="flex items-center space-x-2">
                 <ShoppingBag className="h-4 w-4" />
                 <span>Orders</span>
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="flex items-center space-x-2">
+                <MessageCircle className="h-4 w-4" />
+                <span>Reviews</span>
+              </TabsTrigger>
+              <TabsTrigger value="points" className="flex items-center space-x-2">
+                <Gift className="h-4 w-4" />
+                <span>Points</span>
+              </TabsTrigger>
+              <TabsTrigger value="referrals" className="flex items-center space-x-2">
+                <LinkIcon className="h-4 w-4" />
+                <span>Referrals</span>
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
@@ -953,6 +1077,297 @@ export default function AccountPage() {
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Reviews Tab */}
+            <TabsContent value="reviews" className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-gray-900">My Reviews</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingReviews ? (
+                    <div className="text-center py-8">
+                      <LoadingSpinner size="lg" text="Loading reviews..." />
+                    </div>
+                  ) : userReviews.length === 0 ? (
+                    <div className="text-center py-8">
+                      <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
+                      <p className="text-gray-600 mb-4">Start reviewing products to earn points and help other customers!</p>
+                      <Button asChild className="bg-amber-600 hover:bg-amber-700">
+                        <Link href="/store">
+                          Browse Products
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {userReviews.map((review) => (
+                        <div key={review.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-start space-x-4">
+                            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                              {review.product_image ? (
+                                <Image
+                                  src={review.product_image}
+                                  alt={review.product_name}
+                                  width={64}
+                                  height={64}
+                                  className="object-cover w-full h-full"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Package className="h-6 w-6 text-gray-400" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-semibold text-gray-900">
+                                  <Link href={`/product/${review.product_slug}`} className="hover:text-amber-600">
+                                    {review.product_name}
+                                  </Link>
+                                </h4>
+                                <Badge className={review.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                  {review.status}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="flex items-center">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-sm text-gray-600">{review.rating}/5</span>
+                              </div>
+                              {review.title && (
+                                <h5 className="font-medium text-gray-900 mb-1">{review.title}</h5>
+                              )}
+                              {review.content && (
+                                <p className="text-gray-600 text-sm mb-2">{review.content}</p>
+                              )}
+                              <p className="text-xs text-gray-500">
+                                Reviewed on {new Date(review.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Points Tab */}
+            <TabsContent value="points" className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-gray-900">Points & Rewards</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingPoints ? (
+                    <div className="text-center py-8">
+                      <LoadingSpinner size="lg" text="Loading points..." />
+                    </div>
+                  ) : userPoints ? (
+                    <div className="space-y-6">
+                      {/* Points Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Gift className="h-8 w-8 text-amber-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Current Points</p>
+                              <p className="text-2xl font-bold text-amber-600">{userPoints.current_points || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Gift className="h-8 w-8 text-green-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Lifetime Points</p>
+                              <p className="text-2xl font-bold text-green-600">{userPoints.lifetime_points || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Gift className="h-8 w-8 text-blue-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Points Spent</p>
+                              <p className="text-2xl font-bold text-blue-600">{userPoints.points_spent || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Activity Stats */}
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-4">Activity Summary</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Reviews Written</span>
+                            <span className="font-semibold">{userPoints.review_count || 0}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Ratings Given</span>
+                            <span className="font-semibold">{userPoints.rating_count || 0}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Total Points Earned</span>
+                            <span className="font-semibold">{userPoints.total_points_earned || 0}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Referral Cash</span>
+                            <span className="font-semibold text-green-600">${userPoints.referral_cash || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* How to Earn Points */}
+                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">How to Earn Points</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span>Write a product review: <strong>10 points</strong></span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span>Add a rating: <strong>+5 points</strong></span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span>Write detailed review (50+ chars): <strong>+5 points</strong></span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span>Refer friends: <strong>Cashback rewards</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Gift className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Points Data</h3>
+                      <p className="text-gray-600">Start reviewing products to earn points!</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Referrals Tab */}
+            <TabsContent value="referrals" className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-gray-900">Referral Program</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingReferrals ? (
+                    <div className="text-center py-8">
+                      <LoadingSpinner size="lg" text="Loading referral stats..." />
+                    </div>
+                  ) : referralStats ? (
+                    <div className="space-y-6">
+                      {/* Referral Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <LinkIcon className="h-8 w-8 text-green-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Total Referrals</p>
+                              <p className="text-2xl font-bold text-green-600">{referralStats.total_referrals || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <DollarSign className="h-8 w-8 text-blue-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Total Earnings</p>
+                              <p className="text-2xl font-bold text-blue-600">${referralStats.total_earnings || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Users className="h-8 w-8 text-purple-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Active Referrals</p>
+                              <p className="text-2xl font-bold text-purple-600">{referralStats.active_referrals || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Referral Link */}
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">Your Referral Link</h4>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            value={`${window.location.origin}/signup?ref=${referralStats.referral_code || 'YOURCODE'}`}
+                            readOnly
+                            className="flex-1"
+                          />
+                          <Button
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralStats.referral_code || 'YOURCODE'}`)
+                              toast({
+                                title: "Link Copied!",
+                                description: "Your referral link has been copied to clipboard.",
+                              })
+                            }}
+                            variant="outline"
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Share this link with friends to earn cashback when they make their first purchase!
+                        </p>
+                      </div>
+
+                      {/* How Referrals Work */}
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">How Referrals Work</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>Share your referral link with friends</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>When they sign up and make their first purchase</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>You earn <strong>2.5% cashback</strong> on their order</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>They also get <strong>5% cashback</strong> on their purchase</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <LinkIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Referral Data</h3>
+                      <p className="text-gray-600">Start referring friends to earn cashback rewards!</p>
                     </div>
                   )}
                 </CardContent>
