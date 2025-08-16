@@ -14,13 +14,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { AdminHeader } from "@/components/admin-header"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { 
   Plus, 
   Edit, 
   Trash2, 
   Save, 
   X,
-  Globe
+  Globe,
+  GripVertical
 } from "lucide-react"
 
 interface Shard {
@@ -31,6 +51,101 @@ interface Shard {
   sort_order: number
   created_at: string
   updated_at: string
+}
+
+// Sortable Shard Card Component
+function SortableShardCard({ shard, onEdit, onDelete }: { 
+  shard: Shard
+  onEdit: (shard: Shard) => void
+  onDelete: (shardId: string) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: shard.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <Card 
+      ref={setNodeRef} 
+      style={style} 
+      className={`bg-white ${isDragging ? 'shadow-lg' : ''}`}
+    >
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+            >
+              <GripVertical className="h-4 w-4 text-gray-400" />
+            </button>
+            <Globe className="h-6 w-6 text-blue-600" />
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                {shard.name}
+              </h3>
+              <p className="text-xs text-gray-500">Slug: {shard.slug}</p>
+              <div className="flex items-center space-x-2 mt-1">
+                <Badge variant={shard.is_active ? "default" : "secondary"} className="text-xs">
+                  {shard.is_active ? "Active" : "Inactive"}
+                </Badge>
+                <span className="text-xs text-gray-500">
+                  Order: {shard.sort_order}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(shard)}
+              className="h-8 px-3"
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 h-8 px-3">
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Shard</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{shard.name}"? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(shard.id)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function ShardsPage() {
@@ -47,6 +162,13 @@ export default function ShardsPage() {
     is_active: true,
     sort_order: 0
   })
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   useEffect(() => {
     if (status === 'loading') return
@@ -195,6 +317,65 @@ export default function ShardsPage() {
     return name.toLowerCase().replace(/\s+/g, '-')
   }
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setShards((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over?.id)
+
+        const newShards = arrayMove(items, oldIndex, newIndex)
+        
+        // Update sort_order for all shards based on new order
+        const updatedShards = newShards.map((shard, index) => ({
+          ...shard,
+          sort_order: index + 1
+        }))
+
+        // Save the new order to the database
+        updateShardOrder(updatedShards)
+        
+        return updatedShards
+      })
+    }
+  }
+
+  const updateShardOrder = async (updatedShards: Shard[]) => {
+    try {
+      // Update all shards with their new sort_order
+      const updatePromises = updatedShards.map((shard) =>
+        fetch(`/api/admin/shard/${shard.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: shard.name,
+            slug: shard.slug,
+            is_active: shard.is_active,
+            sort_order: shard.sort_order
+          }),
+        })
+      )
+
+      await Promise.all(updatePromises)
+      
+      toast({
+        title: "Success",
+        description: "Shard order updated successfully",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update shard order",
+        variant: "destructive",
+      })
+      // Refresh the list to get the original order
+      fetchShards()
+    }
+  }
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -218,71 +399,27 @@ export default function ShardsPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {shards.map((shard) => (
-            <Card key={shard.id} className="bg-white hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <Globe className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-sm font-semibold text-gray-900 truncate">
-                      {shard.name}
-                    </h3>
-                  </div>
-                  <Badge variant={shard.is_active ? "default" : "secondary"} className="text-xs">
-                    {shard.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-                
-                <div className="space-y-1 mb-3">
-                  <p className="text-xs text-gray-500">Slug: {shard.slug}</p>
-                  <p className="text-xs text-gray-500">Order: {shard.sort_order}</p>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(shard)}
-                    className="flex-1 text-xs"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-red-600 hover:text-red-700 text-xs"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Shard</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete "{shard.name}"? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(shard.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={shards.map(shard => shard.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {shards.map((shard) => (
+                <SortableShardCard
+                  key={shard.id}
+                  shard={shard}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         {shards.length === 0 && !loading && (
           <Card className="bg-white">
