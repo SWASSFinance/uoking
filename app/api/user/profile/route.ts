@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
-import { query } from '@/lib/db'
+import { query, getUserReviewCount } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         u.id, u.email, u.username, u.first_name, u.last_name, 
         u.discord_username, u.main_shard, u.character_names,
         u.status, u.email_verified, u.is_admin, u.created_at, u.last_login_at,
+        u.review_count, u.rating_count, u.total_points_earned,
         up.phone, up.address, up.city, up.state, up.zip_code, up.country, up.timezone,
         up.profile_image_url
       FROM users u
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest) {
     }
 
     const user = result.rows[0]
+
+    // Get actual review count from product_reviews table
+    const actualReviewCount = await getUserReviewCount(user.id)
 
     return NextResponse.json({
       id: user.id,
@@ -55,7 +59,10 @@ export async function GET(request: NextRequest) {
       email_verified: user.email_verified,
       is_admin: user.is_admin,
       created_at: user.created_at,
-      last_login_at: user.last_login_at
+      last_login_at: user.last_login_at,
+      review_count: actualReviewCount,
+      rating_count: user.rating_count || 0,
+      total_points_earned: user.total_points_earned || 0
     })
 
   } catch (error) {

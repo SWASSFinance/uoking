@@ -413,6 +413,21 @@ export async function getUserReviews(userId: string) {
   }
 }
 
+// Get user's actual review count from product_reviews table
+export async function getUserReviewCount(userId: string) {
+  try {
+    const result = await query(`
+      SELECT COUNT(*) as review_count
+      FROM product_reviews 
+      WHERE user_id = $1
+    `, [userId])
+    return parseInt(result.rows[0].review_count)
+  } catch (error) {
+    console.error('Error fetching user review count:', error)
+    throw error
+  }
+}
+
 // Get user points and statistics
 export async function getUserPoints(userId: string) {
   try {
