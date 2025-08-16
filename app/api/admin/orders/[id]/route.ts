@@ -52,9 +52,10 @@ export async function GET(
         oi.*,
         p.name as product_name,
         p.image_url as product_image,
-        p.category as category
+        c.name as category
       FROM order_items oi
       LEFT JOIN products p ON oi.product_id = p.id
+      LEFT JOIN categories c ON p.category_id = c.id
       WHERE oi.order_id = $1
       ORDER BY oi.created_at
     `, [orderId])
