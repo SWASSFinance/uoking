@@ -44,7 +44,6 @@ export default function CartPage() {
   const [cashbackToUse, setCashbackToUse] = useState(0)
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
   const [selectedShard, setSelectedShard] = useState('')
-  const [characterName, setCharacterName] = useState('')
   const [shards, setShards] = useState<any[]>([])
   const [isLoadingShards, setIsLoadingShards] = useState(false)
 
@@ -219,15 +218,6 @@ export default function CartPage() {
       return
     }
 
-    if (!characterName.trim()) {
-      toast({
-        title: "Character Name Required",
-        description: "Please enter your character name for delivery.",
-        variant: "destructive",
-      })
-      return
-    }
-
     // Validate cashback amount
     if (cashbackToUse > cashbackBalance) {
       toast({
@@ -249,24 +239,56 @@ export default function CartPage() {
 
     setIsCheckingOut(true)
     try {
-      const success = await syncToServer(cashbackToUse, selectedShard, characterName.trim())
-      if (success) {
-        toast({
-          title: "Order Created!",
-          description: cashbackToUse > 0 
-            ? `Your order has been created using $${cashbackToUse.toFixed(2)} in cashback!`
-            : "Your order has been successfully created.",
-          variant: "default",
+      // Create PayPal form checkout
+      const response = await fetch('/api/paypal/simple-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cartItems: cart.items,
+          cashbackToUse,
+          selectedShard,
+          couponCode: appliedCoupon?.code || null
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Create and submit PayPal form
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = data.paypalUrl
+        form.style.display = 'none'
+
+        // Add form fields
+        Object.entries(data.paypalFormData).forEach(([key, value]) => {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = key
+          input.value = value as string
+          form.appendChild(input)
         })
-        router.push('/account')
+
+        // Add cmd field for PayPal
+        const cmdInput = document.createElement('input')
+        cmdInput.type = 'hidden'
+        cmdInput.name = 'cmd'
+        cmdInput.value = '_xclick'
+        form.appendChild(cmdInput)
+
+        document.body.appendChild(form)
+        form.submit()
       } else {
         toast({
           title: "Checkout Failed",
-          description: "Failed to create order. Please try again.",
+          description: data.error || "Failed to create order. Please try again.",
           variant: "destructive",
         })
       }
     } catch (error) {
+      console.error('Checkout error:', error)
       toast({
         title: "Checkout Error",
         description: "An error occurred during checkout. Please try again.",
@@ -562,19 +584,7 @@ export default function CartPage() {
                         </select>
                       </div>
                       
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Character Name *
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="Enter your character name"
-                          value={characterName}
-                          onChange={(e) => setCharacterName(e.target.value)}
-                          className="w-full"
-                          required
-                        />
-                      </div>
+
                     </div>
                   </div>
 
@@ -616,7 +626,7 @@ export default function CartPage() {
                   {/* Checkout Button */}
                   <Button
                     onClick={handleCheckout}
-                    disabled={isCheckingOut || cart.items.length === 0 || !selectedShard || !characterName.trim()}
+                    disabled={isCheckingOut || cart.items.length === 0 || !selectedShard}
                     className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 text-lg font-semibold"
                   >
                     {isCheckingOut ? (
