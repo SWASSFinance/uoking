@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useCart } from "@/contexts/cart-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -39,18 +40,21 @@ import {
   ChevronDown,
   ChevronUp,
   CreditCard,
-  Clock
+  Clock,
+  Trash2
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
 interface OrderItem {
   id: string
+  product_id?: string
   product_name: string
   product_image?: string
   quantity: number
   unit_price: string
   total_price: string
+  category?: string
 }
 
 interface Order {
@@ -96,6 +100,7 @@ export default function AccountPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { toast } = useToast()
+  const { clearCart } = useCart()
   const [activeTab, setActiveTab] = useState("profile")
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -275,8 +280,62 @@ export default function AccountPage() {
     }
   }
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/user/orders/${orderId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Remove order from local state
+        setOrders(prev => prev.filter(order => order.id !== orderId))
+        setOrderDetails(prev => {
+          const newDetails = { ...prev }
+          delete newDetails[orderId]
+          return newDetails
+        })
+        
+        toast({
+          title: "Order Deleted",
+          description: "Order has been deleted successfully.",
+        })
+      } else {
+        const data = await response.json()
+        toast({
+          title: "Delete Failed",
+          description: data.error || "Failed to delete order.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting the order.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handlePayOrder = async (order: Order) => {
     try {
+      // Clear existing cart first to avoid conflicts
+      clearCart()
+      
+      // Convert order items to cart format
+      const cartItems = (order.items || []).map(item => ({
+        id: item.product_id || item.id,
+        name: item.product_name,
+        price: parseFloat(item.unit_price),
+        quantity: item.quantity,
+        image_url: item.product_image,
+        category: item.category
+      }))
+
       // Create PayPal checkout for this specific order
       const response = await fetch('/api/paypal/simple-checkout', {
         method: 'POST',
@@ -284,7 +343,7 @@ export default function AccountPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          cartItems: order.items || [],
+          cartItems: cartItems,
           cashbackToUse: parseFloat(order.cashback_used) || 0,
           selectedShard: order.delivery_shard,
           couponCode: order.coupon_code || null
@@ -353,6 +412,15 @@ export default function AccountPage() {
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const isOrderEligibleForDeletion = (order: Order) => {
+    if (order.payment_status !== 'pending') return false
+    
+    const orderDate = new Date(order.created_at)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+    
+    return orderDate <= fiveMinutesAgo
   }
 
   if (status === 'loading' || isLoading) {
@@ -851,16 +919,31 @@ export default function AccountPage() {
                                           <p className="text-sm text-amber-700">Complete your payment to process this order</p>
                                         </div>
                                       </div>
-                                      <Button 
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handlePayOrder(orderDetails[order.id])
-                                        }}
-                                        className="bg-amber-600 hover:bg-amber-700"
-                                      >
-                                        <CreditCard className="h-4 w-4 mr-2" />
-                                        Pay Now
-                                      </Button>
+                                      <div className="flex space-x-2">
+                                        {isOrderEligibleForDeletion(orderDetails[order.id]) && (
+                                          <Button 
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleDeleteOrder(order.id)
+                                            }}
+                                            variant="outline"
+                                            className="border-red-200 text-red-600 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete
+                                          </Button>
+                                        )}
+                                        <Button 
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handlePayOrder(orderDetails[order.id])
+                                          }}
+                                          className="bg-amber-600 hover:bg-amber-700"
+                                        >
+                                          <CreditCard className="h-4 w-4 mr-2" />
+                                          Pay Now
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
                                 )}
