@@ -18,7 +18,8 @@ import {
   Calendar,
   Eye,
   Check,
-  X
+  X,
+  Trash2
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -102,6 +103,40 @@ export default function AdminReviewsPage() {
       toast({
         title: "Error",
         description: `Failed to ${action} review`,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Review deleted successfully",
+        })
+        loadReviews() // Reload the list
+      } else {
+        const error = await response.json()
+        toast({
+          title: "Error",
+          description: error.error || "Failed to delete review",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete review",
         variant: "destructive",
       })
     }
@@ -326,26 +361,37 @@ export default function AdminReviewsPage() {
                               <p className="text-gray-600 mb-4">{review.content}</p>
 
                               {/* Action Buttons */}
-                              {review.status === 'pending' && (
-                                <div className="flex space-x-2">
-                                  <Button
-                                    onClick={() => handleReviewAction(review.id, 'approve')}
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    <Check className="h-4 w-4 mr-2" />
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleReviewAction(review.id, 'reject')}
-                                    size="sm"
-                                    variant="destructive"
-                                  >
-                                    <X className="h-4 w-4 mr-2" />
-                                    Reject
-                                  </Button>
-                                </div>
-                              )}
+                              <div className="flex space-x-2">
+                                {review.status === 'pending' && (
+                                  <>
+                                    <Button
+                                      onClick={() => handleReviewAction(review.id, 'approve')}
+                                      size="sm"
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      <Check className="h-4 w-4 mr-2" />
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleReviewAction(review.id, 'reject')}
+                                      size="sm"
+                                      variant="destructive"
+                                    >
+                                      <X className="h-4 w-4 mr-2" />
+                                      Reject
+                                    </Button>
+                                  </>
+                                )}
+                                <Button
+                                  onClick={() => handleDeleteReview(review.id)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
