@@ -58,13 +58,18 @@ export async function PUT(
     if (action === 'approve') {
       const review = result.rows[0]
       
-      // Update user's review count
-      await query(`
-        UPDATE users 
-        SET review_count = review_count + 1,
-            rating_count = rating_count + CASE WHEN $1 IS NOT NULL THEN 1 ELSE 0 END
-        WHERE id = $2
-      `, [review.rating, review.user_id])
+      try {
+        // Try to update user's review count (columns might not exist in all schemas)
+        await query(`
+          UPDATE users 
+          SET review_count = COALESCE(review_count, 0) + 1,
+              rating_count = COALESCE(rating_count, 0) + CASE WHEN $1 IS NOT NULL THEN 1 ELSE 0 END
+          WHERE id = $2
+        `, [review.rating, review.user_id])
+      } catch (error) {
+        console.warn('Could not update user review counts (columns may not exist):', error)
+        // Continue without failing the approval
+      }
     }
 
     return NextResponse.json({ 

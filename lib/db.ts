@@ -278,9 +278,12 @@ export async function getProductReviews(productId: string) {
         pr.*,
         u.username,
         u.first_name,
-        u.last_name
+        u.last_name,
+        u.character_names,
+        up.profile_image_url
       FROM product_reviews pr
       JOIN users u ON pr.user_id = u.id
+      LEFT JOIN user_profiles up ON u.id = up.user_id
       WHERE pr.product_id = $1 AND pr.status = 'approved'
       ORDER BY pr.created_at DESC
     `, [productId]);
@@ -384,9 +387,14 @@ export async function getUserReviews(userId: string) {
         pr.*,
         p.name as product_name,
         p.slug as product_slug,
-        p.image_url as product_image
+        p.image_url as product_image,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.character_names
       FROM product_reviews pr
       JOIN products p ON pr.product_id = p.id
+      JOIN users u ON pr.user_id = u.id
       WHERE pr.user_id = $1
       ORDER BY pr.created_at DESC
     `, [userId])

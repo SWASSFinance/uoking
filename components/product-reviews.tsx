@@ -13,6 +13,10 @@ interface Review {
   title?: string
   content: string
   username: string
+  first_name?: string
+  last_name?: string
+  character_names?: string[]
+  profile_image_url?: string
   verified_purchase?: boolean
   created_at: string
 }
@@ -98,8 +102,33 @@ export function ProductReviews({
               {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium">{review.username}</span>
+                    <div className="flex items-center space-x-3">
+                      {/* Profile Image */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                        {review.profile_image_url ? (
+                          <img
+                            src={review.profile_image_url}
+                            alt={review.username}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm font-medium">
+                            {review.username.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {review.character_names && review.character_names.length > 0 
+                            ? review.character_names[0] 
+                            : review.username}
+                        </span>
+                        {review.character_names && review.character_names.length > 0 && (
+                          <span className="text-sm text-gray-500">({review.username})</span>
+                        )}
+                      </div>
+                      
                       {review.verified_purchase && (
                         <Badge variant="secondary" className="text-xs">Verified Purchase</Badge>
                       )}

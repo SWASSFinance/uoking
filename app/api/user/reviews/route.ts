@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
-import { getUserReviews } from '@/lib/db'
+import { getUserReviews, query } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user ID from session
-    const { query } = require('@/lib/db')
     const userResult = await query('SELECT id FROM users WHERE email = $1', [session.user.email])
     
     if (!userResult.rows.length) {
