@@ -54,20 +54,42 @@ export async function PUT(
       )
     }
 
-    // If approving, update user review counts
+    // If approving, update user review counts and add points
     if (action === 'approve') {
       const review = result.rows[0]
       
       try {
-        // Try to update user's review count (columns might not exist in all schemas)
+        // Calculate points to add
+        let pointsToAdd = 10 // Base points for review
+        
+        if (review.rating) {
+          pointsToAdd += 5 // Points for rating
+        }
+        
+        // Note: We can't easily determine if it's a detailed review (50+ chars) 
+        // since we don't have the content length here, but we can add the base points
+        
+        // Update user review counts and add points
         await query(`
           UPDATE users 
           SET review_count = COALESCE(review_count, 0) + 1,
-              rating_count = COALESCE(rating_count, 0) + CASE WHEN $1 IS NOT NULL THEN 1 ELSE 0 END
-          WHERE id = $2
-        `, [review.rating, review.user_id])
+              rating_count = COALESCE(rating_count, 0) + CASE WHEN $1 IS NOT NULL THEN 1 ELSE 0 END,
+              total_points_earned = COALESCE(total_points_earned, 0) + $2
+          WHERE id = $3
+        `, [review.rating, pointsToAdd, review.user_id])
+        
+        // Also update user_points table
+        await query(`
+          INSERT INTO user_points (user_id, current_points, lifetime_points)
+          VALUES ($1, $2, $2)
+          ON CONFLICT (user_id) 
+          DO UPDATE SET 
+            current_points = user_points.current_points + $2,
+            lifetime_points = user_points.lifetime_points + $2
+        `, [review.user_id, pointsToAdd])
+        
       } catch (error) {
-        console.warn('Could not update user review counts (columns may not exist):', error)
+        console.warn('Could not update user review counts or points (columns may not exist):', error)
         // Continue without failing the approval
       }
     }
@@ -138,17 +160,38 @@ export async function DELETE(
       )
     }
 
-    // If the review was approved, update user review counts
+    // If the review was approved, update user review counts and deduct points
     if (review.status === 'approved') {
       try {
+        // Calculate points to deduct
+        let pointsToDeduct = 10 // Base points for review
+        
+        if (review.rating) {
+          pointsToDeduct += 5 // Points for rating
+        }
+        
+        // Note: We can't easily determine if it was a detailed review (50+ chars) 
+        // since we're deleting the review, but we can deduct the base points
+        
+        // Update user review counts and deduct points
         await query(`
           UPDATE users 
           SET review_count = GREATEST(COALESCE(review_count, 0) - 1, 0),
-              rating_count = GREATEST(COALESCE(rating_count, 0) - CASE WHEN $1 IS NOT NULL THEN 1 ELSE 0 END, 0)
-          WHERE id = $2
-        `, [review.rating, review.user_id])
+              rating_count = GREATEST(COALESCE(rating_count, 0) - CASE WHEN $1 IS NOT NULL THEN 1 ELSE 0 END, 0),
+              total_points_earned = GREATEST(COALESCE(total_points_earned, 0) - $2, 0)
+          WHERE id = $3
+        `, [review.rating, pointsToDeduct, review.user_id])
+        
+        // Also update user_points table
+        await query(`
+          UPDATE user_points 
+          SET current_points = GREATEST(current_points - $1, 0),
+              lifetime_points = GREATEST(lifetime_points - $1, 0)
+          WHERE user_id = $2
+        `, [pointsToDeduct, review.user_id])
+        
       } catch (error) {
-        console.warn('Could not update user review counts (columns may not exist):', error)
+        console.warn('Could not update user review counts or points (columns may not exist):', error)
         // Continue without failing the deletion
       }
     }
