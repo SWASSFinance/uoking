@@ -314,67 +314,75 @@ export async function createProductReview({
     
     // Check if user already reviewed this product
     const existingReview = await query(`
-      SELECT id FROM product_reviews 
+      SELECT id, status FROM product_reviews 
       WHERE product_id = $1 AND user_id = $2
     `, [productId, userId])
     
-    let pointsEarned = 0
-    let isNewReview = false
+    if (existingReview.rows.length > 0) {
+      await query('ROLLBACK')
+      throw new Error('You have already reviewed this product. You cannot submit another review.')
+    }
     
-    if (existingReview.rows.length === 0) {
-      // New review - earn points
-      isNewReview = true
-      pointsEarned = 10 // Base points for review
-      
-      if (rating) {
-        pointsEarned += 5 // Bonus points for rating
-      }
-      
-      if (content && content.length > 50) {
-        pointsEarned += 5 // Bonus points for detailed review
-      }
-      
-      // Insert new review
-      const result = await query(`
-        INSERT INTO product_reviews (product_id, user_id, rating, title, content, status)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *
-      `, [productId, userId, rating, title, content, status])
-      
-      // Update user points
+    // Calculate points for new review
+    let pointsEarned = 10 // Base points for review
+    
+    if (rating) {
+      pointsEarned += 5 // Bonus points for rating
+    }
+    
+    if (content && content.length > 50) {
+      pointsEarned += 5 // Bonus points for detailed review
+    }
+    
+    // Insert new review
+    const result = await query(`
+      INSERT INTO product_reviews (product_id, user_id, rating, title, content, status)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `, [productId, userId, rating, title, content, status])
+    
+    // Update user points
+    try {
       await query(`
         UPDATE users 
-        SET total_points_earned = total_points_earned + $1
+        SET total_points_earned = COALESCE(total_points_earned, 0) + $1
         WHERE id = $2
       `, [pointsEarned, userId])
-      
-      // Update user_points table
-      await query(`
-        INSERT INTO user_points (user_id, current_points, lifetime_points)
-        VALUES ($1, $2, $2)
-        ON CONFLICT (user_id) 
-        DO UPDATE SET 
-          current_points = user_points.current_points + $2,
-          lifetime_points = user_points.lifetime_points + $2
-      `, [userId, pointsEarned])
-      
-      await query('COMMIT')
-      return { ...result.rows[0], pointsEarned, isNewReview }
-    } else {
-      // Update existing review
-      const result = await query(`
-        UPDATE product_reviews 
-        SET rating = $1, title = $2, content = $3, updated_at = NOW()
-        WHERE product_id = $4 AND user_id = $5
-        RETURNING *
-      `, [rating, title, content, productId, userId])
-      
-      await query('COMMIT')
-      return { ...result.rows[0], pointsEarned: 0, isNewReview: false }
+    } catch (error) {
+      console.warn('Could not update user total_points_earned (column may not exist):', error)
     }
+    
+    // Update user_points table
+    await query(`
+      INSERT INTO user_points (user_id, current_points, lifetime_points)
+      VALUES ($1, $2, $2)
+      ON CONFLICT (user_id) 
+      DO UPDATE SET 
+        current_points = user_points.current_points + $2,
+        lifetime_points = user_points.lifetime_points + $2
+    `, [userId, pointsEarned])
+    
+    await query('COMMIT')
+    return { ...result.rows[0], pointsEarned, isNewReview: true }
   } catch (error) {
     await query('ROLLBACK')
     console.error('Error creating product review:', error)
+    throw error
+  }
+}
+
+// Check if user has already reviewed a product
+export async function hasUserReviewedProduct(userId: string, productId: string) {
+  try {
+    const result = await query(`
+      SELECT id, status, rating, title, content, created_at
+      FROM product_reviews 
+      WHERE user_id = $1 AND product_id = $2
+    `, [userId, productId])
+    
+    return result.rows.length > 0 ? result.rows[0] : null
+  } catch (error) {
+    console.error('Error checking user review:', error)
     throw error
   }
 }

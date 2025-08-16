@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Star, MessageSquare } from 'lucide-react'
+import { Star, MessageSquare, CheckCircle } from 'lucide-react'
 import { ProductReviewForm } from './product-review-form'
 
 interface Review {
@@ -36,20 +37,47 @@ export function ProductReviews({
 }: ProductReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>(initialReviews)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [userReview, setUserReview] = useState<any>(null)
+  const [isCheckingReview, setIsCheckingReview] = useState(false)
+  const { data: session } = useSession()
 
   const handleReviewSubmitted = () => {
     setShowReviewForm(false)
+    // Check if user has already reviewed after submission
+    checkUserReview()
     // In a real app, you'd refetch the reviews here
     // For now, we'll just show a success message
   }
+
+  const checkUserReview = async () => {
+    if (!session?.user) return
+    
+    setIsCheckingReview(true)
+    try {
+      const response = await fetch(`/api/products/${productId}/reviews/check`)
+      if (response.ok) {
+        const data = await response.json()
+        setUserReview(data.review)
+      }
+    } catch (error) {
+      console.error('Error checking user review:', error)
+    } finally {
+      setIsCheckingReview(false)
+    }
+  }
+
+  useEffect(() => {
+    if (session?.user) {
+      checkUserReview()
+    }
+  }, [session, productId])
 
   return (
     <div className="space-y-8">
       {/* Reviews Header */}
       <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4">
               <CardTitle>Customer Reviews</CardTitle>
               {reviewCount > 0 && (
                 <div className="flex items-center space-x-2">
@@ -67,29 +95,69 @@ export function ProductReviews({
                 </div>
               )}
             </div>
-            <Button 
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              variant="outline"
-              size="sm"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Write a Review
-            </Button>
-          </div>
         </CardHeader>
       </Card>
 
-      {/* Review Form */}
-      {showReviewForm && (
+      {/* Review Form or User Review Status */}
+      {session?.user && (
         <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
           <CardHeader>
-            <CardTitle>Write a Review</CardTitle>
+            <CardTitle>Your Review</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProductReviewForm 
-              productId={productId} 
-              onReviewSubmitted={handleReviewSubmitted}
-            />
+            {isCheckingReview ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600 mx-auto"></div>
+                <p className="text-gray-600 mt-2">Checking review status...</p>
+              </div>
+            ) : userReview ? (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 text-green-600">
+                  <CheckCircle className="h-5 w-5" />
+                  <span className="font-medium">You have already reviewed this product</span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`h-4 w-4 ${i < userReview.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-600">{userReview.rating}/5</span>
+                    </div>
+                    <Badge className={userReview.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                      {userReview.status}
+                    </Badge>
+                  </div>
+                  {userReview.title && (
+                    <h4 className="font-medium text-gray-900 mb-1">{userReview.title}</h4>
+                  )}
+                  <p className="text-gray-700 text-sm">{userReview.content}</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Reviewed on {new Date(userReview.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ) : showReviewForm ? (
+              <ProductReviewForm 
+                productId={productId} 
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            ) : (
+              <div className="text-center">
+                <Button 
+                  onClick={() => setShowReviewForm(true)}
+                  className="bg-amber-600 hover:bg-amber-700"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Write a Review
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
