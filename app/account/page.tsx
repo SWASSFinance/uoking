@@ -35,18 +35,38 @@ import {
   Gift,
   MessageCircle,
   CheckCircle,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  Clock
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+
+interface OrderItem {
+  id: string
+  product_name: string
+  product_image?: string
+  quantity: number
+  unit_price: string
+  total_price: string
+}
 
 interface Order {
   id: string
   order_number: string
   status: string
   total_amount: string
+  subtotal: string
+  discount_amount: string
+  cashback_used: string
+  delivery_shard: string
+  coupon_code?: string
+  payment_status: string
   created_at: string
   item_count: number
+  items?: OrderItem[]
 }
 
 interface UserProfile {
@@ -83,6 +103,9 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [cashbackBalance, setCashbackBalance] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+  const [loadingOrders, setLoadingOrders] = useState<Set<string>>(new Set())
+  const [orderDetails, setOrderDetails] = useState<Record<string, Order>>({})
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
@@ -205,6 +228,111 @@ export default function AccountPage() {
     // Redirect to Discord OAuth
     const discordAuthUrl = `/api/auth/signin?provider=discord&callbackUrl=${encodeURIComponent(window.location.href)}`
     window.location.href = discordAuthUrl
+  }
+
+  const toggleOrderExpansion = async (orderId: string) => {
+    const newExpanded = new Set(expandedOrders)
+    
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId)
+      setExpandedOrders(newExpanded)
+    } else {
+      newExpanded.add(orderId)
+      setExpandedOrders(newExpanded)
+      
+      // Load order details if not already loaded
+      if (!orderDetails[orderId]) {
+        await loadOrderDetails(orderId)
+      }
+    }
+  }
+
+  const loadOrderDetails = async (orderId: string) => {
+    const newLoading = new Set(loadingOrders)
+    newLoading.add(orderId)
+    setLoadingOrders(newLoading)
+    
+    try {
+      const response = await fetch(`/api/user/orders/${orderId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setOrderDetails(prev => ({
+          ...prev,
+          [orderId]: data.order
+        }))
+      }
+    } catch (error) {
+      console.error('Error loading order details:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load order details",
+        variant: "destructive",
+      })
+    } finally {
+      const newLoading = new Set(loadingOrders)
+      newLoading.delete(orderId)
+      setLoadingOrders(newLoading)
+    }
+  }
+
+  const handlePayOrder = async (order: Order) => {
+    try {
+      // Create PayPal checkout for this specific order
+      const response = await fetch('/api/paypal/simple-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cartItems: order.items || [],
+          cashbackToUse: parseFloat(order.cashback_used) || 0,
+          selectedShard: order.delivery_shard,
+          couponCode: order.coupon_code || null
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Create and submit PayPal form
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = data.paypalUrl
+        form.style.display = 'none'
+
+        // Add form fields
+        Object.entries(data.paypalFormData).forEach(([key, value]) => {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = key
+          input.value = value as string
+          form.appendChild(input)
+        })
+
+        // Add cmd field for PayPal
+        const cmdInput = document.createElement('input')
+        cmdInput.type = 'hidden'
+        cmdInput.name = 'cmd'
+        cmdInput.value = '_xclick'
+        form.appendChild(cmdInput)
+
+        document.body.appendChild(form)
+        form.submit()
+      } else {
+        toast({
+          title: "Payment Failed",
+          description: data.error || "Failed to create payment. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Payment error:', error)
+      toast({
+        title: "Payment Error",
+        description: "An error occurred while processing payment. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleCharacterNamesChange = (value: string) => {
@@ -582,27 +710,163 @@ export default function AccountPage() {
                   ) : (
                     <div className="space-y-4">
                       {orders.map((order) => (
-                        <div key={order.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                                <Package className="h-6 w-6 text-amber-600" />
+                        <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                          {/* Order Header */}
+                          <div className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => toggleOrderExpansion(order.id)}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                                  <Package className="h-6 w-6 text-amber-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-gray-900">Order #{order.order_number}</h4>
+                                  <p className="text-sm text-gray-600">
+                                    {order.item_count} item{order.item_count !== 1 ? 's' : ''} • 
+                                    {new Date(order.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-gray-900">Order #{order.order_number}</h4>
-                                <p className="text-sm text-gray-600">
-                                  {order.item_count} item{order.item_count !== 1 ? 's' : ''} • 
-                                  {new Date(order.created_at).toLocaleDateString()}
-                                </p>
+                              <div className="flex items-center space-x-3">
+                                <div className="text-right">
+                                  <p className="font-semibold text-gray-900">${parseFloat(order.total_amount).toFixed(2)}</p>
+                                  <Badge className={getStatusColor(order.status)}>
+                                    {order.status}
+                                  </Badge>
+                                </div>
+                                {loadingOrders.has(order.id) ? (
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-600"></div>
+                                ) : (
+                                  <div className="text-gray-400">
+                                    {expandedOrders.has(order.id) ? (
+                                      <ChevronUp className="h-5 w-5" />
+                                    ) : (
+                                      <ChevronDown className="h-5 w-5" />
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-gray-900">${parseFloat(order.total_amount).toFixed(2)}</p>
-                              <Badge className={getStatusColor(order.status)}>
-                                {order.status}
-                              </Badge>
                             </div>
                           </div>
+
+                          {/* Order Details Dropdown */}
+                          {expandedOrders.has(order.id) && orderDetails[order.id] && (
+                            <div className="border-t border-gray-200 bg-gray-50 p-4">
+                              <div className="space-y-4">
+                                {/* Order Items */}
+                                <div>
+                                  <h5 className="font-semibold text-gray-900 mb-3">Order Items</h5>
+                                  <div className="space-y-3">
+                                    {orderDetails[order.id].items?.map((item) => (
+                                      <div key={item.id} className="flex items-center space-x-3 bg-white p-3 rounded-lg">
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                          {item.product_image ? (
+                                            <Image
+                                              src={item.product_image}
+                                              alt={item.product_name}
+                                              width={48}
+                                              height={48}
+                                              className="object-cover w-full h-full"
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                              <Package className="h-6 w-6 text-gray-400" />
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="flex-1">
+                                          <p className="font-medium text-gray-900">{item.product_name}</p>
+                                          <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="font-semibold text-gray-900">${parseFloat(item.total_price).toFixed(2)}</p>
+                                          <p className="text-sm text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Order Summary */}
+                                <div className="bg-white p-4 rounded-lg">
+                                  <h5 className="font-semibold text-gray-900 mb-3">Order Summary</h5>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Subtotal</span>
+                                      <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal).toFixed(2)}</span>
+                                    </div>
+                                    {parseFloat(orderDetails[order.id].discount_amount) > 0 && (
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Discount</span>
+                                        <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].discount_amount).toFixed(2)}</span>
+                                      </div>
+                                    )}
+                                    {parseFloat(orderDetails[order.id].cashback_used) > 0 && (
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Cashback Used</span>
+                                        <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].cashback_used).toFixed(2)}</span>
+                                      </div>
+                                    )}
+                                    <div className="border-t pt-2 flex justify-between font-semibold">
+                                      <span>Total</span>
+                                      <span>${parseFloat(orderDetails[order.id].total_amount).toFixed(2)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Order Details */}
+                                <div className="bg-white p-4 rounded-lg">
+                                  <h5 className="font-semibold text-gray-900 mb-3">Order Details</h5>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <span className="text-gray-600">Delivery Shard:</span>
+                                      <p className="font-medium">{orderDetails[order.id].delivery_shard}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Payment Status:</span>
+                                      <Badge className={getStatusColor(orderDetails[order.id].payment_status)}>
+                                        {orderDetails[order.id].payment_status}
+                                      </Badge>
+                                    </div>
+                                    {orderDetails[order.id].coupon_code && (
+                                      <div>
+                                        <span className="text-gray-600">Coupon Code:</span>
+                                        <p className="font-medium">{orderDetails[order.id].coupon_code}</p>
+                                      </div>
+                                    )}
+                                    <div>
+                                      <span className="text-gray-600">Order Date:</span>
+                                      <p className="font-medium">{new Date(orderDetails[order.id].created_at).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Payment Action */}
+                                {orderDetails[order.id].payment_status === 'pending' && (
+                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-3">
+                                        <Clock className="h-5 w-5 text-amber-600" />
+                                        <div>
+                                          <p className="font-medium text-amber-900">Payment Pending</p>
+                                          <p className="text-sm text-amber-700">Complete your payment to process this order</p>
+                                        </div>
+                                      </div>
+                                      <Button 
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handlePayOrder(orderDetails[order.id])
+                                        }}
+                                        className="bg-amber-600 hover:bg-amber-700"
+                                      >
+                                        <CreditCard className="h-4 w-4 mr-2" />
+                                        Pay Now
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
