@@ -1376,10 +1376,63 @@ export default function AccountPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <LinkIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Referral Data</h3>
-                      <p className="text-gray-600">Start referring friends to earn cashback rewards!</p>
+                    <div className="space-y-6">
+                      {/* Referral Link */}
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">Your Referral Link</h4>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            value={`${window.location.origin}/signup?ref=${referralStats?.referral_code || 'YOURCODE'}`}
+                            readOnly
+                            className="flex-1"
+                          />
+                          <Button
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/signup?ref=${referralStats?.referral_code || 'YOURCODE'}`)
+                              toast({
+                                title: "Link Copied!",
+                                description: "Your referral link has been copied to clipboard.",
+                              })
+                            }}
+                            variant="outline"
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Share this link with friends to earn cashback when they make their first purchase!
+                        </p>
+                      </div>
+
+                      {/* How Referrals Work */}
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">How Referrals Work</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>Share your referral link with friends</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>When they sign up and make their first purchase</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>You earn <strong>2.5% cashback</strong> on their order</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                            <span>They also get <strong>5% cashback</strong> on their purchase</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* No Referrals Yet */}
+                      <div className="text-center py-8">
+                        <LinkIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Referrals Yet</h3>
+                        <p className="text-gray-600">Start sharing your referral link to earn cashback rewards!</p>
+                      </div>
                     </div>
                   )}
                 </CardContent>

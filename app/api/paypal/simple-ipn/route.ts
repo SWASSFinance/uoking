@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       `, [order.cashback_used, order.user_id])
     }
 
-    // If payment completed, add cashback for this purchase
+    // If payment completed, add cashback for this purchase and process referral bonuses
     if (paymentStatus === 'Completed') {
       const settingsResult = await query(`
         SELECT setting_value FROM site_settings WHERE setting_key = 'customer_cashback_percentage'
@@ -139,15 +139,63 @@ export async function POST(request: NextRequest) {
 
         // Log cashback transaction
         await query(`
-          INSERT INTO user_referrals (
-            referrer_id,
-            referred_id,
-            order_id,
+          INSERT INTO cashback_transactions (
+            user_id,
+            transaction_type,
             amount,
-            type,
-            status
-          ) VALUES ($1, $2, $3, $4, 'purchase_cashback', 'completed')
-        `, [order.user_id, order.user_id, custom, cashbackAmount])
+            description,
+            order_id,
+            created_at
+          ) VALUES ($1, 'purchase_cashback', $2, 'Purchase cashback', $3, NOW())
+        `, [order.user_id, cashbackAmount, custom])
+      }
+
+      // Process referral bonus (2.5% for referrer)
+      const referralResult = await query(`
+        SELECT ur.referrer_id, ur.referral_code
+        FROM user_referrals ur
+        WHERE ur.referred_id = $1 AND ur.reward_status = 'pending'
+        LIMIT 1
+      `, [order.user_id])
+
+      if (referralResult.rows && referralResult.rows.length > 0) {
+        const referral = referralResult.rows[0]
+        const referralBonus = (parseFloat(order.total_amount) * 2.5) / 100 // 2.5% referral bonus
+        
+        // Add referral bonus to referrer's account
+        await query(`
+          UPDATE user_points 
+          SET referral_cash = referral_cash + $1,
+              updated_at = NOW()
+          WHERE user_id = $2
+        `, [referralBonus, referral.referrer_id])
+
+        // Update referral record
+        await query(`
+          UPDATE user_referrals 
+          SET 
+            reward_amount = $1,
+            reward_status = 'earned',
+            first_purchase_amount = $2,
+            first_purchase_date = NOW(),
+            updated_at = NOW()
+          WHERE referrer_id = $3 AND referred_id = $4
+        `, [referralBonus, parseFloat(order.total_amount), referral.referrer_id, order.user_id])
+
+        // Log referral bonus transaction
+        await query(`
+          INSERT INTO cashback_transactions (
+            user_id,
+            transaction_type,
+            amount,
+            description,
+            referral_code_used,
+            order_id,
+            created_at
+          ) VALUES ($1, 'referral_bonus', $2, 'Referral bonus from ${referral.referral_code}', $3, $4, NOW())
+        `, [referral.referrer_id, referralBonus, referral.referral_code, custom])
+
+        console.log(`Referral bonus of $${referralBonus} added to user ${referral.referrer_id} for referral ${referral.referral_code}`)
       }
     }
 
