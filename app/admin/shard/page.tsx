@@ -218,63 +218,66 @@ export default function ShardsPage() {
           </Button>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {shards.map((shard) => (
-            <Card key={shard.id} className="bg-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Globe className="h-8 w-8 text-blue-600" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {shard.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">Slug: {shard.slug}</p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant={shard.is_active ? "default" : "secondary"}>
-                          {shard.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                        <span className="text-xs text-gray-500">
-                          Order: {shard.sort_order}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+            <Card key={shard.id} className="bg-white hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(shard)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Shard</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{shard.name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(shard.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Globe className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-sm font-semibold text-gray-900 truncate">
+                      {shard.name}
+                    </h3>
                   </div>
+                  <Badge variant={shard.is_active ? "default" : "secondary"} className="text-xs">
+                    {shard.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+                
+                <div className="space-y-1 mb-3">
+                  <p className="text-xs text-gray-500">Slug: {shard.slug}</p>
+                  <p className="text-xs text-gray-500">Order: {shard.sort_order}</p>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(shard)}
+                    className="flex-1 text-xs"
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
+                    Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700 text-xs"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Shard</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{shard.name}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(shard.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
