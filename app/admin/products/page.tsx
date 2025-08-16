@@ -184,7 +184,9 @@ export default function ProductsAdminPage() {
     image_url: product?.image_url || '',
     status: product?.status || 'active',
     featured: product?.featured || false,
-    category_ids: product?.category_ids ? product.category_ids.split(',') : [],
+    category_ids: product?.category_ids ? 
+      [...product.category_ids.split(',').filter(id => id.trim() !== ''), '', '', ''].slice(0, 3) : 
+      ['', '', ''],
     class_id: product?.class_id || '',
     type: product?.type || 'item',
     rank: product?.rank || 0,
@@ -248,10 +250,10 @@ export default function ProductsAdminPage() {
                   {[0, 1, 2].map((index) => (
                     <Select 
                       key={index}
-                      value={formData.category_ids[index] || ''} 
+                      value={formData.category_ids[index] || 'none'} 
                       onValueChange={(value) => {
                         const newCategoryIds = [...formData.category_ids]
-                        newCategoryIds[index] = value
+                        newCategoryIds[index] = value === 'none' ? '' : value
                         setFormData({...formData, category_ids: newCategoryIds})
                       }}
                     >
@@ -259,7 +261,7 @@ export default function ProductsAdminPage() {
                         <SelectValue placeholder={`Select category ${index + 1}`} />
                       </SelectTrigger>
                       <SelectContent className="bg-white">
-                        <SelectItem value="" className="text-black">None</SelectItem>
+                        <SelectItem value="none" className="text-black">None</SelectItem>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id} className="text-black">
                             {category.name}
@@ -273,11 +275,12 @@ export default function ProductsAdminPage() {
               
               <div>
                 <Label htmlFor="class" className="text-black font-semibold">Class</Label>
-                <Select value={formData.class_id} onValueChange={(value) => setFormData({...formData, class_id: value})}>
+                <Select value={formData.class_id || "none"} onValueChange={(value) => setFormData({...formData, class_id: value === "none" ? "" : value})}>
                   <SelectTrigger className="border-gray-300 bg-white text-black">
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
+                    <SelectItem value="none" className="text-black">None</SelectItem>
                     {classes.map((classItem) => (
                       <SelectItem key={classItem.id} value={classItem.id} className="text-black">
                         {classItem.name}
