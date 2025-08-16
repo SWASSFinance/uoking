@@ -1059,7 +1059,13 @@ export async function getAllUsers() {
         u.created_at, 
         u.updated_at, 
         u.last_login_at,
-        COALESCE(up.referral_cash, 0) as referral_cash
+        u.total_points_earned,
+        u.review_count,
+        u.rating_count,
+        COALESCE(up.referral_cash, 0) as referral_cash,
+        COALESCE(up.current_points, 0) as current_points,
+        COALESCE(up.lifetime_points, 0) as lifetime_points,
+        COALESCE(up.points_spent, 0) as points_spent
       FROM users u
       LEFT JOIN user_points up ON u.id = up.user_id
       ORDER BY u.created_at DESC

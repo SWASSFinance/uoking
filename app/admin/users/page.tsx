@@ -30,7 +30,7 @@ interface User {
   email: string
   username: string
   first_name: string
-  last_name: string
+  last_name?: string
   discord_username?: string
   main_shard?: string
   character_names?: string[]
@@ -41,6 +41,12 @@ interface User {
   updated_at: string
   last_login_at?: string
   referral_cash?: number
+  total_points_earned?: number
+  current_points?: number
+  lifetime_points?: number
+  points_spent?: number
+  review_count?: number
+  rating_count?: number
 }
 
 export default function UsersAdminPage() {
@@ -123,7 +129,7 @@ export default function UsersAdminPage() {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.last_name && user.last_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (user.discord_username && user.discord_username.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (user.main_shard && user.main_shard.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (user.character_names && user.character_names.some(name => name.toLowerCase().includes(searchTerm.toLowerCase())))
@@ -148,7 +154,13 @@ export default function UsersAdminPage() {
       status: user?.status || 'active',
       email_verified: user?.email_verified || false,
       is_admin: user?.is_admin || false,
-      referral_cash: user?.referral_cash || 0
+      referral_cash: user?.referral_cash || 0,
+      total_points_earned: user?.total_points_earned || 0,
+      current_points: user?.current_points || 0,
+      lifetime_points: user?.lifetime_points || 0,
+      points_spent: user?.points_spent || 0,
+      review_count: user?.review_count || 0,
+      rating_count: user?.rating_count || 0
     })
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -212,7 +224,6 @@ export default function UsersAdminPage() {
                     id="last_name"
                     value={formData.last_name}
                     onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                    required
                     className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -322,6 +333,96 @@ export default function UsersAdminPage() {
                     className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
                   />
                   <p className="text-sm text-gray-500 mt-1">Current cashback balance for this user</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Points Management */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Points Management</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="total_points_earned" className="text-gray-700">Total Points Earned</Label>
+                  <Input
+                    id="total_points_earned"
+                    type="number"
+                    min="0"
+                    value={formData.total_points_earned}
+                    onChange={(e) => setFormData({...formData, total_points_earned: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Total points earned by this user</p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="current_points" className="text-gray-700">Current Points</Label>
+                  <Input
+                    id="current_points"
+                    type="number"
+                    min="0"
+                    value={formData.current_points}
+                    onChange={(e) => setFormData({...formData, current_points: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Current available points</p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="lifetime_points" className="text-gray-700">Lifetime Points</Label>
+                  <Input
+                    id="lifetime_points"
+                    type="number"
+                    min="0"
+                    value={formData.lifetime_points}
+                    onChange={(e) => setFormData({...formData, lifetime_points: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Total points earned over time</p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="points_spent" className="text-gray-700">Points Spent</Label>
+                  <Input
+                    id="points_spent"
+                    type="number"
+                    min="0"
+                    value={formData.points_spent}
+                    onChange={(e) => setFormData({...formData, points_spent: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Total points spent by this user</p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="review_count" className="text-gray-700">Review Count</Label>
+                  <Input
+                    id="review_count"
+                    type="number"
+                    min="0"
+                    value={formData.review_count}
+                    onChange={(e) => setFormData({...formData, review_count: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Number of reviews written</p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="rating_count" className="text-gray-700">Rating Count</Label>
+                  <Input
+                    id="rating_count"
+                    type="number"
+                    min="0"
+                    value={formData.rating_count}
+                    onChange={(e) => setFormData({...formData, rating_count: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    className="border-gray-300 bg-white text-black placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Number of ratings given</p>
                 </div>
               </div>
             </div>
@@ -435,6 +536,7 @@ export default function UsersAdminPage() {
                       <TableHead className="text-black font-semibold">Contact</TableHead>
                       <TableHead className="text-black font-semibold">Gaming Info</TableHead>
                       <TableHead className="text-black font-semibold">Status</TableHead>
+                      <TableHead className="text-black font-semibold">Points</TableHead>
                       <TableHead className="text-black font-semibold">Cashback</TableHead>
                       <TableHead className="text-black font-semibold">Account</TableHead>
                       <TableHead className="text-black font-semibold">Actions</TableHead>
@@ -501,6 +603,18 @@ export default function UsersAdminPage() {
                             {user.email_verified && (
                               <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
                             )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm text-gray-700">
+                              <span className="font-semibold text-amber-600">
+                                {user.current_points || 0} pts
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {user.review_count || 0} reviews, {user.rating_count || 0} ratings
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>

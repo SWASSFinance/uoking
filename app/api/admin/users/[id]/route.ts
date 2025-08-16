@@ -24,7 +24,13 @@ export async function GET(
         u.created_at, 
         u.updated_at, 
         u.last_login_at,
-        COALESCE(up.referral_cash, 0) as referral_cash
+        u.total_points_earned,
+        u.review_count,
+        u.rating_count,
+        COALESCE(up.referral_cash, 0) as referral_cash,
+        COALESCE(up.current_points, 0) as current_points,
+        COALESCE(up.lifetime_points, 0) as lifetime_points,
+        COALESCE(up.points_spent, 0) as points_spent
       FROM users u
       LEFT JOIN user_points up ON u.id = up.user_id
       WHERE u.id = $1
@@ -104,7 +110,13 @@ export async function PUT(
       status,
       email_verified,
       is_admin,
-      referral_cash
+      referral_cash,
+      total_points_earned,
+      current_points,
+      lifetime_points,
+      points_spent,
+      review_count,
+      rating_count
     } = body
 
     // Check if user exists
@@ -133,30 +145,44 @@ export async function PUT(
         status = $8,
         email_verified = $9,
         is_admin = $10,
+        total_points_earned = $11,
+        review_count = $12,
+        rating_count = $13,
         updated_at = NOW()
-      WHERE id = $11
-    `, [email, username, first_name, last_name, discord_username, main_shard, character_names, status, email_verified, is_admin, userId])
+      WHERE id = $14
+    `, [email, username, first_name, last_name, discord_username, main_shard, character_names, status, email_verified, is_admin, total_points_earned, review_count, rating_count, userId])
 
-    // Update or create user_points record for cashback
-    if (referral_cash !== undefined) {
-      const pointsCheck = await query(`
-        SELECT user_id FROM user_points WHERE user_id = $1
-      `, [userId])
+    // Update or create user_points record for cashback and points
+    const pointsCheck = await query(`
+      SELECT user_id FROM user_points WHERE user_id = $1
+    `, [userId])
 
-      if (pointsCheck.rows && pointsCheck.rows.length > 0) {
-        // Update existing record
-        await query(`
-          UPDATE user_points 
-          SET referral_cash = $1, updated_at = NOW()
-          WHERE user_id = $2
-        `, [referral_cash, userId])
-      } else {
-        // Create new record
-        await query(`
-          INSERT INTO user_points (user_id, referral_cash, created_at, updated_at)
-          VALUES ($1, $2, NOW(), NOW())
-        `, [userId, referral_cash])
-      }
+    if (pointsCheck.rows && pointsCheck.rows.length > 0) {
+      // Update existing record
+      await query(`
+        UPDATE user_points 
+        SET 
+          referral_cash = $1,
+          current_points = $2,
+          lifetime_points = $3,
+          points_spent = $4,
+          updated_at = NOW()
+        WHERE user_id = $5
+      `, [referral_cash || 0, current_points || 0, lifetime_points || 0, points_spent || 0, userId])
+    } else {
+      // Create new record
+      await query(`
+        INSERT INTO user_points (
+          user_id, 
+          referral_cash, 
+          current_points, 
+          lifetime_points, 
+          points_spent,
+          created_at, 
+          updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      `, [userId, referral_cash || 0, current_points || 0, lifetime_points || 0, points_spent || 0])
     }
 
     return NextResponse.json({
