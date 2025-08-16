@@ -12,6 +12,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { cartItems, cashbackToUse, selectedShard, couponCode } = body
 
+    console.log('Received checkout request:', {
+      cartItemsCount: cartItems?.length,
+      cashbackToUse,
+      selectedShard,
+      couponCode
+    })
+
     if (!cartItems || cartItems.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
     }
@@ -20,19 +27,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Shard selection required' }, { status: 400 })
     }
 
+    // Validate cart items
+    for (const item of cartItems) {
+      if (!item.id || !item.name || !item.price || !item.quantity) {
+        return NextResponse.json({ 
+          error: 'Invalid cart item data', 
+          details: `Missing required fields for item: ${item.name || 'unknown'}` 
+        }, { status: 400 })
+      }
+    }
+
+    // Check if user exists in database
+    const userResult = await query(`
+      SELECT id FROM users WHERE email = $1
+    `, [session.user.email])
+    
+    if (!userResult.rows || userResult.rows.length === 0) {
+      return NextResponse.json({ error: 'User not found in database' }, { status: 404 })
+    }
+    
+    console.log('User found:', userResult.rows[0].id)
+
     // Get PayPal email from admin settings
     const settingsResult = await query(`
       SELECT setting_value FROM site_settings WHERE setting_key = 'paypal_email'
     `)
     
     if (!settingsResult.rows || settingsResult.rows.length === 0) {
-      return NextResponse.json({ error: 'PayPal email not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'PayPal email not configured in admin settings' }, { status: 500 })
     }
 
     const paypalEmail = settingsResult.rows[0].setting_value
     if (!paypalEmail) {
-      return NextResponse.json({ error: 'PayPal email not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'PayPal email not configured in admin settings' }, { status: 500 })
     }
+
+    console.log('PayPal email found:', paypalEmail)
 
     // Calculate totals
     let subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
@@ -64,17 +94,19 @@ export async function POST(request: NextRequest) {
     const orderResult = await query(`
       INSERT INTO orders (
         user_id, 
+        order_number,
         status, 
         total_amount, 
-        subtotal_amount,
+        subtotal,
         discount_amount,
         cashback_used,
-        shard,
+        delivery_shard,
         coupon_code,
         payment_method,
         payment_status
       ) VALUES (
         (SELECT id FROM users WHERE email = $1),
+        'ORD-' || EXTRACT(EPOCH FROM NOW())::BIGINT,
         'pending',
         $2,
         $3,
@@ -88,9 +120,12 @@ export async function POST(request: NextRequest) {
     `, [session.user.email, finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null])
 
     const orderId = orderResult.rows[0].id
+    console.log('Order created with ID:', orderId)
 
     // Insert order items
+    console.log('Inserting order items:', cartItems.length)
     for (const item of cartItems) {
+      console.log('Inserting item:', item.name, 'for order:', orderId)
       await query(`
         INSERT INTO order_items (
           order_id, 
@@ -102,6 +137,7 @@ export async function POST(request: NextRequest) {
         ) VALUES ($1, $2, $3, $4, $5, $6)
       `, [orderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity])
     }
+    console.log('All order items inserted successfully')
 
     // Create PayPal form data
     const paypalFormData = {
@@ -117,6 +153,8 @@ export async function POST(request: NextRequest) {
       no_note: '1',
       charset: 'utf-8'
     }
+    
+    console.log('PayPal form data created:', paypalFormData)
 
     return NextResponse.json({
       success: true,
@@ -125,10 +163,14 @@ export async function POST(request: NextRequest) {
       paypalUrl: 'https://www.paypal.com/cgi-bin/webscr'
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('PayPal simple checkout error:', error)
+    console.error('Error details:', {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack
+    })
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: 'Failed to create order', details: error?.message || 'Unknown error' },
       { status: 500 }
     )
   }
