@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { 
@@ -20,9 +21,31 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Edit,
+  Save,
+  X,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  MapPin,
+  MessageSquare,
+  Star
 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
+
+interface OrderItem {
+  id: string
+  product_id?: string
+  product_name: string
+  product_image?: string
+  quantity: number
+  unit_price: string
+  total_price: string
+  category?: string
+}
 
 interface Order {
   id: string
@@ -30,20 +53,26 @@ interface Order {
   user_id: string
   user_email: string
   username: string
+  first_name?: string
+  last_name?: string
   status: string
   payment_status: string
   delivery_status: string
   subtotal: string
   total_amount: string
+  discount_amount?: string
+  cashback_used?: string
   currency: string
   payment_method: string
   delivery_shard: string
   delivery_character: string
   customer_notes: string
   admin_notes: string
+  coupon_code?: string
   created_at: string
   updated_at: string
   item_count: string
+  items?: OrderItem[]
 }
 
 export default function OrdersAdminPage() {
@@ -52,6 +81,15 @@ export default function OrdersAdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("all")
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+  const [loadingOrders, setLoadingOrders] = useState<Set<string>>(new Set())
+  const [orderDetails, setOrderDetails] = useState<Record<string, Order>>({})
+  const [editingOrder, setEditingOrder] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({
+    status: "",
+    payment_status: "",
+    admin_notes: ""
+  })
 
   useEffect(() => {
     fetchOrders()
@@ -68,6 +106,115 @@ export default function OrdersAdminPage() {
       console.error('Error fetching orders:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const toggleOrderExpansion = async (orderId: string) => {
+    const newExpanded = new Set(expandedOrders)
+    
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId)
+      setExpandedOrders(newExpanded)
+    } else {
+      newExpanded.add(orderId)
+      setExpandedOrders(newExpanded)
+      
+      // Load order details if not already loaded
+      if (!orderDetails[orderId]) {
+        await loadOrderDetails(orderId)
+      }
+    }
+  }
+
+  const loadOrderDetails = async (orderId: string) => {
+    const newLoading = new Set(loadingOrders)
+    newLoading.add(orderId)
+    setLoadingOrders(newLoading)
+    
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setOrderDetails(prev => ({
+          ...prev,
+          [orderId]: data.order
+        }))
+      }
+    } catch (error) {
+      console.error('Error loading order details:', error)
+    } finally {
+      const newLoading = new Set(loadingOrders)
+      newLoading.delete(orderId)
+      setLoadingOrders(newLoading)
+    }
+  }
+
+  const handleEditOrder = (order: Order) => {
+    setEditingOrder(order.id)
+    setEditForm({
+      status: order.status,
+      payment_status: order.payment_status,
+      admin_notes: order.admin_notes || ""
+    })
+  }
+
+  const handleSaveOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Update the order in the list
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { ...order, ...data.order } : order
+        ))
+        // Update order details if loaded
+        if (orderDetails[orderId]) {
+          setOrderDetails(prev => ({
+            ...prev,
+            [orderId]: { ...prev[orderId], ...data.order }
+          }))
+        }
+        setEditingOrder(null)
+        setEditForm({ status: "", payment_status: "", admin_notes: "" })
+      }
+    } catch (error) {
+      console.error('Error updating order:', error)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone and will handle refunds automatically.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Remove order from local state
+        setOrders(prev => prev.filter(order => order.id !== orderId))
+        setOrderDetails(prev => {
+          const newDetails = { ...prev }
+          delete newDetails[orderId]
+          return newDetails
+        })
+        setExpandedOrders(prev => {
+          const newExpanded = new Set(prev)
+          newExpanded.delete(orderId)
+          return newExpanded
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error)
     }
   }
 
@@ -98,7 +245,7 @@ export default function OrdersAdminPage() {
       case 'cancelled':
         return <Badge className={`${baseClasses} bg-red-100 text-red-800`}>Cancelled</Badge>
       case 'refunded':
-        return <Badge className={`baseClasses} bg-purple-100 text-purple-800`}>Refunded</Badge>
+        return <Badge className={`${baseClasses} bg-purple-100 text-purple-800`}>Refunded</Badge>
       case 'failed':
         return <Badge className={`${baseClasses} bg-red-100 text-red-800`}>Failed</Badge>
       default:
@@ -214,95 +361,291 @@ export default function OrdersAdminPage() {
               <p className="mt-4 text-gray-600">Loading orders...</p>
             </div>
           ) : (
-            <Card className="border border-gray-200 bg-white">
-              <CardHeader>
-                <CardTitle className="text-black">Orders ({filteredOrders.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-black font-semibold">Order</TableHead>
-                      <TableHead className="text-black font-semibold">Customer</TableHead>
-                      <TableHead className="text-black font-semibold">Amount</TableHead>
-                      <TableHead className="text-black font-semibold">Status</TableHead>
-                      <TableHead className="text-black font-semibold">Payment</TableHead>
-                      <TableHead className="text-black font-semibold">Date</TableHead>
-                      <TableHead className="text-black font-semibold">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredOrders.map((order) => (
-                      <TableRow key={order.id} className="hover:bg-gray-50">
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <ShoppingCart className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <div className="font-semibold text-black">{order.order_number}</div>
-                              <div className="text-sm text-gray-700">
-                                {order.item_count} items
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-semibold text-black">{order.username}</div>
-                            <div className="text-sm text-gray-700">{order.user_email}</div>
-                            {order.delivery_character && (
-                              <div className="text-xs text-gray-600">
-                                Character: {order.delivery_character}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-right">
-                            <div className="font-semibold text-green-600">
-                              ${parseFloat(order.total_amount).toFixed(2)}
-                            </div>
-                            <div className="text-sm text-gray-700">
-                              {order.currency}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
+            <div className="space-y-4">
+              {filteredOrders.map((order) => (
+                <Card key={order.id} className="border border-gray-200 bg-white">
+                  {/* Order Header */}
+                  <div 
+                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
+                    onClick={() => toggleOrderExpansion(order.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <ShoppingCart className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-black">Order #{order.order_number}</h4>
+                          <p className="text-sm text-gray-600">
+                            {order.item_count} items • {new Date(order.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600">${parseFloat(order.total_amount).toFixed(2)}</p>
+                          <div className="flex items-center space-x-2 mt-1">
                             {getStatusIcon(order.status)}
                             {getStatusBadge(order.status)}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          {getPaymentStatusBadge(order.payment_status)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-black">
-                            {new Date(order.created_at).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {loadingOrders.has(order.id) ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                          ) : (
+                            <div className="text-gray-400">
+                              {expandedOrders.has(order.id) ? (
+                                <ChevronUp className="h-5 w-5" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Details Dropdown */}
+                  {expandedOrders.has(order.id) && orderDetails[order.id] && (
+                    <div className="border-t border-gray-200 bg-gray-50 p-6">
+                      <div className="space-y-6">
+                        {/* Customer Information */}
+                        <div className="bg-white p-4 rounded-lg">
+                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                            <User className="h-4 w-4 mr-2" />
+                            Customer Information
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-gray-600 text-sm">Name:</span>
+                              <p className="font-medium">{orderDetails[order.id].first_name} {orderDetails[order.id].last_name}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 text-sm">Email:</span>
+                              <p className="font-medium">{orderDetails[order.id].user_email}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 text-sm">Username:</span>
+                              <p className="font-medium">{orderDetails[order.id].username}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 text-sm">Delivery Character:</span>
+                              <p className="font-medium">{orderDetails[order.id].delivery_character || 'Not specified'}</p>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-700">
-                            {new Date(order.created_at).toLocaleTimeString()}
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="bg-white p-4 rounded-lg">
+                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                            <Package className="h-4 w-4 mr-2" />
+                            Order Items
+                          </h5>
+                          <div className="space-y-3">
+                            {orderDetails[order.id].items?.map((item) => (
+                              <div key={item.id} className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                                <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                  {item.product_image ? (
+                                    <Image
+                                      src={item.product_image}
+                                      alt={item.product_name}
+                                      width={48}
+                                      height={48}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Package className="h-6 w-6 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900">{item.product_name}</p>
+                                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold text-gray-900">${parseFloat(item.total_price).toFixed(2)}</p>
+                                  <p className="text-sm text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-gray-300 text-black"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
+                        </div>
+
+                        {/* Order Summary */}
+                        <div className="bg-white p-4 rounded-lg">
+                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Order Summary
+                          </h5>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Subtotal</span>
+                              <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal).toFixed(2)}</span>
+                            </div>
+                            {parseFloat(orderDetails[order.id].discount_amount || '0') > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Discount</span>
+                                <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].discount_amount || '0').toFixed(2)}</span>
+                              </div>
+                            )}
+                            {parseFloat(orderDetails[order.id].cashback_used || '0') > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Cashback Used</span>
+                                <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].cashback_used || '0').toFixed(2)}</span>
+                              </div>
+                            )}
+                            <div className="border-t pt-2 flex justify-between font-semibold">
+                              <span>Total</span>
+                              <span>${parseFloat(orderDetails[order.id].total_amount).toFixed(2)}</span>
+                            </div>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                        </div>
+
+                        {/* Order Details */}
+                        <div className="bg-white p-4 rounded-lg">
+                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Order Details
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-600">Delivery Shard:</span>
+                              <p className="font-medium">{orderDetails[order.id].delivery_shard}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Payment Method:</span>
+                              <p className="font-medium">{orderDetails[order.id].payment_method}</p>
+                            </div>
+                            {orderDetails[order.id].coupon_code && (
+                              <div>
+                                <span className="text-gray-600">Coupon Code:</span>
+                                <p className="font-medium">{orderDetails[order.id].coupon_code}</p>
+                              </div>
+                            )}
+                            <div>
+                              <span className="text-gray-600">Order Date:</span>
+                              <p className="font-medium">{new Date(orderDetails[order.id].created_at).toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Admin Actions */}
+                        <div className="bg-white p-4 rounded-lg">
+                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Admin Actions
+                          </h5>
+                          
+                          {editingOrder === order.id ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="text-gray-700 font-medium block mb-2">Order Status</label>
+                                  <Select value={editForm.status} onValueChange={(value) => setEditForm({...editForm, status: value})}>
+                                    <SelectTrigger className="border-gray-300 bg-white text-black">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white">
+                                      <SelectItem value="pending" className="text-black">Pending</SelectItem>
+                                      <SelectItem value="processing" className="text-black">Processing</SelectItem>
+                                      <SelectItem value="completed" className="text-black">Completed</SelectItem>
+                                      <SelectItem value="cancelled" className="text-black">Cancelled</SelectItem>
+                                      <SelectItem value="refunded" className="text-black">Refunded</SelectItem>
+                                      <SelectItem value="failed" className="text-black">Failed</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <label className="text-gray-700 font-medium block mb-2">Payment Status</label>
+                                  <Select value={editForm.payment_status} onValueChange={(value) => setEditForm({...editForm, payment_status: value})}>
+                                    <SelectTrigger className="border-gray-300 bg-white text-black">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white">
+                                      <SelectItem value="pending" className="text-black">Pending</SelectItem>
+                                      <SelectItem value="completed" className="text-black">Completed</SelectItem>
+                                      <SelectItem value="failed" className="text-black">Failed</SelectItem>
+                                      <SelectItem value="refunded" className="text-black">Refunded</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-gray-700 font-medium block mb-2">Admin Notes</label>
+                                <Textarea
+                                  value={editForm.admin_notes}
+                                  onChange={(e) => setEditForm({...editForm, admin_notes: e.target.value})}
+                                  placeholder="Add admin notes..."
+                                  className="border-gray-300 bg-white text-black"
+                                  rows={3}
+                                />
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  onClick={() => handleSaveOrder(order.id)}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                  <Save className="h-4 w-4 mr-2" />
+                                  Save Changes
+                                </Button>
+                                <Button 
+                                  onClick={() => setEditingOrder(null)}
+                                  variant="outline"
+                                  className="border-gray-300 text-black"
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                  <span className="text-gray-600 text-sm">Order Status:</span>
+                                  <div className="flex items-center space-x-2 mt-1">
+                                    {getStatusIcon(orderDetails[order.id].status)}
+                                    {getStatusBadge(orderDetails[order.id].status)}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600 text-sm">Payment Status:</span>
+                                  <div className="mt-1">
+                                    {getPaymentStatusBadge(orderDetails[order.id].payment_status)}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600 text-sm">Admin Notes:</span>
+                                  <p className="font-medium mt-1">{orderDetails[order.id].admin_notes || 'No notes'}</p>
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  onClick={() => handleEditOrder(orderDetails[order.id])}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit Order
+                                </Button>
+                                <Button 
+                                  onClick={() => handleDeleteOrder(order.id)}
+                                  variant="destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Order
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
           )}
 
           {!loading && filteredOrders.length === 0 && (
