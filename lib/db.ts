@@ -173,8 +173,8 @@ export async function getProducts(filters?: {
     const result = await query(`
       SELECT 
         p.*,
-        STRING_AGG(DISTINCT c.name, ', ' ORDER BY pc.sort_order) as category_names,
-        STRING_AGG(DISTINCT c.slug, ', ' ORDER BY pc.sort_order) as category_slugs,
+        STRING_AGG(DISTINCT c.name, ', ') as category_names,
+        STRING_AGG(DISTINCT c.slug, ', ') as category_slugs,
         cl.name as class_name,
         cl.slug as class_slug,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
@@ -731,8 +731,8 @@ export async function getAllProducts() {
         p.*,
         cl.name as class_name,
         cl.slug as class_slug,
-        STRING_AGG(c.name, ', ' ORDER BY pc.sort_order) as category_names,
-        STRING_AGG(c.id::text, ',' ORDER BY pc.sort_order) as category_ids
+        STRING_AGG(c.name, ', ') as category_names,
+        STRING_AGG(c.id::text, ',') as category_ids
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
