@@ -12,7 +12,8 @@ import {
   FolderOpen,
   Tag,
   Video,
-  Globe
+  Globe,
+  MessageCircle
 } from "lucide-react"
 
 const adminNavItems = [
@@ -35,6 +36,11 @@ const adminNavItems = [
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart
+  },
+  {
+    name: "Reviews",
+    href: "/admin/reviews",
+    icon: MessageCircle
   },
   {
     name: "Coupons",
