@@ -346,7 +346,8 @@ export default function AccountPage() {
           cartItems: cartItems,
           cashbackToUse: parseFloat(order.cashback_used) || 0,
           selectedShard: order.delivery_shard,
-          couponCode: order.coupon_code || null
+          couponCode: order.coupon_code || null,
+          existingOrderId: order.id
         }),
       })
 

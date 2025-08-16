@@ -10,13 +10,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { cartItems, cashbackToUse, selectedShard, couponCode } = body
+    const { cartItems, cashbackToUse, selectedShard, couponCode, existingOrderId } = body
 
     console.log('Received checkout request:', {
       cartItemsCount: cartItems?.length,
       cashbackToUse,
       selectedShard,
-      couponCode
+      couponCode,
+      existingOrderId
     })
 
     if (!cartItems || cartItems.length === 0) {
@@ -90,54 +91,114 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create order in database
-    const orderResult = await query(`
-      INSERT INTO orders (
-        user_id, 
-        order_number,
-        status, 
-        total_amount, 
-        subtotal,
-        discount_amount,
-        cashback_used,
-        delivery_shard,
-        coupon_code,
-        payment_method,
-        payment_status
-      ) VALUES (
-        (SELECT id FROM users WHERE email = $1),
-        'ORD-' || EXTRACT(EPOCH FROM NOW())::BIGINT,
-        'pending',
-        $2,
-        $3,
-        $4,
-        $5,
-        $6,
-        $7,
-        'paypal_form',
-        'pending'
-      ) RETURNING id
-    `, [session.user.email, finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null])
+    let orderId: string
 
-    const orderId = orderResult.rows[0].id
-    console.log('Order created with ID:', orderId)
+    if (existingOrderId) {
+      // Update existing order
+      console.log('Updating existing order:', existingOrderId)
+      
+      // Verify the order exists and belongs to the user
+      const existingOrderResult = await query(`
+        SELECT id, payment_status FROM orders 
+        WHERE id = $1 AND user_id = (SELECT id FROM users WHERE email = $2)
+      `, [existingOrderId, session.user.email])
 
-    // Insert order items
-    console.log('Inserting order items:', cartItems.length)
-    for (const item of cartItems) {
-      console.log('Inserting item:', item.name, 'for order:', orderId)
+      if (!existingOrderResult.rows || existingOrderResult.rows.length === 0) {
+        return NextResponse.json({ error: 'Order not found or access denied' }, { status: 404 })
+      }
+
+      const existingOrder = existingOrderResult.rows[0]
+      if (existingOrder.payment_status !== 'pending') {
+        return NextResponse.json({ error: 'Order is not in pending status' }, { status: 400 })
+      }
+
+      // Update the existing order
       await query(`
-        INSERT INTO order_items (
-          order_id, 
-          product_id, 
-          product_name, 
-          quantity, 
-          unit_price, 
-          total_price
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-      `, [orderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity])
+        UPDATE orders SET
+          total_amount = $1,
+          subtotal = $2,
+          discount_amount = $3,
+          cashback_used = $4,
+          delivery_shard = $5,
+          coupon_code = $6,
+          updated_at = NOW()
+        WHERE id = $7
+      `, [finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null, existingOrderId])
+
+      // Clear existing order items
+      await query(`
+        DELETE FROM order_items WHERE order_id = $1
+      `, [existingOrderId])
+
+      // Insert new order items
+      console.log('Updating order items for existing order:', existingOrderId)
+      for (const item of cartItems) {
+        console.log('Inserting item:', item.name, 'for order:', existingOrderId)
+        await query(`
+          INSERT INTO order_items (
+            order_id, 
+            product_id, 
+            product_name, 
+            quantity, 
+            unit_price, 
+            total_price
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+        `, [existingOrderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity])
+      }
+
+      orderId = existingOrderId
+      console.log('Existing order updated successfully:', orderId)
+    } else {
+      // Create new order
+      console.log('Creating new order')
+      const orderResult = await query(`
+        INSERT INTO orders (
+          user_id, 
+          order_number,
+          status, 
+          total_amount, 
+          subtotal,
+          discount_amount,
+          cashback_used,
+          delivery_shard,
+          coupon_code,
+          payment_method,
+          payment_status
+        ) VALUES (
+          (SELECT id FROM users WHERE email = $1),
+          'ORD-' || EXTRACT(EPOCH FROM NOW())::BIGINT,
+          'pending',
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          'paypal_form',
+          'pending'
+        ) RETURNING id
+      `, [session.user.email, finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null])
+
+      orderId = orderResult.rows[0].id
+      console.log('New order created with ID:', orderId)
+
+      // Insert order items
+      console.log('Inserting order items:', cartItems.length)
+      for (const item of cartItems) {
+        console.log('Inserting item:', item.name, 'for order:', orderId)
+        await query(`
+          INSERT INTO order_items (
+            order_id, 
+            product_id, 
+            product_name, 
+            quantity, 
+            unit_price, 
+            total_price
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+        `, [orderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity])
+      }
+      console.log('All order items inserted successfully')
     }
-    console.log('All order items inserted successfully')
 
     // Create PayPal form data
     const paypalFormData = {
