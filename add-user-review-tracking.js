@@ -1,22 +1,16 @@
-const { query } = require('./lib/db.ts');
+import { query } from './lib/db.ts';
+import fs from 'fs';
 
 async function addUserReviewTracking() {
   try {
     console.log('Adding user review and rating count tracking...');
     
     // Read and execute the SQL migration
-    const fs = require('fs');
     const sql = fs.readFileSync('./add-user-review-tracking.sql', 'utf8');
     
-    // Split by semicolon and execute each statement
-    const statements = sql.split(';').filter(stmt => stmt.trim());
-    
-    for (const statement of statements) {
-      if (statement.trim()) {
-        await query(statement);
-        console.log('Executed:', statement.substring(0, 50) + '...');
-      }
-    }
+    // Execute the entire SQL file as one statement
+    await query(sql);
+    console.log('Executed SQL migration');
     
     console.log('✅ User review tracking migration completed successfully!');
     

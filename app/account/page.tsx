@@ -237,10 +237,22 @@ export default function AccountPage() {
   const loadUserPoints = async () => {
     setIsLoadingPoints(true)
     try {
+      console.log('Loading user points...')
       const response = await fetch('/api/user/points')
+      console.log('Points response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('Points data:', data)
         setUserPoints(data.points)
+      } else {
+        const errorData = await response.json()
+        console.error('Points API error:', errorData)
+        toast({
+          title: "Error",
+          description: "Failed to load points. Please try again.",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error('Error loading points:', error)

@@ -431,6 +431,7 @@ export async function getUserReviewCount(userId: string) {
 // Get user points and statistics
 export async function getUserPoints(userId: string) {
   try {
+    // First try to get existing user_points record
     const result = await query(`
       SELECT 
         up.*,
@@ -446,14 +447,37 @@ export async function getUserPoints(userId: string) {
       return result.rows[0]
     }
     
-    // Create user points record if it doesn't exist
-    const createResult = await query(`
-      INSERT INTO user_points (user_id, current_points, lifetime_points, points_spent)
-      VALUES ($1, 0, 0, 0)
-      RETURNING *
+    // If no user_points record exists, get user data and create one
+    const userResult = await query(`
+      SELECT 
+        id,
+        review_count,
+        rating_count,
+        total_points_earned
+      FROM users 
+      WHERE id = $1
     `, [userId])
     
-    return createResult.rows[0]
+    if (userResult.rows.length === 0) {
+      throw new Error('User not found')
+    }
+    
+    const user = userResult.rows[0]
+    
+    // Create user points record
+    const createResult = await query(`
+      INSERT INTO user_points (user_id, current_points, lifetime_points, points_spent)
+      VALUES ($1, $2, $2, 0)
+      RETURNING *
+    `, [userId, user.total_points_earned || 0])
+    
+    // Return combined data
+    return {
+      ...createResult.rows[0],
+      review_count: user.review_count || 0,
+      rating_count: user.rating_count || 0,
+      total_points_earned: user.total_points_earned || 0
+    }
   } catch (error) {
     console.error('Error fetching user points:', error)
     throw error

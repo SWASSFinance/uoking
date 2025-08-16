@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
-import { getUserPoints } from '@/lib/db'
+import { getUserPoints, query } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user ID from session
-    const { query } = require('@/lib/db')
     const userResult = await query('SELECT id FROM users WHERE email = $1', [session.user.email])
     
     if (!userResult.rows.length) {
@@ -25,7 +24,9 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = userResult.rows[0].id
+    console.log('Getting points for user ID:', userId)
     const points = await getUserPoints(userId)
+    console.log('Points data returned:', points)
 
     return NextResponse.json({ points })
   } catch (error) {
