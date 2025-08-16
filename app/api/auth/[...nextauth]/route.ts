@@ -90,6 +90,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // User exists, update last login and profile image if provided
           const userId = existingUser.rows[0].id
           
+          // Update Discord information if signing in with Discord
+          if (account?.provider === 'discord' && profile) {
+            const discordUsername = (profile as any).username
+            const discordId = (profile as any).id
+            
+            await query(`
+              UPDATE users 
+              SET 
+                discord_username = $1,
+                discord_id = $2,
+                last_login_at = NOW()
+              WHERE id = $3
+            `, [discordUsername, discordId, userId])
+          } else {
+            await query(`
+              UPDATE users SET last_login_at = NOW() WHERE id = $1
+            `, [userId])
+          }
+          
           if (user.image) {
             await query(`
               INSERT INTO user_profiles (user_id, profile_image_url, updated_at)
@@ -100,9 +119,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             `, [userId, user.image])
           }
 
-          await query(`
-            UPDATE users SET last_login_at = NOW() WHERE id = $1
-          `, [userId])
           return true
         }
 
@@ -112,8 +128,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const lastName = user.name?.split(' ').slice(1).join(' ') || ''
         
         let discordUsername = null
+        let discordId = null
         if (account?.provider === 'discord' && profile) {
           discordUsername = (profile as any).username
+          discordId = (profile as any).id
         }
 
         const newUser = await query(`
@@ -124,12 +142,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             first_name, 
             last_name, 
             discord_username,
+            discord_id,
             status,
             email_verified,
             created_at,
             updated_at,
             last_login_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), NOW())
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW(), NOW())
           RETURNING id
         `, [
           user.email, 
@@ -138,6 +157,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           firstName, 
           lastName, 
           discordUsername,
+          discordId,
           'active',
           true // OAuth users are pre-verified
         ])
@@ -173,6 +193,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const userResult = await query(`
           SELECT 
             u.id, u.username, u.first_name, u.last_name, u.is_admin, u.status,
+            u.discord_username, u.discord_id,
             up.profile_image_url
           FROM users u
           LEFT JOIN user_profiles up ON u.id = up.user_id
@@ -188,6 +209,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           session.user.isAdmin = user.is_admin
           session.user.status = user.status
           session.user.image = user.profile_image_url || session.user.image
+          session.user.discordUsername = user.discord_username
+          session.user.discordId = user.discord_id
         }
       }
       return session

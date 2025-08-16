@@ -32,7 +32,10 @@ import {
   Mail,
   Phone,
   MapPin,
-  Gift
+  Gift,
+  MessageCircle,
+  CheckCircle,
+  Link as LinkIcon
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -196,6 +199,12 @@ export default function AccountPage() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleDiscordLink = () => {
+    // Redirect to Discord OAuth
+    const discordAuthUrl = `/api/auth/signin?provider=discord&callbackUrl=${encodeURIComponent(window.location.href)}`
+    window.location.href = discordAuthUrl
   }
 
   const handleCharacterNamesChange = (value: string) => {
@@ -494,6 +503,57 @@ export default function AccountPage() {
                           <p className="mt-1 text-gray-900">{userProfile.timezone || 'Not set'}</p>
                         )}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Discord Account Linking */}
+                  <div className="border-t pt-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Discord Account</h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      {session?.user?.discordId ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                              <MessageCircle className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                Connected to Discord
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                @{session.user.discordUsername}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Connected
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                              <MessageCircle className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                Link Discord Account
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Connect your Discord account to sync your profile image and username
+                              </p>
+                            </div>
+                          </div>
+                          <Button 
+                            onClick={() => handleDiscordLink()}
+                            className="bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            <LinkIcon className="h-4 w-4 mr-2" />
+                            Link Discord
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>

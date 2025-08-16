@@ -12,6 +12,8 @@ declare module "next-auth" {
       lastName: string
       isAdmin: boolean
       status: string
+      discordUsername?: string | null
+      discordId?: string | null
     }
   }
 
@@ -25,6 +27,8 @@ declare module "next-auth" {
     lastName: string
     isAdmin: boolean
     status: string
+    discordUsername?: string | null
+    discordId?: string | null
   }
 }
 
