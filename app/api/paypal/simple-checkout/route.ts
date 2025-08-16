@@ -65,6 +65,35 @@ export async function POST(request: NextRequest) {
 
     console.log('PayPal email found:', paypalEmail)
 
+    // Validate cashback amount against user's available balance
+    if (cashbackToUse > 0) {
+      const userPointsResult = await query(`
+        SELECT up.referral_cash,
+               COALESCE(SUM(o.cashback_used), 0) as pending_cashback
+        FROM user_points up
+        LEFT JOIN orders o ON o.user_id = up.user_id 
+          AND o.payment_status = 'pending' 
+          AND o.cashback_used > 0
+        WHERE up.user_id = (SELECT id FROM users WHERE email = $1)
+        GROUP BY up.referral_cash
+      `, [session.user.email])
+
+      if (!userPointsResult.rows || userPointsResult.rows.length === 0) {
+        return NextResponse.json({ error: 'User points not found' }, { status: 404 })
+      }
+
+      const userPoints = userPointsResult.rows[0]
+      const rawCashbackBalance = parseFloat(userPoints.referral_cash || 0)
+      const pendingCashback = parseFloat(userPoints.pending_cashback || 0)
+      const availableCashback = Math.max(0, rawCashbackBalance - pendingCashback)
+
+      if (cashbackToUse > availableCashback) {
+        return NextResponse.json({ 
+          error: 'Insufficient cashback balance. Available: $' + availableCashback.toFixed(2) 
+        }, { status: 400 })
+      }
+    }
+
     // Calculate totals
     let subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
     let discount = 0

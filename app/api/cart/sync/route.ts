@@ -44,12 +44,24 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = userResult.rows[0].id
-    const currentCashbackBalance = parseFloat(userResult.rows[0].referral_cash || 0)
+    const rawCashbackBalance = parseFloat(userResult.rows[0].referral_cash || 0)
+
+    // Get pending cashback to prevent double spending
+    const pendingCashbackResult = await query(`
+      SELECT COALESCE(SUM(cashback_used), 0) as pending_cashback
+      FROM orders 
+      WHERE user_id = $1 
+      AND payment_status = 'pending'
+      AND cashback_used > 0
+    `, [userId])
+
+    const pendingCashback = parseFloat(pendingCashbackResult.rows[0]?.pending_cashback || 0)
+    const availableCashback = Math.max(0, rawCashbackBalance - pendingCashback)
 
     // Validate cashback amount
-    if (cashbackAmount > currentCashbackBalance) {
+    if (cashbackAmount > availableCashback) {
       return NextResponse.json(
-        { error: 'Insufficient cashback balance' },
+        { error: `Insufficient cashback balance. Available: $${availableCashback.toFixed(2)}` },
         { status: 400 }
       )
     }

@@ -36,9 +36,16 @@ export async function POST(request: NextRequest) {
 
     const userId = userResult.rows[0].id
 
-    // Get current cashback balance
+    // Get current cashback balance and pending cashback
     const balanceResult = await query(`
-      SELECT referral_cash FROM user_points WHERE user_id = $1
+      SELECT up.referral_cash,
+             COALESCE(SUM(o.cashback_used), 0) as pending_cashback
+      FROM user_points up
+      LEFT JOIN orders o ON o.user_id = up.user_id 
+        AND o.payment_status = 'pending' 
+        AND o.cashback_used > 0
+      WHERE up.user_id = $1
+      GROUP BY up.referral_cash
     `, [userId])
 
     if (!balanceResult.rows || balanceResult.rows.length === 0) {
@@ -48,11 +55,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const currentBalance = parseFloat(balanceResult.rows[0].referral_cash || 0)
+    const rawCashbackBalance = parseFloat(balanceResult.rows[0].referral_cash || 0)
+    const pendingCashback = parseFloat(balanceResult.rows[0].pending_cashback || 0)
+    const availableCashback = Math.max(0, rawCashbackBalance - pendingCashback)
 
-    if (amount > currentBalance) {
+    if (amount > availableCashback) {
       return NextResponse.json(
-        { error: 'Insufficient cashback balance' },
+        { error: `Insufficient cashback balance. Available: $${availableCashback.toFixed(2)}` },
         { status: 400 }
       )
     }
@@ -77,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      newBalance: currentBalance - amount,
+      newBalance: availableCashback - amount,
       amountUsed: amount
     })
 

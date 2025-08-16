@@ -49,11 +49,26 @@ export async function GET(request: NextRequest) {
     }
 
     const userPoints = result.rows[0]
+    const rawCashbackBalance = parseFloat(userPoints.referral_cash || 0)
+
+    // Get total cashback used in pending orders to prevent double spending
+    const pendingCashbackResult = await query(`
+      SELECT COALESCE(SUM(cashback_used), 0) as pending_cashback
+      FROM orders 
+      WHERE user_id = $1 
+      AND payment_status = 'pending'
+      AND cashback_used > 0
+    `, [userId])
+
+    const pendingCashback = parseFloat(pendingCashbackResult.rows[0]?.pending_cashback || 0)
+    const availableCashback = Math.max(0, rawCashbackBalance - pendingCashback)
 
     return NextResponse.json({
-      referral_cash: parseFloat(userPoints.referral_cash || 0),
+      referral_cash: availableCashback,
       current_points: parseInt(userPoints.current_points || 0),
-      lifetime_points: parseInt(userPoints.lifetime_points || 0)
+      lifetime_points: parseInt(userPoints.lifetime_points || 0),
+      raw_balance: rawCashbackBalance,
+      pending_orders_cashback: pendingCashback
     })
 
   } catch (error) {
