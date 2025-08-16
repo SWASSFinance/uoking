@@ -507,7 +507,7 @@ export default function UsersAdminPage() {
                           <div className="space-y-1">
                             <div className="flex items-center text-sm text-gray-700">
                               <span className="font-semibold text-green-600">
-                                ${(user.referral_cash || 0).toFixed(2)}
+                                ${(typeof user.referral_cash === 'string' ? parseFloat(user.referral_cash) : user.referral_cash || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="text-xs text-gray-500">
