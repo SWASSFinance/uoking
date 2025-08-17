@@ -41,7 +41,25 @@ export async function GET() {
     `, [today])
 
     if (!result.rows || result.rows.length === 0) {
-      // If no deal for today, try to get a random featured product
+      // If no deal for today, get a deterministic featured product based on today's date
+      const today = new Date()
+      const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24))
+      
+      // First get the count of featured products
+      const countResult = await query(`
+        SELECT COUNT(*) as count FROM products 
+        WHERE status = 'active' AND featured = true
+      `)
+      
+      const totalFeatured = parseInt(countResult.rows[0].count)
+      
+      if (totalFeatured === 0) {
+        return NextResponse.json({ deal: null, enabled: true })
+      }
+      
+      // Use day of year to select a consistent product for the day
+      const offset = dayOfYear % totalFeatured
+      
       const randomProductResult = await query(`
         SELECT 
           p.id,
@@ -53,9 +71,10 @@ export async function GET() {
         FROM products p
         WHERE p.status = 'active' 
           AND p.featured = true
-        ORDER BY RANDOM()
+        ORDER BY p.id
         LIMIT 1
-      `)
+        OFFSET $1
+      `, [offset])
 
       if (randomProductResult.rows && randomProductResult.rows.length > 0) {
         const product = randomProductResult.rows[0]

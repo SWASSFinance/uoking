@@ -1,26 +1,244 @@
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import React, { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Star } from "lucide-react"
 import Link from "next/link"
 
+// Gaming-style canvas button component
+const GamingButton = ({ 
+  title, 
+  description, 
+  icon, 
+  href, 
+  color = "amber",
+  isPopular = false 
+}: {
+  title: string
+  description: string
+  icon: React.ReactNode
+  href: string
+  color?: string
+  isPopular?: boolean
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  const [particles, setParticles] = useState<Array<{
+    x: number
+    y: number
+    vx: number
+    vy: number
+    life: number
+    maxLife: number
+  }>>([])
+
+  const colorMap = {
+    amber: {
+      primary: "#f59e0b",
+      secondary: "#d97706",
+      glow: "#fbbf24",
+      bg: "rgba(251, 191, 36, 0.1)"
+    },
+    purple: {
+      primary: "#8b5cf6",
+      secondary: "#7c3aed",
+      glow: "#a78bfa",
+      bg: "rgba(139, 92, 246, 0.1)"
+    },
+    green: {
+      primary: "#10b981",
+      secondary: "#059669",
+      glow: "#34d399",
+      bg: "rgba(16, 185, 129, 0.1)"
+    },
+    red: {
+      primary: "#ef4444",
+      secondary: "#dc2626",
+      glow: "#f87171",
+      bg: "rgba(239, 68, 68, 0.1)"
+    },
+    blue: {
+      primary: "#3b82f6",
+      secondary: "#2563eb",
+      glow: "#60a5fa",
+      bg: "rgba(59, 130, 246, 0.1)"
+    },
+    gray: {
+      primary: "#6b7280",
+      secondary: "#4b5563",
+      glow: "#9ca3af",
+      bg: "rgba(107, 114, 128, 0.1)"
+    }
+  }
+
+  const colors = colorMap[color as keyof typeof colorMap] || colorMap.amber
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    return () => window.removeEventListener('resize', resizeCanvas)
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const animate = () => {
+      const rect = canvas.getBoundingClientRect()
+      ctx.clearRect(0, 0, rect.width, rect.height)
+
+      // Draw background glow
+      if (isHovered) {
+        const gradient = ctx.createRadialGradient(
+          rect.width / 2, rect.height / 2, 0,
+          rect.width / 2, rect.height / 2, rect.width / 2
+        )
+        gradient.addColorStop(0, colors.bg)
+        gradient.addColorStop(1, 'transparent')
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, rect.width, rect.height)
+      }
+
+      // Update and draw particles
+      setParticles(prev => {
+        const updated = prev
+          .map(particle => ({
+            ...particle,
+            x: particle.x + particle.vx,
+            y: particle.y + particle.vy,
+            life: particle.life - 1
+          }))
+          .filter(particle => particle.life > 0)
+
+        // Add new particles on hover
+        if (isHovered && Math.random() < 0.3) {
+          updated.push({
+            x: Math.random() * rect.width,
+            y: rect.height,
+            vx: (Math.random() - 0.5) * 2,
+            vy: -Math.random() * 3 - 1,
+            life: Math.random() * 60 + 30,
+            maxLife: Math.random() * 60 + 30
+          })
+        }
+
+        // Draw particles
+        updated.forEach(particle => {
+          const alpha = particle.life / particle.maxLife
+          ctx.save()
+          ctx.globalAlpha = alpha
+          ctx.fillStyle = colors.glow
+          ctx.beginPath()
+          ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.restore()
+        })
+
+        return updated
+      })
+
+      // Draw border glow
+      if (isHovered) {
+        ctx.strokeStyle = colors.glow
+        ctx.lineWidth = 2
+        ctx.globalAlpha = 0.6
+        ctx.strokeRect(2, 2, rect.width - 4, rect.height - 4)
+        ctx.globalAlpha = 1
+      }
+
+      requestAnimationFrame(animate)
+    }
+
+    animate()
+  }, [isHovered, colors])
+
+  return (
+    <Link href={href}>
+      <div
+        className="relative group cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        />
+        
+        <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 rounded-lg p-6 h-48 flex flex-col justify-between transition-all duration-300 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/20">
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
+                {icon}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors duration-300">
+                  {title}
+                </h3>
+                {isPopular && (
+                  <Badge className="bg-amber-500 text-black text-xs font-semibold mt-1">
+                    Popular
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            {/* Glowing indicator */}
+            <div className={`w-3 h-3 rounded-full bg-${color}-500 group-hover:animate-pulse`}></div>
+          </div>
+
+          {/* Description */}
+          <p className="text-gray-300 text-sm leading-relaxed">
+            {description}
+          </p>
+
+          {/* Bottom section */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-amber-400">
+              <Star className="h-4 w-4" />
+              <span className="text-sm font-medium">Browse Items</span>
+            </div>
+            
+            <div className="relative">
+              <div className="absolute inset-0 bg-amber-500 rounded blur-sm opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
+              <Button 
+                size="sm"
+                className="relative bg-amber-500 hover:bg-amber-400 text-black font-semibold px-4 py-2 rounded-md border-0 transition-all duration-300"
+              >
+                Explore
+              </Button>
+            </div>
+          </div>
+
+          {/* Scan line effect */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
 // High-tech SVG icons for each class
 const ClassIconSVG = ({ className, type }: { className: string, type: string }) => {
   const icons: { [key: string]: React.ReactElement } = {
-    'getting-started': (
-      <svg viewBox="0 0 100 100" className={className}>
-        <defs>
-          <linearGradient id="startGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#10b981" />
-            <stop offset="100%" stopColor="#059669" />
-          </linearGradient>
-        </defs>
-        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#startGrad)" strokeWidth="2" opacity="0.3"/>
-        <circle cx="50" cy="50" r="20" fill="url(#startGrad)" opacity="0.8"/>
-        <path d="M50 30 L50 70 M30 50 L70 50" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
-    ),
     'mage': (
       <svg viewBox="0 0 100 100" className={className}>
         <defs>
@@ -126,120 +344,86 @@ const ClassIconSVG = ({ className, type }: { className: string, type: string }) 
     )
   };
   
-  return icons[type] || icons['getting-started'];
+  return icons[type] || icons['mage'];
 }
 
 export function ClassSection() {
-  // Use the same class structure as the header navigation (excluding Getting Started)
   const classItems = [
-    { name: "Mage", slug: "mage", description: "Magical weapons, armor, and equipment for spellcasters" },
-    { name: "Tamer", slug: "tamer", description: "Equipment for animal taming and creature control" },
-    { name: "Melee", slug: "melee", description: "Weapons and armor for close combat warriors" },
-    { name: "Ranged", slug: "ranged", description: "Bows, crossbows, and ranged combat equipment" },
-    { name: "Thief", slug: "thief", description: "Stealth equipment and tools for thieves and assassins" },
-    { name: "Crafter", slug: "crafter", description: "Tools and materials for crafting and gathering" }
+    { 
+      name: "Mage", 
+      slug: "mage", 
+      description: "Powerful spellcasters with devastating magical abilities",
+      color: "purple",
+      isPopular: true
+    },
+    { 
+      name: "Tamer", 
+      slug: "tamer", 
+      description: "Masters of beasts and creatures, commanding powerful pets",
+      color: "red"
+    },
+    { 
+      name: "Melee", 
+      slug: "melee", 
+      description: "Close combat warriors with exceptional physical strength",
+      color: "amber",
+      isPopular: true
+    },
+    { 
+      name: "Ranged", 
+      slug: "ranged", 
+      description: "Skilled archers and marksmen with precision accuracy",
+      color: "green"
+    },
+    { 
+      name: "Thief", 
+      slug: "thief", 
+      description: "Stealthy rogues with exceptional agility and cunning",
+      color: "gray"
+    },
+    { 
+      name: "Crafter", 
+      slug: "crafter", 
+      description: "Master artisans creating powerful equipment and items",
+      color: "amber",
+      isPopular: true
+    }
   ];
 
   return (
-    <section className="py-16 px-4">
+    <section className="py-16 px-4 bg-gradient-to-b from-gray-900 via-gray-800 to-black">
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <Crown className="h-8 w-8 text-amber-600 mr-3" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Shop by Character Class</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Ultima Online Items - By Slot</h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Find weapons, armor, and equipment specifically designed for your character class
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+            Find the perfect equipment for every equipment slot
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classItems.map((classData) => {
-            return (
-              <Link key={classData.slug} href={`/class/${classData.slug}`}>
-                <Card className="group hover:shadow-2xl hover:scale-105 transition-all duration-500 overflow-hidden border-0 cursor-pointer bg-gradient-to-b from-gray-50 to-white">
-                  {/* Top Icon Section with High-tech Gradient */}
-                  <div className="relative h-40 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 flex items-center justify-center overflow-hidden">
-                    {/* Animated Background Pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(251,191,36,0.3),transparent_70%)]"></div>
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-amber-200 to-transparent rounded-full blur-xl"></div>
-                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-orange-200 to-transparent rounded-full blur-lg"></div>
-                    </div>
-                    
-                    {/* High-tech SVG Icon */}
-                    <div className="relative z-10 group-hover:scale-110 transition-transform duration-500">
-                      <ClassIconSVG 
-                        className="h-24 w-24 drop-shadow-lg" 
-                        type={classData.slug}
-                      />
-                    </div>
-                    
-                    {/* Shop Category Badge */}
-                    <Badge className="absolute top-3 right-3 bg-amber-500 text-black text-xs font-semibold">
-                      Shop Items
-                    </Badge>
-                    
-                    {/* Glowing Orb Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  </div>
-                  
-                  {/* Dark Bottom Section with High Contrast Text */}
-                  <div className="relative bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white p-5">
-                    {/* Subtle Grid Pattern Overlay */}
-                    <div className="absolute inset-0 opacity-10" style={{
-                      backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-                      backgroundSize: '20px 20px'
-                    }}></div>
-                    
-                    <div className="relative z-10">
-                      {/* Class Name */}
-                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors duration-300">
-                        {classData.name}
-                      </h3>
-                      
-                      {/* Description */}
-                      <p className="text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed">
-                        {classData.description}
-                      </p>
-                      
-                      {/* Shopping Info */}
-                      <p className="text-amber-400 text-sm mb-4 font-medium">
-                        Browse items specifically designed for {classData.name.toLowerCase()} characters
-                      </p>
-                      
-                      {/* Browse Button */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-sm">
-                          Equipment & Items
-                        </span>
-                        
-                        <Button 
-                          size="sm"
-                          className="bg-amber-500 hover:bg-amber-400 text-black font-semibold px-4 py-2 rounded-md border-0 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25"
-                        >
-                          Shop Items
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {/* Subtle Bottom Glow */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
+          {classItems.map((classData) => (
+            <GamingButton
+              key={classData.slug}
+              title={classData.name}
+              description={classData.description}
+              icon={<ClassIconSVG className="h-8 w-8" type={classData.slug} />}
+              href={`/class/${classData.slug}`}
+              color={classData.color}
+              isPopular={classData.isPopular}
+            />
+          ))}
         </div>
 
         <div className="text-center mt-12">
           <Link href="/class">
             <Button 
-              variant="outline" 
               size="lg" 
-              className="px-8 bg-white/90 backdrop-blur-sm border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white"
+              className="px-8 bg-amber-500 hover:bg-amber-400 text-black font-bold border-0 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/50"
             >
-              Browse All Categories
+              View All Slots
             </Button>
           </Link>
         </div>
