@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Star } from "lucide-react"
 import Link from "next/link"
 
-// Gaming-style canvas button component
+// Gaming-style button component without canvas
 const GamingButton = ({ 
   title, 
   description, 
@@ -22,17 +22,6 @@ const GamingButton = ({
   color?: string
   isPopular?: boolean
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [isHovered, setIsHovered] = useState(false)
-  const [particles, setParticles] = useState<Array<{
-    x: number
-    y: number
-    vx: number
-    vy: number
-    life: number
-    maxLife: number
-  }>>([])
-
   const colorMap = {
     amber: {
       primary: "#f59e0b",
@@ -74,167 +63,85 @@ const GamingButton = ({
 
   const colors = colorMap[color as keyof typeof colorMap] || colorMap.amber
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect()
-      canvas.width = rect.width * window.devicePixelRatio
-      canvas.height = rect.height * window.devicePixelRatio
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-    }
-
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
-
-    return () => window.removeEventListener('resize', resizeCanvas)
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const animate = () => {
-      const rect = canvas.getBoundingClientRect()
-      ctx.clearRect(0, 0, rect.width, rect.height)
-
-      // Draw background glow
-      if (isHovered) {
-        const gradient = ctx.createRadialGradient(
-          rect.width / 2, rect.height / 2, 0,
-          rect.width / 2, rect.height / 2, rect.width / 2
-        )
-        gradient.addColorStop(0, colors.bg)
-        gradient.addColorStop(1, 'transparent')
-        ctx.fillStyle = gradient
-        ctx.fillRect(0, 0, rect.width, rect.height)
-      }
-
-      // Update and draw particles
-      setParticles(prev => {
-        const updated = prev
-          .map(particle => ({
-            ...particle,
-            x: particle.x + particle.vx,
-            y: particle.y + particle.vy,
-            life: particle.life - 1
-          }))
-          .filter(particle => particle.life > 0)
-
-        // Add new particles on hover
-        if (isHovered && Math.random() < 0.3) {
-          updated.push({
-            x: Math.random() * rect.width,
-            y: rect.height,
-            vx: (Math.random() - 0.5) * 2,
-            vy: -Math.random() * 3 - 1,
-            life: Math.random() * 60 + 30,
-            maxLife: Math.random() * 60 + 30
-          })
-        }
-
-        // Draw particles
-        updated.forEach(particle => {
-          const alpha = particle.life / particle.maxLife
-          ctx.save()
-          ctx.globalAlpha = alpha
-          ctx.fillStyle = colors.glow
-          ctx.beginPath()
-          ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.restore()
-        })
-
-        return updated
-      })
-
-      // Draw border glow
-      if (isHovered) {
-        ctx.strokeStyle = colors.glow
-        ctx.lineWidth = 2
-        ctx.globalAlpha = 0.6
-        ctx.strokeRect(2, 2, rect.width - 4, rect.height - 4)
-        ctx.globalAlpha = 1
-      }
-
-      requestAnimationFrame(animate)
-    }
-
-    animate()
-  }, [isHovered, colors])
-
   return (
-    <div
-      className="relative group cursor-pointer"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
-      
-      <Link href={href} className="block w-full h-full">
-        <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 rounded-lg p-6 h-48 flex flex-col justify-between transition-all duration-300 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/20">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
-                {icon}
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors duration-300">
-                  {title}
-                </h3>
-                {isPopular && (
-                  <Badge className="bg-amber-500 text-black text-xs font-semibold mt-1">
-                    Popular
-                  </Badge>
-                )}
-              </div>
+    <Link href={href} className="block w-full h-full">
+      <div className="relative group cursor-pointer bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 rounded-lg p-6 h-48 flex flex-col justify-between transition-all duration-300 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/20 hover:scale-105">
+        {/* Animated background glow on hover */}
+        <div 
+          className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(circle at center, ${colors.bg}, transparent 70%)`
+          }}
+        />
+        
+        {/* Header */}
+        <div className="relative z-10 flex items-start justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
+              {icon}
             </div>
-            
-            {/* Glowing indicator */}
-            <div className={`w-3 h-3 rounded-full bg-${color}-500 group-hover:animate-pulse`}></div>
+            <div>
+              <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors duration-300">
+                {title}
+              </h3>
+              {isPopular && (
+                <Badge className="bg-amber-500 text-black text-xs font-semibold mt-1">
+                  Popular
+                </Badge>
+              )}
+            </div>
           </div>
+          
+          {/* Glowing indicator */}
+          <div 
+            className="w-3 h-3 rounded-full group-hover:animate-pulse transition-all duration-300"
+            style={{ backgroundColor: colors.primary }}
+          />
+        </div>
 
-          {/* Description */}
+        {/* Description */}
+        <div className="relative z-10">
           <p className="text-gray-300 text-sm leading-relaxed">
             {description}
           </p>
+        </div>
 
-          {/* Bottom section */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-amber-400">
-              <Star className="h-4 w-4" />
-              <span className="text-sm font-medium">Browse Items</span>
-            </div>
-            
-            <div className="relative">
-              <div className="absolute inset-0 bg-amber-500 rounded blur-sm opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
-              <Button 
-                size="sm"
-                className="relative bg-amber-500 hover:bg-amber-400 text-black font-semibold px-4 py-2 rounded-md border-0 transition-all duration-300"
-              >
-                Explore
-              </Button>
-            </div>
+        {/* Bottom section */}
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-amber-400">
+            <Star className="h-4 w-4" />
+            <span className="text-sm font-medium">Browse Items</span>
           </div>
-
-          {/* Scan line effect */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse"></div>
+          
+          <div className="relative">
+            <div 
+              className="absolute inset-0 rounded blur-sm opacity-0 group-hover:opacity-50 transition-opacity duration-300"
+              style={{ backgroundColor: colors.glow }}
+            />
+            <Button 
+              size="sm"
+              className="relative bg-amber-500 hover:bg-amber-400 text-black font-semibold px-4 py-2 rounded-md border-0 transition-all duration-300"
+            >
+              Explore
+            </Button>
           </div>
         </div>
-      </Link>
-    </div>
+
+        {/* Scan line effect */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse"></div>
+        </div>
+
+        {/* Border glow effect */}
+        <div 
+          className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-60 transition-opacity duration-300 pointer-events-none"
+          style={{
+            boxShadow: `0 0 20px ${colors.glow}`,
+            border: `1px solid ${colors.glow}`
+          }}
+        />
+      </div>
+    </Link>
   )
 }
 
