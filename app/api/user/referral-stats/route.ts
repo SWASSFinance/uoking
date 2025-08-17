@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
-import { getUserReferralStats, generateReferralCode } from '@/lib/referral'
+import { getUserReferralStats, getUserReferralCode } from '@/lib/referral'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,18 +22,8 @@ export async function GET(request: NextRequest) {
     const userId = userResult.rows[0].id
 
     // Get or create referral code
-    let referralCodeResult = await query(`
-      SELECT referral_code FROM user_referral_codes 
-      WHERE user_id = $1 AND is_active = true
-    `, [userId])
-
-    let referralCode = null
-    if (!referralCodeResult.rows || referralCodeResult.rows.length === 0) {
-      // Generate a new referral code
-      referralCode = await generateReferralCode(userId)
-    } else {
-      referralCode = referralCodeResult.rows[0].referral_code
-    }
+    const referralCodeData = await getUserReferralCode(userId)
+    const referralCode = referralCodeData.referral_code
 
     // Get referral statistics
     const statsResult = await query(`

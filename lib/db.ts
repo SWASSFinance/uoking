@@ -1065,9 +1065,13 @@ export async function getAllUsers() {
         COALESCE(up.referral_cash, 0) as referral_cash,
         COALESCE(up.current_points, 0) as current_points,
         COALESCE(up.lifetime_points, 0) as lifetime_points,
-        COALESCE(up.points_spent, 0) as points_spent
+        COALESCE(up.points_spent, 0) as points_spent,
+        urc.referral_code,
+        (SELECT COUNT(*) FROM user_referrals WHERE referrer_id = u.id) as referral_count,
+        (SELECT COUNT(*) FROM user_referrals WHERE referred_id = u.id) as referred_by_count
       FROM users u
       LEFT JOIN user_points up ON u.id = up.user_id
+      LEFT JOIN user_referral_codes urc ON u.id = urc.user_id AND urc.is_active = true
       ORDER BY u.created_at DESC
     `)
     return result.rows

@@ -47,6 +47,9 @@ interface User {
   points_spent?: number
   review_count?: number
   rating_count?: number
+  referral_code?: string
+  referral_count?: number
+  referred_by_count?: number
 }
 
 export default function UsersAdminPage() {
@@ -538,6 +541,7 @@ export default function UsersAdminPage() {
                       <TableHead className="text-black font-semibold">Status</TableHead>
                       <TableHead className="text-black font-semibold">Points</TableHead>
                       <TableHead className="text-black font-semibold">Cashback</TableHead>
+                      <TableHead className="text-black font-semibold">Referrals</TableHead>
                       <TableHead className="text-black font-semibold">Account</TableHead>
                       <TableHead className="text-black font-semibold">Actions</TableHead>
                     </TableRow>
@@ -626,6 +630,24 @@ export default function UsersAdminPage() {
                             </div>
                             <div className="text-xs text-gray-500">
                               Cashback Balance
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {user.referral_code ? (
+                              <div className="flex items-center text-sm text-gray-700">
+                                <span className="font-semibold text-purple-600">
+                                  {user.referral_code}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-xs text-gray-500">
+                                No code
+                              </div>
+                            )}
+                            <div className="text-xs text-gray-500">
+                              {user.referral_count || 0} referred, {user.referred_by_count || 0} referred by
                             </div>
                           </div>
                         </TableCell>
