@@ -1,7 +1,6 @@
 import { Header } from "@/components/header"
 import { VideoBanner } from "@/components/video-banner"
 import { ClassSection } from "@/components/class-section"
-import { SlotSection } from "@/components/slot-section"
 import { FeaturedProducts } from "@/components/featured-products"
 import { HelpSection } from "@/components/help-section"
 import { DealOfTheDay } from "@/components/deal-of-the-day"
@@ -49,11 +48,6 @@ export default async function HomePage() {
           {/* Class Section */}
           <section className="py-16 bg-white/80 backdrop-blur-sm">
             <ClassSection />
-          </section>
-
-          {/* Slot Section */}
-          <section className="py-16 bg-gradient-to-r from-amber-50/90 to-orange-50/90 backdrop-blur-sm">
-            <SlotSection />
           </section>
 
           {/* Featured Products */}
