@@ -326,16 +326,7 @@ export function ClassSection() {
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Link href="/class">
-            <Button 
-              size="lg" 
-              className="px-8 bg-amber-500 hover:bg-amber-400 text-black font-bold border-0 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/50"
-            >
-              View All Slots
-            </Button>
-          </Link>
-        </div>
+        
       </div>
     </section>
   )
