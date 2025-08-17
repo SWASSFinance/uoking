@@ -171,17 +171,17 @@ const GamingButton = ({
   }, [isHovered, colors])
 
   return (
-    <Link href={href}>
-      <div
-        className="relative group cursor-pointer"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        />
-        
+    <div
+      className="relative group cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+      />
+      
+      <Link href={href} className="block w-full h-full">
         <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 rounded-lg p-6 h-48 flex flex-col justify-between transition-all duration-300 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/20">
           {/* Header */}
           <div className="flex items-start justify-between">
@@ -233,8 +233,8 @@ const GamingButton = ({
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse"></div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
 }
 
