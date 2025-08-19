@@ -1376,4 +1376,152 @@ export async function deleteShard(id: string) {
   }
 }
 
+// Daily Check-in Functions
+export async function getUserDailyCheckinStatus(userId: string) {
+  try {
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    
+    const result = await query(`
+      SELECT 
+        udc.*,
+        CASE 
+          WHEN udc.checkin_date = $2 THEN true 
+          ELSE false 
+        END as checked_in_today,
+        CASE 
+          WHEN udc.checkin_date = $2 THEN udc.points_earned 
+          ELSE 0 
+        END as today_points
+      FROM user_daily_checkins udc
+      WHERE udc.user_id = $1 AND udc.checkin_date = $2
+    `, [userId, today])
+    
+    if (result.rows.length > 0) {
+      return result.rows[0]
+    }
+    
+    // Return default status if no check-in today
+    return {
+      checked_in_today: false,
+      today_points: 0,
+      checkin_date: today
+    }
+  } catch (error) {
+    console.error('Error fetching daily check-in status:', error)
+    throw error
+  }
+}
+
+export async function getUserCheckinHistory(userId: string, limit: number = 30) {
+  try {
+    const result = await query(`
+      SELECT 
+        checkin_date,
+        points_earned,
+        created_at
+      FROM user_daily_checkins
+      WHERE user_id = $1
+      ORDER BY checkin_date DESC
+      LIMIT $2
+    `, [userId, limit])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching check-in history:', error)
+    throw error
+  }
+}
+
+export async function performDailyCheckin(userId: string) {
+  try {
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    const pointsToAward = 10
+    
+    // Start transaction
+    await query('BEGIN')
+    
+    try {
+      // Check if user already checked in today
+      const existingCheckin = await query(`
+        SELECT id FROM user_daily_checkins 
+        WHERE user_id = $1 AND checkin_date = $2
+      `, [userId, today])
+      
+      if (existingCheckin.rows.length > 0) {
+        await query('ROLLBACK')
+        throw new Error('Already checked in today')
+      }
+      
+      // Insert daily check-in record
+      const checkinResult = await query(`
+        INSERT INTO user_daily_checkins (user_id, checkin_date, points_earned)
+        VALUES ($1, $2, $3)
+        RETURNING *
+      `, [userId, today, pointsToAward])
+      
+      // Update user points
+      await query(`
+        UPDATE user_points 
+        SET 
+          current_points = current_points + $2,
+          lifetime_points = lifetime_points + $2,
+          updated_at = NOW()
+        WHERE user_id = $1
+      `, [userId, pointsToAward])
+      
+      // Update user total points earned
+      await query(`
+        UPDATE users 
+        SET total_points_earned = COALESCE(total_points_earned, 0) + $2
+        WHERE id = $1
+      `, [userId, pointsToAward])
+      
+      await query('COMMIT')
+      
+      return {
+        success: true,
+        checkin: checkinResult.rows[0],
+        points_awarded: pointsToAward
+      }
+      
+    } catch (error) {
+      await query('ROLLBACK')
+      throw error
+    }
+    
+  } catch (error) {
+    console.error('Error performing daily check-in:', error)
+    throw error
+  }
+}
+
+export async function getCheckinStreak(userId: string) {
+  try {
+    const result = await query(`
+      WITH checkin_dates AS (
+        SELECT checkin_date
+        FROM user_daily_checkins
+        WHERE user_id = $1
+        ORDER BY checkin_date DESC
+      ),
+      streak_calc AS (
+        SELECT 
+          checkin_date,
+          ROW_NUMBER() OVER (ORDER BY checkin_date DESC) as rn,
+          checkin_date + ROW_NUMBER() OVER (ORDER BY checkin_date DESC) as expected_date
+        FROM checkin_dates
+      )
+      SELECT 
+        COUNT(*) as current_streak
+      FROM streak_calc
+      WHERE expected_date = CURRENT_DATE
+    `, [userId])
+    
+    return result.rows[0]?.current_streak || 0
+  } catch (error) {
+    console.error('Error calculating check-in streak:', error)
+    return 0
+  }
+}
+
 export default pool; 

@@ -43,7 +43,8 @@ import {
   Clock,
   Trash2,
   Star,
-  Users
+  Users,
+  CalendarCheck
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -122,6 +123,8 @@ export default function AccountPage() {
   const [isLoadingReviews, setIsLoadingReviews] = useState(false)
   const [isLoadingPoints, setIsLoadingPoints] = useState(false)
   const [isLoadingReferrals, setIsLoadingReferrals] = useState(false)
+  const [isLoadingCheckin, setIsLoadingCheckin] = useState(false)
+  const [checkinData, setCheckinData] = useState<any>(null)
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
@@ -161,6 +164,8 @@ export default function AccountPage() {
         loadUserPoints()
       } else if (activeTab === 'referrals' && !referralStats) {
         loadReferralStats()
+      } else if (activeTab === 'checkin' && !checkinData) {
+        loadCheckinData()
       }
     }
   }, [activeTab, session])
@@ -283,6 +288,64 @@ export default function AccountPage() {
       })
     } finally {
       setIsLoadingReferrals(false)
+    }
+  }
+
+  const loadCheckinData = async () => {
+    setIsLoadingCheckin(true)
+    try {
+      const response = await fetch('/api/user/daily-checkin')
+      if (response.ok) {
+        const data = await response.json()
+        setCheckinData(data)
+      }
+    } catch (error) {
+      console.error('Error loading check-in data:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load check-in data. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingCheckin(false)
+    }
+  }
+
+  const handleDailyCheckin = async () => {
+    setIsLoadingCheckin(true)
+    try {
+      const response = await fetch('/api/user/daily-checkin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "Check-in Successful!",
+          description: `You earned ${data.points_awarded} points! Come back tomorrow for more!`,
+          variant: "default",
+        })
+        setCheckinData(data)
+      } else {
+        toast({
+          title: "Check-in Failed",
+          description: data.error || "Failed to check in. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error performing daily check-in:', error)
+      toast({
+        title: "Error",
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingCheckin(false)
     }
   }
 
@@ -640,7 +703,7 @@ export default function AccountPage() {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 bg-white/80 backdrop-blur-sm border border-amber-200">
+            <TabsList className="grid w-full grid-cols-7 bg-white/80 backdrop-blur-sm border border-amber-200">
               <TabsTrigger value="profile" className="flex items-center space-x-2">
                 <User className="h-4 w-4" />
                 <span>Profile</span>
@@ -656,6 +719,10 @@ export default function AccountPage() {
               <TabsTrigger value="points" className="flex items-center space-x-2">
                 <Gift className="h-4 w-4" />
                 <span>Points</span>
+              </TabsTrigger>
+              <TabsTrigger value="checkin" className="flex items-center space-x-2">
+                <CalendarCheck className="h-4 w-4" />
+                <span>Daily Check-in</span>
               </TabsTrigger>
               <TabsTrigger value="referrals" className="flex items-center space-x-2">
                 <LinkIcon className="h-4 w-4" />
@@ -1253,6 +1320,10 @@ export default function AccountPage() {
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center space-x-2">
                             <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span>Daily check-in: <strong>10 points</strong></span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                             <span>Write a product review: <strong>10 points</strong></span>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -1275,6 +1346,160 @@ export default function AccountPage() {
                       <Gift className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">No Points Data</h3>
                       <p className="text-gray-600">Start reviewing products to earn points!</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Daily Check-in Tab */}
+            <TabsContent value="checkin" className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-gray-900">Daily Check-in</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingCheckin ? (
+                    <div className="text-center py-8">
+                      <LoadingSpinner size="lg" text="Loading check-in data..." />
+                    </div>
+                  ) : checkinData ? (
+                    <div className="space-y-6">
+                      {/* Check-in Status */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <CalendarCheck className="h-8 w-8 text-green-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Today's Status</p>
+                              <p className="text-2xl font-bold text-green-600">
+                                {checkinData.status.checked_in_today ? 'Checked In!' : 'Not Checked In'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Gift className="h-8 w-8 text-blue-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Points Available</p>
+                              <p className="text-2xl font-bold text-blue-600">10</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Star className="h-8 w-8 text-purple-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Current Streak</p>
+                              <p className="text-2xl font-bold text-purple-600">{checkinData.streak || 0} days</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Check-in Button */}
+                      <div className="text-center">
+                        {checkinData.status.checked_in_today ? (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <div className="flex items-center justify-center space-x-3 mb-4">
+                              <CheckCircle className="h-8 w-8 text-green-600" />
+                              <h3 className="text-xl font-semibold text-green-900">Already Checked In Today!</h3>
+                            </div>
+                            <p className="text-green-700 mb-4">
+                              You earned {checkinData.status.today_points} points today. Come back tomorrow for more!
+                            </p>
+                            <div className="text-sm text-green-600">
+                              Next check-in available: {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                            <div className="flex items-center justify-center space-x-3 mb-4">
+                              <CalendarCheck className="h-8 w-8 text-amber-600" />
+                              <h3 className="text-xl font-semibold text-amber-900">Ready to Check In!</h3>
+                            </div>
+                            <p className="text-amber-700 mb-6">
+                              Click the button below to earn 10 points for today's check-in!
+                            </p>
+                            <Button 
+                              onClick={handleDailyCheckin}
+                              disabled={isLoadingCheckin}
+                              className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
+                            >
+                              {isLoadingCheckin ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                  Checking In...
+                                </>
+                              ) : (
+                                <>
+                                  <CalendarCheck className="h-5 w-5 mr-2" />
+                                  Check In Now
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Check-in History */}
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-4">Recent Check-ins</h4>
+                        {checkinData.history && checkinData.history.length > 0 ? (
+                          <div className="space-y-2">
+                            {checkinData.history.map((checkin: any, index: number) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center space-x-3">
+                                  <CalendarCheck className="h-4 w-4 text-green-600" />
+                                  <span className="font-medium">
+                                    {new Date(checkin.checkin_date).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Gift className="h-4 w-4 text-amber-600" />
+                                  <span className="text-sm font-medium text-amber-600">
+                                    +{checkin.points_earned} points
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">
+                            No check-in history yet. Start checking in daily to build your streak!
+                          </div>
+                        )}
+                      </div>
+
+                      {/* How it Works */}
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-3">How Daily Check-ins Work</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                            <span>Check in once per day to earn <strong>10 points</strong></span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                            <span>Build a streak for bonus rewards and achievements</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                            <span>Points can be used for discounts and special offers</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                            <span>Check-in resets at midnight in your local timezone</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <CalendarCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Check-in Data</h3>
+                      <p className="text-gray-600">Start checking in daily to earn points!</p>
                     </div>
                   )}
                 </CardContent>
