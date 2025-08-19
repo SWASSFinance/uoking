@@ -1348,6 +1348,38 @@ export default function AccountPage() {
                         </div>
                       </div>
 
+                      {/* Check-in Statistics */}
+                      {userPoints.checkin_totals && (
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                            <CalendarCheck className="h-5 w-5 mr-2 text-amber-600" />
+                            Daily Check-in Statistics
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Total Check-ins</span>
+                              <span className="font-semibold text-amber-600">{userPoints.checkin_totals.total_checkins || 0}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Points from Check-ins</span>
+                              <span className="font-semibold text-amber-600">{userPoints.checkin_totals.total_points_from_checkins || 0}</span>
+                            </div>
+                            {userPoints.checkin_totals.first_checkin_date && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">First Check-in</span>
+                                <span className="font-semibold">{new Date(userPoints.checkin_totals.first_checkin_date).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                            {userPoints.checkin_totals.last_checkin_date && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">Last Check-in</span>
+                                <span className="font-semibold">{new Date(userPoints.checkin_totals.last_checkin_date).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Activity Stats */}
                       <div className="bg-white border border-gray-200 rounded-lg p-4">
                         <h4 className="font-semibold text-gray-900 mb-4">Activity Summary</h4>

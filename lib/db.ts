@@ -1543,4 +1543,33 @@ export async function getCheckinStreak(userId: string) {
   }
 }
 
+export async function getCheckinTotals(userId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        COUNT(*) as total_checkins,
+        SUM(points_earned) as total_points_from_checkins,
+        MIN(checkin_date) as first_checkin_date,
+        MAX(checkin_date) as last_checkin_date
+      FROM user_daily_checkins
+      WHERE user_id = $1
+    `, [userId])
+    
+    return result.rows[0] || {
+      total_checkins: 0,
+      total_points_from_checkins: 0,
+      first_checkin_date: null,
+      last_checkin_date: null
+    }
+  } catch (error) {
+    console.error('Error fetching check-in totals:', error)
+    return {
+      total_checkins: 0,
+      total_points_from_checkins: 0,
+      first_checkin_date: null,
+      last_checkin_date: null
+    }
+  }
+}
+
 export default pool; 
