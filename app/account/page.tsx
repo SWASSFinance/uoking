@@ -1380,6 +1380,34 @@ export default function AccountPage() {
                         </div>
                       )}
 
+                      {/* Referral Points Statistics */}
+                      {userPoints.referral_points && (
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                            <LinkIcon className="h-5 w-5 mr-2 text-green-600" />
+                            Referral Points Statistics
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Total Referrals</span>
+                              <span className="font-semibold text-green-600">{userPoints.referral_points.total_referrals || 0}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Points from Referrals</span>
+                              <span className="font-semibold text-green-600">{userPoints.referral_points.total_points_from_referrals || 0}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Points per Referral</span>
+                              <span className="font-semibold text-green-600">25</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Total Cashback</span>
+                              <span className="font-semibold text-green-600">${userPoints.referral_cash || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Activity Stats */}
                       <div className="bg-white border border-gray-200 rounded-lg p-4">
                         <h4 className="font-semibold text-gray-900 mb-4">Activity Summary</h4>
@@ -1425,7 +1453,7 @@ export default function AccountPage() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            <span>Refer friends: <strong>Cashback rewards</strong></span>
+                            <span>Refer friends: <strong>25 points per referral</strong></span>
                           </div>
                         </div>
                       </div>
@@ -1633,7 +1661,7 @@ export default function AccountPage() {
                   ) : referralStats ? (
                     <div className="space-y-6">
                       {/* Referral Stats */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
                           <div className="flex items-center space-x-3">
                             <LinkIcon className="h-8 w-8 text-green-600" />
@@ -1658,6 +1686,15 @@ export default function AccountPage() {
                             <div>
                               <p className="text-sm text-gray-600">Active Referrals</p>
                               <p className="text-2xl font-bold text-purple-600">{referralStats.active_referrals || 0}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-3">
+                            <Gift className="h-8 w-8 text-amber-600" />
+                            <div>
+                              <p className="text-sm text-gray-600">Referral Points</p>
+                              <p className="text-2xl font-bold text-amber-600">{referralStats.referral_points?.total_points_from_referrals || 0}</p>
                             </div>
                           </div>
                         </div>

@@ -1572,4 +1572,27 @@ export async function getCheckinTotals(userId: string) {
   }
 }
 
+export async function getReferralPoints(userId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        COUNT(*) as total_referrals,
+        COUNT(*) * 25 as total_points_from_referrals
+      FROM user_referrals
+      WHERE referrer_id = $1 AND reward_status = 'earned'
+    `, [userId])
+    
+    return result.rows[0] || {
+      total_referrals: 0,
+      total_points_from_referrals: 0
+    }
+  } catch (error) {
+    console.error('Error fetching referral points:', error)
+    return {
+      total_referrals: 0,
+      total_points_from_referrals: 0
+    }
+  }
+}
+
 export default pool; 

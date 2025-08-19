@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
-import { getUserPoints, getCheckinTotals, query } from '@/lib/db'
+import { getUserPoints, getCheckinTotals, getReferralPoints, query } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,19 +26,22 @@ export async function GET(request: NextRequest) {
     const userId = userResult.rows[0].id
     console.log('Getting points for user ID:', userId)
     
-    // Get both points and check-in totals
-    const [points, checkinTotals] = await Promise.all([
+    // Get points, check-in totals, and referral points
+    const [points, checkinTotals, referralPoints] = await Promise.all([
       getUserPoints(userId),
-      getCheckinTotals(userId)
+      getCheckinTotals(userId),
+      getReferralPoints(userId)
     ])
     
     console.log('Points data returned:', points)
     console.log('Check-in totals returned:', checkinTotals)
+    console.log('Referral points returned:', referralPoints)
 
     return NextResponse.json({ 
       points: {
         ...points,
-        checkin_totals: checkinTotals
+        checkin_totals: checkinTotals,
+        referral_points: referralPoints
       }
     })
   } catch (error) {
