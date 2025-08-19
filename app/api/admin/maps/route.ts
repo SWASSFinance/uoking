@@ -6,14 +6,6 @@ import {
   createMapTable,
   query 
 } from '@/lib/db'
-import { v2 as cloudinary } from 'cloudinary'
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dngclyzkj',
-  api_key: process.env.CLOUDINARY_API_KEY || '827585767246395',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'q4JyvKJGRoyoI0AJ3fxgR8p8nNA'
-})
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,52 +55,23 @@ export async function POST(request: NextRequest) {
     }
     const userId = userResult.rows[0].id
 
-    // Parse form data
-    const formData = await request.formData()
-    const name = formData.get('name') as string
-    const description = formData.get('description') as string
-    const mapFile = formData.get('mapFile') as File
+    // Parse JSON data
+    const body = await request.json()
+    const { name, description, mapFileUrl, mapFileSize } = body
 
-    if (!name || !mapFile) {
+    if (!name || !mapFileUrl) {
       return NextResponse.json(
-        { error: 'Name and map file are required' },
+        { error: 'Name and map file URL are required' },
         { status: 400 }
       )
     }
-
-    // Check file size (100MB limit)
-    if (mapFile.size > 100 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: 'File size must be less than 100MB' },
-        { status: 400 }
-      )
-    }
-
-    // Convert file to buffer
-    const bytes = await mapFile.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // Upload to Cloudinary
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: 'uoking/maps',
-          resource_type: 'auto',
-          overwrite: true
-        },
-        (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
-        }
-      ).end(buffer)
-    }) as any
 
     // Save to database
     const map = await uploadMap(
       name,
       description || '',
-      uploadResult.secure_url,
-      mapFile.size,
+      mapFileUrl,
+      mapFileSize || 0,
       userId
     )
 
