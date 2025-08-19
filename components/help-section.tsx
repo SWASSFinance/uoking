@@ -15,7 +15,7 @@ export function HelpSection() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             If you don't see the item you are looking for then just ask live chat. There is a good chance we carry whatever you are looking for.
           </p>
-        </div>
+        </div> 
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
