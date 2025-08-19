@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server'
-import { getProducts, searchProducts } from '@/lib/db'
+import { getProducts, searchProducts, getClassBySlug } from '@/lib/db'
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('categoryId')
+    const classSlug = searchParams.get('class')
+    const featured = searchParams.get('featured') === 'true'
     const search = searchParams.get('search')
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 100
+
+    // Convert class slug to classId if provided
+    let classId = undefined
+    if (classSlug) {
+      const classData = await getClassBySlug(classSlug)
+      if (classData) {
+        classId = classData.id
+      }
+    }
 
     let products
     if (search) {
@@ -14,6 +25,8 @@ export async function GET(request: Request) {
     } else {
       products = await getProducts({ 
         categoryId: categoryId || undefined,
+        classId: classId || undefined,
+        featured: featured || undefined,
         limit 
       })
     }

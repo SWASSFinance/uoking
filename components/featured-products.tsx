@@ -1,10 +1,14 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, ShoppingCart, Crown } from "lucide-react"
 import Link from "next/link"
 import { ProductImage } from "@/components/ui/product-image"
-import { getFeaturedProducts } from "@/lib/db"
+import { useCart } from "@/contexts/cart-context"
+import { useToast } from "@/hooks/use-toast"
 
 interface Product {
   id: string | number
@@ -21,9 +25,66 @@ interface Product {
   stats?: any[]
 }
 
-export async function FeaturedProducts() {
+export function FeaturedProducts() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const { addItem } = useCart()
+  const { toast } = useToast()
+
   // Fetch featured products from database
-  const products = await getFeaturedProducts(6)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products?featured=true&limit=6')
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+        }
+      } catch (error) {
+        console.error('Error fetching featured products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: String(product.id),
+      name: product.name,
+      price: parseFloat(product.sale_price || product.price),
+      image_url: product.image_url || '',
+      category: product.category || ''
+    })
+    
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+      variant: "default",
+    })
+  }
+
+  if (loading) {
+    return (
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <Crown className="h-8 w-8 text-amber-600 mr-3" />
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Products</h2>
+            </div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Discover our most popular and highest-rated Ultima Online items</p>
+          </div>
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading featured products...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-16 px-4">
@@ -109,17 +170,15 @@ export async function FeaturedProducts() {
                     </div>
                   </Link>
 
-                  {/* Add to Cart Button - Simplified for server component */}
+                  {/* Add to Cart Button */}
                   <div className="flex items-center gap-2">
                     <Button 
+                      onClick={() => handleAddToCart(product)}
                       size="sm"
                       className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                      asChild
                     >
-                      <Link href={`/product/${product.slug}`}>
-                        <ShoppingCart className="h-3 w-3 mr-1" />
-                        View Details
-                      </Link>
+                      <ShoppingCart className="h-3 w-3 mr-1" />
+                      Add to Cart
                     </Button>
                   </div>
                 </CardContent>
