@@ -1595,4 +1595,188 @@ export async function getReferralPoints(userId: string) {
   }
 }
 
+// Map and Plot Management Functions
+export async function createMapTable() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS maps (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        map_file_url TEXT,
+        map_file_size BIGINT,
+        created_by UUID REFERENCES users(id),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `)
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS plots (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        map_id UUID REFERENCES maps(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        latitude DECIMAL(10, 8) NOT NULL,
+        longitude DECIMAL(11, 8) NOT NULL,
+        points_price INTEGER DEFAULT 0,
+        is_available BOOLEAN DEFAULT true,
+        created_by UUID REFERENCES users(id),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `)
+
+    // Create indexes for performance
+    await query(`CREATE INDEX IF NOT EXISTS idx_plots_map_id ON plots(map_id)`)
+    await query(`CREATE INDEX IF NOT EXISTS idx_plots_location ON plots(latitude, longitude)`)
+    await query(`CREATE INDEX IF NOT EXISTS idx_maps_active ON maps(is_active) WHERE is_active = true`)
+
+    return { success: true, message: 'Map and plot tables created successfully' }
+  } catch (error) {
+    console.error('Error creating map tables:', error)
+    throw error
+  }
+}
+
+export async function uploadMap(name: string, description: string, mapFileUrl: string, mapFileSize: number, createdBy: string) {
+  try {
+    const result = await query(`
+      INSERT INTO maps (name, description, map_file_url, map_file_size, created_by)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [name, description, mapFileUrl, mapFileSize, createdBy])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error uploading map:', error)
+    throw error
+  }
+}
+
+export async function getAllMaps() {
+  try {
+    const result = await query(`
+      SELECT 
+        m.*,
+        COUNT(p.id) as plot_count,
+        u.username as created_by_name
+      FROM maps m
+      LEFT JOIN plots p ON m.id = p.map_id
+      LEFT JOIN users u ON m.created_by = u.id
+      WHERE m.is_active = true
+      GROUP BY m.id, u.username
+      ORDER BY m.created_at DESC
+    `)
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching maps:', error)
+    throw error
+  }
+}
+
+export async function getMapById(mapId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        m.*,
+        u.username as created_by_name
+      FROM maps m
+      LEFT JOIN users u ON m.created_by = u.id
+      WHERE m.id = $1 AND m.is_active = true
+    `, [mapId])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error fetching map:', error)
+    throw error
+  }
+}
+
+export async function getPlotsByMapId(mapId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        p.*,
+        u.username as created_by_name
+      FROM plots p
+      LEFT JOIN users u ON p.created_by = u.id
+      WHERE p.map_id = $1 AND p.is_available = true
+      ORDER BY p.created_at ASC
+    `, [mapId])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching plots:', error)
+    throw error
+  }
+}
+
+export async function createPlot(mapId: string, name: string, description: string, latitude: number, longitude: number, pointsPrice: number, createdBy: string) {
+  try {
+    const result = await query(`
+      INSERT INTO plots (map_id, name, description, latitude, longitude, points_price, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `, [mapId, name, description, latitude, longitude, pointsPrice, createdBy])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error creating plot:', error)
+    throw error
+  }
+}
+
+export async function updatePlot(plotId: string, name: string, description: string, latitude: number, longitude: number, pointsPrice: number) {
+  try {
+    const result = await query(`
+      UPDATE plots 
+      SET name = $2, description = $3, latitude = $4, longitude = $5, points_price = $6, updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `, [plotId, name, description, latitude, longitude, pointsPrice])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating plot:', error)
+    throw error
+  }
+}
+
+export async function deletePlot(plotId: string) {
+  try {
+    const result = await query(`
+      DELETE FROM plots 
+      WHERE id = $1
+      RETURNING id
+    `, [plotId])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error deleting plot:', error)
+    throw error
+  }
+}
+
+export async function deleteMap(mapId: string) {
+  try {
+    // First delete all plots associated with the map
+    await query(`DELETE FROM plots WHERE map_id = $1`, [mapId])
+    
+    // Then delete the map
+    const result = await query(`
+      DELETE FROM maps 
+      WHERE id = $1
+      RETURNING id
+    `, [mapId])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error deleting map:', error)
+    throw error
+  }
+}
+
 export default pool; 

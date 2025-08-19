@@ -13,7 +13,8 @@ import {
   Tag,
   Video,
   Globe,
-  MessageCircle
+  MessageCircle,
+  Map
 } from "lucide-react"
 
 const adminNavItems = [
@@ -56,6 +57,11 @@ const adminNavItems = [
     name: "Shards",
     href: "/admin/shard",
     icon: Globe
+  },
+  {
+    name: "Maps",
+    href: "/admin/maps",
+    icon: Map
   },
   {
     name: "Settings",

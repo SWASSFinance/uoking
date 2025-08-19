@@ -65,6 +65,11 @@ html {
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#d97706" />
+        <script
+          async
+          defer
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+        />
       </head>
       <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen" suppressHydrationWarning>
         <ClientOnly>
