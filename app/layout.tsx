@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
 import { ClientOnly } from '@/components/ui/client-only'
+import { MusicPlayer } from '@/components/music-player'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -71,6 +72,7 @@ html {
             <ErrorBoundary>
               {children}
               <Toaster />
+              <MusicPlayer />
             </ErrorBoundary>
           </Providers>
         </ClientOnly>

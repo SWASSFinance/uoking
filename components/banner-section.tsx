@@ -23,20 +23,6 @@ interface BannerSectionProps {
 export function BannerSection({ banners }: BannerSectionProps) {
   return (
     <section className="relative h-[1000px] flex items-center justify-center">
-      {/* Sound Enable Button */}
-      <button
-        id="enable-sound-btn"
-        className="absolute top-4 right-4 z-40 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors drop-shadow-lg"
-        onClick={() => {
-          // This will be handled by the VideoBanner component
-          const event = new CustomEvent('enableVideoSound')
-          window.dispatchEvent(event)
-        }}
-      >
-        <VolumeX className="h-5 w-5" />
-        <span>Enable Sound</span>
-      </button>
-
       <div className="text-center text-white z-30 relative">
         <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl">
           Welcome to UO KING

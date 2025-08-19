@@ -66,42 +66,77 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     saveSearch(term)
 
     try {
-      // Simulate search - replace with actual API call
-      const mockResults: SearchResult[] = [
-        {
-          id: '1',
-          name: 'Sword of Power',
-          type: 'product' as const,
-          url: '/product/sword-of-power',
-          description: 'Legendary weapon with +50 damage'
-        },
-        {
-          id: '2',
-          name: 'Mage Class',
-          type: 'class' as const,
-          url: '/class/mage',
-          description: 'Master of arcane magic'
-        },
-        {
-          id: '3',
-          name: 'Damage Increase',
-          type: 'prop' as const,
-          url: '/prop/damage-increase',
-          description: 'Increase your damage output'
-        },
-        {
-          id: '4',
-          name: 'Head Armor',
-          type: 'category' as const,
-          url: '/UO/Head',
-          description: 'Protect your head with powerful armor'
-        }
-      ].filter(item => 
-        item.name.toLowerCase().includes(term.toLowerCase()) ||
-        item.description?.toLowerCase().includes(term.toLowerCase())
-      )
+      // Search products
+      const productsResponse = await fetch(`/api/products?search=${encodeURIComponent(term)}&limit=10`)
+      const products = productsResponse.ok ? await productsResponse.json() : []
 
-      setResults(mockResults)
+      // Search categories
+      const categoriesResponse = await fetch(`/api/categories`)
+      const allCategories = categoriesResponse.ok ? await categoriesResponse.json() : []
+      const matchingCategories = allCategories.filter((cat: any) => 
+        cat.name.toLowerCase().includes(term.toLowerCase())
+      ).slice(0, 5)
+
+      // Search classes
+      const classesResponse = await fetch(`/api/admin/classes`)
+      const allClasses = classesResponse.ok ? await classesResponse.json() : []
+      const matchingClasses = allClasses.filter((cls: any) => 
+        cls.name.toLowerCase().includes(term.toLowerCase())
+      ).slice(0, 5)
+
+      // Define property search terms
+      const propertyTerms = [
+        'Damage Increase', 'Defense Chance Increase', 'Enhance Potions', 
+        'Faster Cast Recovery', 'Faster Casting', 'Hit Chance Increase',
+        'Hit Point Regeneration', 'Lower Mana Cost', 'Lower Reagent Cost',
+        'Mana Regeneration', 'Spell Channeling', 'Spell Damage Increase',
+        'Stamina Regeneration', 'Swing Speed Increase'
+      ]
+      
+      const matchingProps = propertyTerms.filter(prop => 
+        prop.toLowerCase().includes(term.toLowerCase())
+      ).slice(0, 5)
+
+      // Combine and format results
+      const searchResults: SearchResult[] = [
+        // Products
+        ...products.map((product: any) => ({
+          id: `product-${product.id}`,
+          name: product.name,
+          type: 'product' as const,
+          url: `/product/${product.slug}`,
+          description: product.short_description || `Price: $${product.price}`
+        })),
+        
+        // Categories
+        ...matchingCategories.map((category: any) => ({
+          id: `category-${category.id}`,
+          name: category.name,
+          type: 'category' as const,
+          url: `/UO/${category.name.replace(/\s+/g, '-')}`,
+          description: 'Browse category items'
+        })),
+        
+        // Classes
+        ...matchingClasses.map((cls: any) => ({
+          id: `class-${cls.id}`,
+          name: cls.name,
+          type: 'class' as const,
+          url: `/class/${cls.slug}`,
+          description: 'Class-specific items'
+        })),
+        
+        // Properties
+        ...matchingProps.map((prop) => ({
+          id: `prop-${prop}`,
+          name: prop,
+          type: 'prop' as const,
+          url: `/prop/${prop.toLowerCase().replace(/\s+/g, '-')}`,
+          description: 'Property enhancement items'
+        }))
+      ]
+
+      setResults(searchResults)
     } catch (error) {
       console.error('Search error:', error)
       setResults([])
@@ -167,12 +202,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden p-0">
         <div className="flex flex-col h-full">
-          {/* Header */}
+          {/* Header - Removed custom close button to avoid overlap */}
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-lg font-semibold text-gray-900">Search</h2>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           {/* Search Input */}
