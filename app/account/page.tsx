@@ -125,6 +125,7 @@ export default function AccountPage() {
   const [isLoadingReferrals, setIsLoadingReferrals] = useState(false)
   const [isLoadingCheckin, setIsLoadingCheckin] = useState(false)
   const [checkinData, setCheckinData] = useState<any>(null)
+  const [countdown, setCountdown] = useState<string>('')
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
@@ -169,6 +170,62 @@ export default function AccountPage() {
       }
     }
   }, [activeTab, session])
+
+  // Countdown timer for next check-in
+  useEffect(() => {
+    if (!checkinData) return
+
+    const updateCountdown = () => {
+      const now = new Date()
+      
+      if (checkinData.status?.checked_in_today) {
+        // User has checked in today - countdown to next check-in
+        const tomorrow = new Date(now)
+        tomorrow.setDate(now.getDate() + 1)
+        tomorrow.setHours(0, 0, 0, 0) // Set to midnight
+        
+        const timeLeft = tomorrow.getTime() - now.getTime()
+        
+        if (timeLeft <= 0) {
+          setCountdown('Ready to check in!')
+          // Refresh check-in data when countdown reaches zero
+          loadCheckinData()
+          return
+        }
+        
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60))
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000)
+        
+        setCountdown(`${hours}h ${minutes}m ${seconds}s`)
+      } else {
+        // User hasn't checked in today - countdown to end of day
+        const endOfDay = new Date(now)
+        endOfDay.setHours(23, 59, 59, 999) // Set to end of day
+        
+        const timeLeft = endOfDay.getTime() - now.getTime()
+        
+        if (timeLeft <= 0) {
+          setCountdown('Day is over!')
+          return
+        }
+        
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60))
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000)
+        
+        setCountdown(`${hours}h ${minutes}m ${seconds}s`)
+      }
+    }
+
+    // Update immediately
+    updateCountdown()
+    
+    // Update every second
+    const interval = setInterval(updateCountdown, 1000)
+    
+    return () => clearInterval(interval)
+  }, [checkinData])
 
   const loadUserData = async () => {
     try {
@@ -1410,7 +1467,22 @@ export default function AccountPage() {
                               You earned {checkinData.status.today_points} points today. Come back tomorrow for more!
                             </p>
                             <div className="text-sm text-green-600">
-                              Next check-in available: {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}
+                              Next check-in available: {(() => {
+                                // Calculate next check-in date based on today's check-in
+                                const today = new Date()
+                                const tomorrow = new Date(today)
+                                tomorrow.setDate(today.getDate() + 1)
+                                return tomorrow.toLocaleDateString()
+                              })()}
+                            </div>
+                            {countdown && (
+                              <div className="text-sm text-amber-600 font-medium mt-2">
+                                ⏰ Countdown: {countdown}
+                              </div>
+                            )}
+                            {/* Debug info - remove this after testing */}
+                            <div className="text-xs text-gray-500 mt-1">
+                              Debug: Today is {new Date().toLocaleDateString()}, Check-in date: {checkinData.status.checkin_date}
                             </div>
                           </div>
                         ) : (
@@ -1419,9 +1491,14 @@ export default function AccountPage() {
                               <CalendarCheck className="h-8 w-8 text-amber-600" />
                               <h3 className="text-xl font-semibold text-amber-900">Ready to Check In!</h3>
                             </div>
-                            <p className="text-amber-700 mb-6">
+                            <p className="text-amber-700 mb-4">
                               Click the button below to earn 10 points for today's check-in!
                             </p>
+                            {countdown && (
+                              <div className="text-sm text-amber-600 font-medium mb-4">
+                                ⏰ Time remaining today: {countdown}
+                              </div>
+                            )}
                             <Button 
                               onClick={handleDailyCheckin}
                               disabled={isLoadingCheckin}
@@ -1454,6 +1531,10 @@ export default function AccountPage() {
                                   <CalendarCheck className="h-4 w-4 text-green-600" />
                                   <span className="font-medium">
                                     {new Date(checkin.checkin_date).toLocaleDateString()}
+                                  </span>
+                                  {/* Debug info - remove this after testing */}
+                                  <span className="text-xs text-gray-500">
+                                    (raw: {checkin.checkin_date})
                                   </span>
                                 </div>
                                 <div className="flex items-center space-x-2">

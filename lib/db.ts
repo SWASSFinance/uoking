@@ -1379,7 +1379,13 @@ export async function deleteShard(id: string) {
 // Daily Check-in Functions
 export async function getUserDailyCheckinStatus(userId: string) {
   try {
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    // Get today's date in the user's local timezone
+    // This ensures consistency regardless of server timezone
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const today = `${year}-${month}-${day}` // YYYY-MM-DD format
     
     const result = await query(`
       SELECT 
@@ -1434,7 +1440,13 @@ export async function getUserCheckinHistory(userId: string, limit: number = 30) 
 
 export async function performDailyCheckin(userId: string) {
   try {
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    // Get today's date in the user's local timezone
+    // This ensures consistency regardless of server timezone
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const today = `${year}-${month}-${day}` // YYYY-MM-DD format
     const pointsToAward = 10
     
     // Start transaction
@@ -1497,6 +1509,13 @@ export async function performDailyCheckin(userId: string) {
 
 export async function getCheckinStreak(userId: string) {
   try {
+    // Get today's date in the user's local timezone
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const today = `${year}-${month}-${day}` // YYYY-MM-DD format
+    
     const result = await query(`
       WITH checkin_dates AS (
         SELECT checkin_date
@@ -1514,8 +1533,8 @@ export async function getCheckinStreak(userId: string) {
       SELECT 
         COUNT(*) as current_streak
       FROM streak_calc
-      WHERE expected_date = CURRENT_DATE
-    `, [userId])
+      WHERE expected_date = $2
+    `, [userId, today])
     
     return result.rows[0]?.current_streak || 0
   } catch (error) {
