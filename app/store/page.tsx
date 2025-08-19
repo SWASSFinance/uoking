@@ -3,6 +3,7 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ProductImage } from "@/components/ui/product-image"
 import { 
   Crown, 
   ShoppingBag, 
@@ -96,20 +97,38 @@ export default async function StorePage() {
               return (
                 <Link key={category.id} href={`/UO/${category.slug}`}>
                   <Card className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-amber-300 cursor-pointer overflow-hidden">
-                    <CardHeader className="text-center bg-gradient-to-r from-amber-50 to-orange-50 group-hover:from-amber-100 group-hover:to-orange-100 transition-all duration-300">
-                      <div className="flex justify-center mb-4">
-                        <div className="relative">
-                          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                            <IconComponent className="h-8 w-8 text-amber-600 group-hover:scale-110 transition-transform duration-300" />
+                    <CardHeader className="text-center bg-gradient-to-r from-amber-50 to-orange-50 group-hover:from-amber-100 group-hover:to-orange-100 transition-all duration-300 p-0">
+                      {/* Category Image */}
+                      <div className="relative h-48 overflow-hidden">
+                        {category.image_url ? (
+                          <ProductImage
+                            src={category.image_url}
+                            alt={category.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                            <IconComponent className="h-16 w-16 text-amber-600 opacity-50" />
                           </div>
-                          {category.itemCount > 50 && (
-                            <Badge className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs">Hot</Badge>
-                          )}
-                        </div>
+                        )}
+                        {/* Overlay for better text readability */}
+                        <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300" />
+                        
+                        {/* Hot badge */}
+                        {category.itemCount > 50 && (
+                          <Badge className="absolute top-4 right-4 bg-amber-500 text-white text-xs z-10">
+                            Hot
+                          </Badge>
+                        )}
                       </div>
-                      <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
-                        {category.name}
-                      </CardTitle>
+                      
+                      {/* Category Title */}
+                      <div className="p-6">
+                        <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
+                          {category.name}
+                        </CardTitle>
+                      </div>
                     </CardHeader>
                     
                     <CardContent className="p-6">
