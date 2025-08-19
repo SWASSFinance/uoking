@@ -9,6 +9,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['pg'],
+  },
+  api: {
+    bodyParser: {
+      sizeLimit: '100mb',
+    },
+    responseLimit: false,
+  },
 }
 
 export default nextConfig
