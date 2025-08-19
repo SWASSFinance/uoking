@@ -72,6 +72,7 @@ export default function ProductsAdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterCategory, setFilterCategory] = useState("all")
+  const [filterClass, setFilterClass] = useState("all")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -166,8 +167,9 @@ export default function ProductsAdminPage() {
                          (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesStatus = filterStatus === "all" || product.status === filterStatus
     const matchesCategory = filterCategory === "all" || (product.category_ids && product.category_ids.includes(filterCategory))
+    const matchesClass = filterClass === "all" || product.class_id === filterClass
     
-    return matchesSearch && matchesStatus && matchesCategory
+    return matchesSearch && matchesStatus && matchesCategory && matchesClass
   })
 
   const ProductForm = ({ product, onSave, onCancel }: { 
@@ -430,7 +432,7 @@ export default function ProductsAdminPage() {
           {/* Filters */}
           <Card className="mb-6 border border-gray-200 bg-white">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                   <Label htmlFor="search" className="text-black font-semibold">Search Products</Label>
                   <div className="relative">
@@ -477,6 +479,23 @@ export default function ProductsAdminPage() {
                   </Select>
                 </div>
                 
+                <div>
+                  <Label htmlFor="class-filter" className="text-black font-semibold">Class</Label>
+                  <Select value={filterClass} onValueChange={setFilterClass}>
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all" className="text-black">All Classes</SelectItem>
+                      {classes.map((classItem) => (
+                        <SelectItem key={classItem.id} value={classItem.id} className="text-black">
+                          {classItem.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div className="flex items-end">
                   <Button variant="outline" className="w-full border-gray-300 text-gray-700">
                     <Filter className="h-4 w-4 mr-2" />
@@ -517,6 +536,7 @@ export default function ProductsAdminPage() {
                       <TableHead className="text-black font-semibold">Product</TableHead>
                       <TableHead className="text-black font-semibold">Price</TableHead>
                       <TableHead className="text-black font-semibold">Category</TableHead>
+                      <TableHead className="text-black font-semibold">Class</TableHead>
                       <TableHead className="text-black font-semibold">Status</TableHead>
                       <TableHead className="text-black font-semibold">Type</TableHead>
                       <TableHead className="text-black font-semibold">Rank</TableHead>
@@ -564,11 +584,11 @@ export default function ProductsAdminPage() {
                           <div className="text-sm text-black">
                             {product.category_names || 'No Category'}
                           </div>
-                          {product.class_name && (
-                            <div className="text-xs text-gray-700">
-                              Class: {product.class_name}
-                            </div>
-                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-black">
+                            {product.class_name || 'No Class'}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge 
