@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    if (!session?.user?.email || !session?.user?.is_admin) {
+    if (!session?.user?.email || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 401 }

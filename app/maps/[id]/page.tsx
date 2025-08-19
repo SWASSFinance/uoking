@@ -74,7 +74,7 @@ export default function MapPage({ params }: { params: { id: string } }) {
   // Check if admin mode is enabled via URL parameter
   useEffect(() => {
     const adminParam = searchParams.get('admin')
-    setIsAdminMode(adminParam === 'true' && session?.user?.is_admin)
+    setIsAdminMode(adminParam === 'true' && session?.user?.isAdmin)
   }, [searchParams, session])
 
   // Load map data
@@ -386,7 +386,7 @@ export default function MapPage({ params }: { params: { id: string } }) {
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">{mapData.name}</h1>
                 <p className="text-gray-600">{mapData.description}</p>
               </div>
-              {session?.user?.is_admin && (
+              {session?.user?.isAdmin && (
                 <Button 
                   onClick={() => setIsAdminMode(!isAdminMode)}
                   className={`${isAdminMode ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'}`}

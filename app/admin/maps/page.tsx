@@ -54,14 +54,14 @@ export default function AdminMapsPage() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login')
-    } else if (status === 'authenticated' && !session?.user?.is_admin) {
+    } else if (status === 'authenticated' && !session?.user?.isAdmin) {
       router.push('/')
     }
   }, [status, session, router])
 
   // Load maps
   useEffect(() => {
-    if (session?.user?.is_admin) {
+    if (session?.user?.isAdmin) {
       loadMaps()
     }
   }, [session])

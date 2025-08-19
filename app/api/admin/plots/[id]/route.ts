@@ -12,7 +12,7 @@ export async function PUT(
   try {
     const session = await auth()
     
-    if (!session?.user?.email || !session?.user?.is_admin) {
+    if (!session?.user?.email || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 401 }
@@ -74,7 +74,7 @@ export async function DELETE(
   try {
     const session = await auth()
     
-    if (!session?.user?.email || !session?.user?.is_admin) {
+    if (!session?.user?.email || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 401 }

@@ -10,16 +10,16 @@ import { v2 as cloudinary } from 'cloudinary'
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dngclyzkj',
+  api_key: process.env.CLOUDINARY_API_KEY || '827585767246395',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'q4JyvKJGRoyoI0AJ3fxgR8p8nNA'
 })
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     
-    if (!session?.user?.email || !session?.user?.is_admin) {
+    if (!session?.user?.email || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 401 }
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    if (!session?.user?.email || !session?.user?.is_admin) {
+    if (!session?.user?.email || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 401 }
@@ -92,9 +92,9 @@ export async function POST(request: NextRequest) {
     const uploadResult = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
+          folder: 'uoking/maps',
           resource_type: 'auto',
-          folder: 'maps',
-          public_id: `map_${Date.now()}`,
+          overwrite: true
         },
         (error, result) => {
           if (error) reject(error)
