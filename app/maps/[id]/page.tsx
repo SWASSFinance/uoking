@@ -116,25 +116,59 @@ export default function MapPage({ params }: { params: { id: string } }) {
   }
 
   const initializeGoogleMap = () => {
-    if (!window.google || !mapRef.current) return
+    if (!window.google || !mapRef.current || !mapData) return
 
-    // Initialize map centered on the first plot or default coordinates
-    const center = plots.length > 0 
-      ? { lat: plots[0].latitude, lng: plots[0].longitude }
-      : { lat: 0, lng: 0 }
-
+    // Initialize map with a blank/satellite base
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 10,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+      center: { lat: 0, lng: 0 },
+      zoom: 2,
+      mapTypeId: window.google.maps.MapTypeId.SATELLITE,
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        position: window.google.maps.ControlPosition.TOP_LEFT
+      },
+      streetViewControl: false,
+      fullscreenControl: true,
+      zoomControl: true,
       styles: [
         {
           featureType: "poi",
           elementType: "labels",
           stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "transit",
+          elementType: "labels",
+          stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "road",
+          elementType: "labels",
+          stylers: [{ visibility: "off" }]
         }
       ]
     })
+
+    // Create an overlay that displays the custom map image
+    // Use a reasonable coordinate system for the game map
+    const imageBounds = new window.google.maps.LatLngBounds(
+      new window.google.maps.LatLng(-1, -1), // Southwest corner
+      new window.google.maps.LatLng(1, 1)    // Northeast corner
+    )
+
+    const mapOverlay = new window.google.maps.GroundOverlay(
+      mapData.map_file_url,
+      imageBounds,
+      {
+        opacity: 1.0
+      }
+    )
+
+    mapOverlay.setMap(googleMapRef.current)
+
+    // Fit the map to show the entire image
+    googleMapRef.current.fitBounds(imageBounds)
 
     // Add existing markers
     plots.forEach(plot => {
