@@ -49,7 +49,8 @@ interface Product {
   updated_at: string
   category_names?: string
   category_ids?: string
-  class_name?: string
+  class_names?: string
+  class_ids?: string
 }
 
 interface Category {
@@ -167,7 +168,7 @@ export default function ProductsAdminPage() {
                          (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesStatus = filterStatus === "all" || product.status === filterStatus
     const matchesCategory = filterCategory === "all" || (product.category_ids && product.category_ids.includes(filterCategory))
-    const matchesClass = filterClass === "all" || product.class_id === filterClass
+    const matchesClass = filterClass === "all" || (product.class_ids && product.class_ids.includes(filterClass))
     
     return matchesSearch && matchesStatus && matchesCategory && matchesClass
   })
@@ -177,24 +178,26 @@ export default function ProductsAdminPage() {
     onSave: (data: any) => void, 
     onCancel: () => void 
   }) => {
-      const [formData, setFormData] = useState({
-    name: product?.name || '',
-    slug: product?.slug || '',
-    description: product?.description || '',
-    short_description: product?.short_description || '',
-    price: product?.price || '',
-    image_url: product?.image_url || '',
-    status: product?.status || 'active',
-    featured: product?.featured || false,
-    category_ids: product?.category_ids ? 
-      [...product.category_ids.split(',').filter(id => id.trim() !== ''), '', '', ''].slice(0, 3) : 
-      ['', '', ''],
-    class_id: product?.class_id || '',
-    type: product?.type || 'item',
-    rank: product?.rank || 0,
-    requires_character_name: product?.requires_character_name || false,
-    requires_shard: product?.requires_shard || false
-  })
+             const [formData, setFormData] = useState({
+     name: product?.name || '',
+     slug: product?.slug || '',
+     description: product?.description || '',
+     short_description: product?.short_description || '',
+     price: product?.price || '',
+     image_url: product?.image_url || '',
+     status: product?.status || 'active',
+     featured: product?.featured || false,
+     category_ids: product?.category_ids ? 
+       [...product.category_ids.split(',').filter(id => id.trim() !== ''), '', '', ''].slice(0, 3) : 
+       ['', '', ''],
+     class_ids: product?.class_ids ? 
+       [...product.class_ids.split(',').filter(id => id.trim() !== ''), '', ''].slice(0, 2) : 
+       ['', ''],
+     type: product?.type || 'item',
+     rank: product?.rank || 0,
+     requires_character_name: product?.requires_character_name || false,
+     requires_shard: product?.requires_shard || false
+   })
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
@@ -275,22 +278,34 @@ export default function ProductsAdminPage() {
                 </div>
               </div>
               
-              <div>
-                <Label htmlFor="class" className="text-black font-semibold">Class</Label>
-                <Select value={formData.class_id || "none"} onValueChange={(value) => setFormData({...formData, class_id: value === "none" ? "" : value})}>
-                  <SelectTrigger className="border-gray-300 bg-white text-black">
-                    <SelectValue placeholder="Select class" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="none" className="text-black">None</SelectItem>
-                    {classes.map((classItem) => (
-                      <SelectItem key={classItem.id} value={classItem.id} className="text-black">
-                        {classItem.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                             <div>
+                 <Label htmlFor="class" className="text-black font-semibold">Classes (Up to 2)</Label>
+                 <div className="space-y-2">
+                   {[0, 1].map((index) => (
+                     <Select 
+                       key={index}
+                       value={formData.class_ids[index] || 'none'} 
+                       onValueChange={(value) => {
+                         const newClassIds = [...formData.class_ids]
+                         newClassIds[index] = value === 'none' ? '' : value
+                         setFormData({...formData, class_ids: newClassIds})
+                       }}
+                     >
+                       <SelectTrigger className="border-gray-300 bg-white text-black">
+                         <SelectValue placeholder={`Select class ${index + 1}`} />
+                       </SelectTrigger>
+                       <SelectContent className="bg-white">
+                         <SelectItem value="none" className="text-black">None</SelectItem>
+                         {classes.map((classItem) => (
+                           <SelectItem key={classItem.id} value={classItem.id} className="text-black">
+                             {classItem.name}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   ))}
+                 </div>
+               </div>
               
               <div>
                 <Label htmlFor="status" className="text-black font-semibold">Status</Label>
@@ -585,11 +600,11 @@ export default function ProductsAdminPage() {
                             {product.category_names || 'No Category'}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-black">
-                            {product.class_name || 'No Class'}
-                          </div>
-                        </TableCell>
+                                                 <TableCell>
+                           <div className="text-sm text-black">
+                             {product.class_names || 'No Class'}
+                           </div>
+                         </TableCell>
                         <TableCell>
                           <Badge 
                             className={`${

@@ -74,20 +74,20 @@ export function Header() {
   const slotToCategoryUrl = (slotName: string) => {
     const slotToCategoryMap: { [key: string]: string } = {
       "Head": "Head",
-      "Chest Armor": "Chest_Armor", 
-      "Leg Armor": "Leg_Armor",
-      "Glove Armor": "Glove_Armor",
-      "Sleeve Armor": "Sleeve_Armor", 
+      "Chest Armor": "Chest-Armor", 
+      "Leg Armor": "Leg-Armor",
+      "Glove Armor": "Glove-Armor",
+      "Sleeve Armor": "Sleeve-Armor", 
       "Footwear": "Footwear",
-      "Neck Armor": "Neck_Armor",
+      "Neck Armor": "Neck-Armor",
       "Jewelry": "Jewelry",
       "Talismans": "Talismans",
       "Robes": "Robes",
-      "Belts Aprons": "Belts_Aprons",
+      "Belts Aprons": "Belts-Aprons",
       "Sashes": "Sashes",
-      "Cloaks Quivers": "Cloaks_Quivers"
+      "Cloaks Quivers": "Cloaks-Quivers"
     }
-    return slotToCategoryMap[slotName] || slotName.replace(/\s+/g, '_')
+    return slotToCategoryMap[slotName] || slotName.replace(/\s+/g, '-')
   }
 
   // Helper function to convert scroll name to URL with proper capitalization
@@ -314,27 +314,25 @@ export function Header() {
               </button>
               {activeDropdown === 'store' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-96 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-[600px] bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
-                  <div className="grid grid-cols-3 gap-1 p-2">
+                  <div className="grid grid-cols-4 gap-1 p-3">
                     {categoriesLoading ? (
-                      <div className="col-span-3 text-center py-4 text-gray-500 text-sm">
+                      <div className="col-span-4 text-center py-4 text-gray-500 text-sm">
                         Loading categories...
                       </div>
                     ) : categories.length > 0 ? (
-                      [...categories]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((category) => (
-                          <Link
-                            key={category.id}
-                            href={`/UO/${categoryToUrl(category.name)}`}
-                            className="block px-2 py-1 text-xs text-gray-700 hover:bg-amber-50 hover:text-amber-800 rounded transition-colors"
-                          >
-                            {category.name}
-                          </Link>
-                        ))
+                      categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/UO/${categoryToUrl(category.name)}`}
+                          className="block px-2 py-1 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 rounded transition-colors"
+                        >
+                          {category.name}
+                        </Link>
+                      ))
                     ) : (
-                      <div className="col-span-3 text-center py-4 text-gray-500 text-sm">
+                      <div className="col-span-4 text-center py-4 text-gray-500 text-sm">
                         No categories available
                       </div>
                     )}
