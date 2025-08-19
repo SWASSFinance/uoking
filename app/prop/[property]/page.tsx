@@ -223,23 +223,20 @@ export default function PropertyPage({ params }: PropertyPageProps) {
               <div className={`p-2 rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'}`}>
                 <IconComponent className="h-8 w-8 text-white" />
               </div>
-              <div className="text-left">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {propertyName} Property
-                </h1>
-                {currentProperty?.category && (
-                  <Badge className="mt-1 bg-amber-500 text-white text-xs">{currentProperty.category}</Badge>
-                )}
-              </div>
+                             <div className="text-left">
+                 <h1 className="text-3xl font-bold text-gray-900">
+                   {propertyName} Property
+                 </h1>
+               </div>
             </div>
-            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
-              {currentProperty?.description || `Items with ${propertyName} property`}
-            </p>
+                         <p className="text-sm text-gray-600 max-w-4xl mx-auto">
+               {currentProperty?.description || `Items with ${propertyName} property`}
+             </p>
           </div>
 
           {/* Property Details - Compact Version */}
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* What is Property */}
               <div className="space-y-3">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center">
@@ -286,23 +283,6 @@ export default function PropertyPage({ params }: PropertyPageProps) {
                     Craft items with {propertyName}
                   </div>
                 </div>
-              </div>
-
-              {/* Quick Action */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                  <ShoppingCart className="h-5 w-5 text-amber-500 mr-2" />
-                  Ready to Shop?
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Browse our selection of equipment with {propertyName} properties.
-                </p>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm" asChild>
-                  <Link href="/store">
-                    Browse Equipment
-                    <ArrowUp className="h-4 w-4 ml-2" />
-                  </Link>
-                </Button>
               </div>
             </div>
           </div>
