@@ -118,33 +118,50 @@ export default function MapPage({ params }: { params: { id: string } }) {
   const initializeGoogleMap = () => {
     if (!window.google || !mapRef.current || !mapData) return
 
-    // Initialize map with a blank/satellite base
+    // Initialize map with a completely blank base
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
-      mapTypeId: window.google.maps.MapTypeId.SATELLITE,
-      mapTypeControl: true,
-      mapTypeControlOptions: {
-        style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-        position: window.google.maps.ControlPosition.TOP_LEFT
-      },
+      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+      mapTypeControl: false, // Hide map type controls since we only want the custom overlay
       streetViewControl: false,
       fullscreenControl: true,
       zoomControl: true,
       styles: [
+        // Make the entire map completely blank/transparent
         {
-          featureType: "poi",
-          elementType: "labels",
+          featureType: "all",
+          elementType: "all",
           stylers: [{ visibility: "off" }]
         },
         {
-          featureType: "transit",
-          elementType: "labels",
+          featureType: "administrative",
+          elementType: "all",
+          stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "landscape",
+          elementType: "all",
+          stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "poi",
+          elementType: "all",
           stylers: [{ visibility: "off" }]
         },
         {
           featureType: "road",
-          elementType: "labels",
+          elementType: "all",
+          stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "transit",
+          elementType: "all",
+          stylers: [{ visibility: "off" }]
+        },
+        {
+          featureType: "water",
+          elementType: "all",
           stylers: [{ visibility: "off" }]
         }
       ]
