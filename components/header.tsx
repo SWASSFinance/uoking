@@ -427,14 +427,6 @@ export function Header() {
               </div>
             ) : session ? (
               <div className="hidden sm:flex items-center space-x-3">
-                {/* Cashback Balance */}
-                <div className="flex items-center space-x-1 bg-green-100 px-3 py-1 rounded-full">
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-700">
-                    ${cashbackBalance.toFixed(2)}
-                  </span>
-                </div>
-                
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -444,6 +436,16 @@ export function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
+                    {/* Cashback Balance */}
+                    <div className="flex items-center justify-between px-2 py-1.5 text-sm border-b border-gray-100">
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-green-700">Cashback</span>
+                      </div>
+                      <span className="font-semibold text-green-700">
+                        ${cashbackBalance.toFixed(2)}
+                      </span>
+                    </div>
                     <DropdownMenuItem asChild>
                       <Link href="/account" className="flex items-center">
                         <User className="h-4 w-4 mr-2" />
