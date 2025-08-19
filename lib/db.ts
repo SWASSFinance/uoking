@@ -144,7 +144,10 @@ export async function getProducts(filters?: {
     }
 
     if (filters?.classId) {
-      whereConditions.push(`p.class_id = $${++paramCount}`);
+      whereConditions.push(`EXISTS (
+        SELECT 1 FROM product_classes pcl 
+        WHERE pcl.product_id = p.id AND pcl.class_id = $${++paramCount}
+      )`);
       params.push(filters.classId);
     }
 
@@ -175,17 +178,18 @@ export async function getProducts(filters?: {
         p.*,
         STRING_AGG(DISTINCT c.name, ', ') as category_names,
         STRING_AGG(DISTINCT c.slug, ', ') as category_slugs,
-        cl.name as class_name,
-        cl.slug as class_slug,
+        STRING_AGG(DISTINCT cl.name, ', ') as class_names,
+        STRING_AGG(DISTINCT cl.slug, ', ') as class_slugs,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(DISTINCT pr.id) as review_count
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
-      LEFT JOIN classes cl ON p.class_id = cl.id
+      LEFT JOIN product_classes pcl ON p.id = pcl.product_id
+      LEFT JOIN classes cl ON pcl.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE ${whereClause}
-      GROUP BY p.id, cl.name, cl.slug
+      GROUP BY p.id
       ORDER BY p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       ${limitClause} ${offsetClause}
     `, params);
@@ -202,18 +206,20 @@ export async function getProductBySlug(slug: string) {
     const result = await query(`
       SELECT 
         p.*,
-        c.name as category_name,
-        c.slug as category_slug,
-        cl.name as class_name,
-        cl.slug as class_slug,
+        STRING_AGG(DISTINCT c.name, ', ') as category_names,
+        STRING_AGG(DISTINCT c.slug, ', ') as category_slugs,
+        STRING_AGG(DISTINCT cl.name, ', ') as class_names,
+        STRING_AGG(DISTINCT cl.slug, ', ') as class_slugs,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(pr.id) as review_count
       FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN classes cl ON p.class_id = cl.id
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN categories c ON pc.category_id = c.id
+      LEFT JOIN product_classes pcl ON p.id = pcl.product_id
+      LEFT JOIN classes cl ON pcl.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE p.slug = $1 AND p.status = 'active'
-      GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
+      GROUP BY p.id
     `, [slug]);
     
     const product = result.rows[0];
@@ -227,7 +233,17 @@ export async function getProductBySlug(slug: string) {
         ORDER BY pc.is_primary DESC, c.name
       `, [product.id]);
       
+      // Get all classes for this product
+      const classesResult = await query(`
+        SELECT cl.id, cl.name, cl.slug, pcl.is_primary
+        FROM product_classes pcl
+        JOIN classes cl ON pcl.class_id = cl.id
+        WHERE pcl.product_id = $1
+        ORDER BY pcl.is_primary DESC, cl.name
+      `, [product.id]);
+      
       product.categories = categoriesResult.rows;
+      product.classes = classesResult.rows;
     }
     
     return product;
@@ -807,9 +823,9 @@ export async function createProduct(productData: any) {
     const result = await query(`
       INSERT INTO products (
         name, slug, description, short_description, price, sale_price, 
-        image_url, status, featured, class_id, type, rank,
+        image_url, status, featured, type, rank,
         requires_character_name, requires_shard
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `, [
       productData.name,
@@ -821,7 +837,6 @@ export async function createProduct(productData: any) {
       productData.image_url || '',
       productData.status || 'active',
       productData.featured || false,
-      productData.class_id || null,
       productData.type || '',
       productData.rank || 0,
       productData.requires_character_name || false,
@@ -850,13 +865,12 @@ export async function updateProduct(id: string, productData: any) {
         image_url = $7,
         status = $8,
         featured = $9,
-        class_id = $10,
-        type = $11,
-        rank = $12,
-        requires_character_name = $13,
-        requires_shard = $14,
+        type = $10,
+        rank = $11,
+        requires_character_name = $12,
+        requires_shard = $13,
         updated_at = NOW()
-      WHERE id = $15
+      WHERE id = $14
       RETURNING *
     `, [
       productData.name,
@@ -868,7 +882,6 @@ export async function updateProduct(id: string, productData: any) {
       productData.image_url || '',
       productData.status || 'active',
       productData.featured || false,
-      productData.class_id || null,
       productData.type || 'item',
       productData.rank || 0,
       productData.requires_character_name || false,
@@ -906,10 +919,35 @@ export async function updateProductCategories(productId: string, categoryIds: st
     }
     
     await query('COMMIT')
-    return true
   } catch (error) {
     await query('ROLLBACK')
     console.error('Error updating product categories:', error)
+    throw error
+  }
+}
+
+export async function updateProductClasses(productId: string, classIds: string[]) {
+  try {
+    // Start a transaction
+    await query('BEGIN')
+    
+    // Delete existing classes for this product
+    await query('DELETE FROM product_classes WHERE product_id = $1', [productId])
+    
+    // Insert new classes
+    for (let i = 0; i < classIds.length; i++) {
+      if (classIds[i] && classIds[i].trim() !== '') {
+        await query(`
+          INSERT INTO product_classes (product_id, class_id, sort_order, is_primary)
+          VALUES ($1, $2, $3, $4)
+        `, [productId, classIds[i], i, i === 0]) // First class is primary
+      }
+    }
+    
+    await query('COMMIT')
+  } catch (error) {
+    await query('ROLLBACK')
+    console.error('Error updating product classes:', error)
     throw error
   }
 }

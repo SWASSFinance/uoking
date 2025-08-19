@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllProducts, createProduct, updateProductCategories } from '@/lib/db'
+import { getAllProducts, createProduct, updateProductCategories, updateProductClasses } from '@/lib/db'
 
 export async function GET() {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         .replace(/^-|-$/g, '')
     }
     
-    const { category_ids, ...productData } = body
+    const { category_ids, class_ids, ...productData } = body
     
     const product = await createProduct({
       ...productData,
@@ -41,6 +41,12 @@ export async function POST(request: NextRequest) {
     if (category_ids && Array.isArray(category_ids)) {
       const filteredCategoryIds = category_ids.filter(id => id && id !== '')
       await updateProductCategories(product.id, filteredCategoryIds)
+    }
+    
+    // Update product classes if provided
+    if (class_ids && Array.isArray(class_ids)) {
+      const filteredClassIds = class_ids.filter(id => id && id !== '')
+      await updateProductClasses(product.id, filteredClassIds)
     }
     
     return NextResponse.json(product)
