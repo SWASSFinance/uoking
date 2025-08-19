@@ -114,40 +114,18 @@ export default function AdminMapsPage() {
 
     setIsUploading(true)
     try {
-      // Upload directly to Cloudinary from client side
-      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dngclyzkj'}/auto/upload`
-      
+      // Create FormData for file upload to our API
       const formData = new FormData()
-      formData.append('file', uploadForm.mapFile)
-      formData.append('upload_preset', 'ml_default') // Use unsigned upload preset
-      formData.append('folder', 'uoking/maps')
+      formData.append('name', uploadForm.name)
+      formData.append('description', uploadForm.description)
+      formData.append('mapFile', uploadForm.mapFile)
 
-      const uploadResponse = await fetch(cloudinaryUrl, {
+      const response = await fetch('/api/admin/maps', {
         method: 'POST',
         body: formData,
       })
 
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload to Cloudinary')
-      }
-
-      const uploadResult = await uploadResponse.json()
-
-      // Now send the metadata to our API
-      const apiResponse = await fetch('/api/admin/maps', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: uploadForm.name,
-          description: uploadForm.description,
-          mapFileUrl: uploadResult.secure_url,
-          mapFileSize: uploadForm.mapFile.size,
-        }),
-      })
-
-      if (apiResponse.ok) {
+      if (response.ok) {
         toast({
           title: "Success",
           description: "Map uploaded successfully!",
@@ -156,10 +134,10 @@ export default function AdminMapsPage() {
         setUploadForm({ name: "", description: "", mapFile: null })
         loadMaps() // Reload maps
       } else {
-        const error = await apiResponse.json()
+        const error = await response.json()
         toast({
           title: "Upload Failed",
-          description: error.error || "Failed to save map metadata. Please try again.",
+          description: error.error || "Failed to upload map. Please try again.",
           variant: "destructive",
         })
       }
