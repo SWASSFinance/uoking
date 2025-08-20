@@ -265,7 +265,7 @@ export default function PlotPage({ params }: PlotPageProps) {
                     <div>
                       <span className="text-sm font-medium text-gray-600">Location:</span>
                       <p className="text-gray-900">
-                        {plot.latitude.toFixed(6)}, {plot.longitude.toFixed(6)}
+                        {Number(plot.latitude).toFixed(6)}, {Number(plot.longitude).toFixed(6)}
                       </p>
                     </div>
                     
