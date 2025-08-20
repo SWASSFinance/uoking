@@ -150,21 +150,11 @@ export default function MapsPage() {
   const initializeGoogleMap = () => {
     if (!window.google || !mapRef.current || !mapData) return
 
-    // Create a completely blank map type
-    const blankMapType = new window.google.maps.ImageMapType({
-      getTileUrl: function() {
-        // Return a 1x1 transparent pixel
-        return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-      },
-      tileSize: new window.google.maps.Size(256, 256),
-      name: 'Blank'
-    })
-
     // Initialize map with completely blank base
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
-      mapTypeId: 'blank',
+      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
@@ -240,9 +230,6 @@ export default function MapsPage() {
         }
       ]
     })
-
-    // Register the blank map type
-    googleMapRef.current.mapTypes.set('blank', blankMapType)
 
     // Create an overlay that displays the custom map image
     const imageBounds = new window.google.maps.LatLngBounds(
