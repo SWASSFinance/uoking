@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
@@ -14,7 +14,9 @@ export function MusicPlayer() {
   const [showControls, setShowControls] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const pathname = usePathname()
-  const isHomepage = pathname === "/"
+  
+  // Memoize homepage check to prevent unnecessary re-renders
+  const isHomepage = useMemo(() => pathname === "/", [pathname])
 
   useEffect(() => {
     if (audioRef.current) {
@@ -32,7 +34,7 @@ export function MusicPlayer() {
     }
   }, [isMuted, volume])
 
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause()
@@ -49,9 +51,9 @@ export function MusicPlayer() {
       }
       setIsPlaying(!isPlaying)
     }
-  }
+  }, [isPlaying, isHomepage])
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     setIsMuted(!isMuted)
     // If on homepage, also control video mute state
     if (isHomepage) {
@@ -61,9 +63,9 @@ export function MusicPlayer() {
         window.dispatchEvent(new CustomEvent('unmuteVideo'))
       }
     }
-  }
+  }, [isMuted, isHomepage])
 
-  const handleVolumeChange = (value: number[]) => {
+  const handleVolumeChange = useCallback((value: number[]) => {
     const newVolume = value[0] / 100
     setVolume(newVolume)
     if (newVolume === 0) {
@@ -79,14 +81,14 @@ export function MusicPlayer() {
         window.dispatchEvent(new CustomEvent('unmuteVideo'))
       }
     }
-  }
+  }, [isMuted, isHomepage])
 
-  const handleAudioEnded = () => {
+  const handleAudioEnded = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0
       audioRef.current.play()
     }
-  }
+  }, [])
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

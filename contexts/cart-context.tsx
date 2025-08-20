@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react'
 import { Cart, CartItem, clientCart } from '@/lib/cart'
 
 interface CartContextType {
@@ -36,43 +36,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  const addItem = (item: Omit<CartItem, 'quantity'>, quantity: number = 1) => {
+  const addItem = useCallback((item: Omit<CartItem, 'quantity'>, quantity: number = 1) => {
     const updatedCart = clientCart.addItem(item, quantity)
     setCart(updatedCart)
-  }
+  }, [])
 
-  const removeItem = (itemId: string) => {
+  const removeItem = useCallback((itemId: string) => {
     const updatedCart = clientCart.removeItem(itemId)
     setCart(updatedCart)
-  }
+  }, [])
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
     const updatedCart = clientCart.updateQuantity(itemId, quantity)
     setCart(updatedCart)
-  }
+  }, [])
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     const updatedCart = clientCart.clearCart()
     setCart(updatedCart)
-  }
+  }, [])
 
-  const syncToServer = async (cashbackAmount?: number, shard?: string, characterName?: string): Promise<boolean> => {
+  const syncToServer = useCallback(async (cashbackAmount?: number, shard?: string, characterName?: string): Promise<boolean> => {
     const success = await clientCart.syncToServer(cashbackAmount, shard, characterName)
     if (success) {
       setCart({ items: [], total: 0, itemCount: 0 })
     }
     return success
-  }
+  }, [])
+
+  const contextValue = useMemo(() => ({
+    cart,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    syncToServer
+  }), [cart, addItem, removeItem, updateQuantity, clearCart, syncToServer])
 
   return (
-    <CartContext.Provider value={{
-      cart,
-      addItem,
-      removeItem,
-      updateQuantity,
-      clearCart,
-      syncToServer
-    }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   )

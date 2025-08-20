@@ -314,7 +314,7 @@ export function Header() {
               </button>
               {activeDropdown === 'store' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-[600px] bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-[750px] bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
                   <div className="grid grid-cols-4 gap-1 p-3">
                     {categoriesLoading ? (

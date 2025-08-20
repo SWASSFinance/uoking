@@ -3,8 +3,10 @@
 import { SessionProvider } from "next-auth/react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CartProvider } from "@/contexts/cart-context"
+import { memo } from "react"
 
-export function Providers({ children }: { children: React.ReactNode }) {
+// Memoize providers to prevent unnecessary re-renders
+const Providers = memo(function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <ThemeProvider
@@ -12,6 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultTheme="light"
         enableSystem={false}
         disableTransitionOnChange
+        storageKey="uoking-theme"
       >
         <CartProvider>
           {children}
@@ -19,4 +22,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       </ThemeProvider>
     </SessionProvider>
   )
-} 
+})
+
+export { Providers } 

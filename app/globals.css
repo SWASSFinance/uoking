@@ -17,6 +17,32 @@
   .backdrop-blur-sm {
     backdrop-filter: blur(4px);
   }
+
+  /* Performance optimizations */
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .will-change-opacity {
+    will-change: opacity;
+  }
+  
+  .gpu-accelerated {
+    transform: translateZ(0);
+  }
+  
+  /* Optimize animations */
+  .transition-fast {
+    transition: all 0.15s ease-in-out;
+  }
+  
+  .transition-medium {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .transition-slow {
+    transition: all 0.5s ease-in-out;
+  }
 }
 
 @layer base {

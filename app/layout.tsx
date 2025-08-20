@@ -4,13 +4,19 @@ import { GeistMono } from 'geist/font/mono'
 import { Providers } from '@/components/providers'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
-import { ClientOnly } from '@/components/ui/client-only'
-import { MusicPlayer } from '@/components/music-player'
+import { GoogleMapsLoader } from '@/components/google-maps-loader'
+import dynamic from 'next/dynamic'
 import './globals.css'
 
 // Configure fonts with display swap for better performance
 const geistSans = GeistSans
 const geistMono = GeistMono
+
+// Lazy load music player to avoid blocking initial render
+const MusicPlayer = dynamic(() => import('@/components/music-player').then(mod => ({ default: mod.MusicPlayer })), {
+  ssr: false,
+  loading: () => null
+})
 
 export const metadata: Metadata = {
   title: 'UOKing - Premium Ultima Online Items & Gold',
@@ -62,14 +68,9 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#d97706" />
-        <script
-          async
-          defer
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,marker`}
-        />
       </head>
       <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen font-sans" suppressHydrationWarning>
-        <ClientOnly>
+        <GoogleMapsLoader>
           <Providers>
             <ErrorBoundary>
               {children}
@@ -77,7 +78,7 @@ export default function RootLayout({
               <MusicPlayer />
             </ErrorBoundary>
           </Providers>
-        </ClientOnly>
+        </GoogleMapsLoader>
       </body>
     </html>
   )

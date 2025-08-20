@@ -8,10 +8,22 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    // Add image optimization settings
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
   },
   serverExternalPackages: ['pg'],
   experimental: {
-    // Remove deprecated options
+    // Performance optimizations
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
   serverRuntimeConfig: {
     api: {
@@ -20,6 +32,26 @@ const nextConfig = {
       },
       responseLimit: false,
     },
+  },
+  // Performance optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Optimize bundle size
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      }
+    }
+    return config
   },
 }
 
