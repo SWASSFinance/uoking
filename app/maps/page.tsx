@@ -150,18 +150,29 @@ export default function MapsPage() {
   const initializeGoogleMap = () => {
     if (!window.google || !mapRef.current || !mapData) return
 
-    // Initialize map with a completely blank base
+    // Create a completely blank map type
+    const blankMapType = new window.google.maps.ImageMapType({
+      getTileUrl: function() {
+        // Return a 1x1 transparent pixel
+        return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+      },
+      tileSize: new window.google.maps.Size(256, 256),
+      name: 'Blank'
+    })
+
+    // Initialize map with completely blank base
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+      mapTypeId: 'blank',
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
       zoomControl: true,
       gestureHandling: 'greedy',
+      backgroundColor: '#e6f3ff', // Light blue background
       styles: [
-        // Make the entire map completely blank with light blue background
+        // Nuclear option - hide EVERYTHING
         {
           featureType: "all",
           elementType: "all",
@@ -197,11 +208,10 @@ export default function MapsPage() {
           elementType: "all",
           stylers: [{ visibility: "off" }]
         },
-        // Set the background to light blue
         {
           featureType: "all",
           elementType: "geometry",
-          stylers: [{ color: "#e6f3ff" }]
+          stylers: [{ visibility: "off" }]
         },
         {
           featureType: "all",
@@ -230,6 +240,9 @@ export default function MapsPage() {
         }
       ]
     })
+
+    // Register the blank map type
+    googleMapRef.current.mapTypes.set('blank', blankMapType)
 
     // Create an overlay that displays the custom map image
     const imageBounds = new window.google.maps.LatLngBounds(

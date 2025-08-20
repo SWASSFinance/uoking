@@ -93,6 +93,8 @@ declare global {
         GroundOverlay: any
         InfoWindow: any
         MapTypeId: any
+        ImageMapType: any
+        Size: any
         marker: {
           AdvancedMarkerElement: any
         }
