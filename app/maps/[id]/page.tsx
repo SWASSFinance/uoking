@@ -86,10 +86,16 @@ export default function MapPage({ params }: { params: { id: string } }) {
 
   // Initialize Google Maps
   useEffect(() => {
-    if (mapData && mapRef.current && !googleMapRef.current) {
+    if (mapData && mapRef.current) {
+      // Clear existing map if it exists
+      if (googleMapRef.current) {
+        markersRef.current.forEach(marker => marker.setMap(null))
+        markersRef.current = []
+        googleMapRef.current = null
+      }
       initializeGoogleMap()
     }
-  }, [mapData])
+  }, [mapData, isAdminMode]) // Re-initialize when admin mode changes
 
   const loadMapData = async () => {
     try {
