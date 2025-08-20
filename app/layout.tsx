@@ -8,6 +8,10 @@ import { ClientOnly } from '@/components/ui/client-only'
 import { MusicPlayer } from '@/components/music-player'
 import './globals.css'
 
+// Configure fonts with display swap for better performance
+const geistSans = GeistSans
+const geistMono = GeistMono
+
 export const metadata: Metadata = {
   title: 'UOKing - Premium Ultima Online Items & Gold',
   description: 'Your trusted source for premium Ultima Online items, gold, and services. Fast delivery, competitive prices, and 24/7 support.',
@@ -53,15 +57,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#d97706" />
@@ -71,7 +68,7 @@ html {
           src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
         />
       </head>
-      <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen" suppressHydrationWarning>
+      <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen font-sans" suppressHydrationWarning>
         <ClientOnly>
           <Providers>
             <ErrorBoundary>
