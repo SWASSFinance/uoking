@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { MapPin, CheckCircle, Clock, XCircle } from 'lucide-react'
 
@@ -23,7 +22,6 @@ interface Submission {
   spawn_location: string
   description?: string
   coordinates?: string
-  shard?: string
   review_notes?: string
   created_at: string
   points_awarded?: number
@@ -34,11 +32,11 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submission, setSubmission] = useState<Submission | null>(null)
+  const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     spawnLocation: '',
     description: '',
-    coordinates: '',
-    shard: ''
+    coordinates: ''
   })
 
   // Check for existing submission
@@ -94,7 +92,6 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
           spawnLocation: formData.spawnLocation.trim(),
           description: formData.description.trim() || null,
           coordinates: formData.coordinates.trim() || null,
-          shard: formData.shard.trim() || null,
         }),
       })
 
@@ -113,9 +110,9 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
         setFormData({
           spawnLocation: '',
           description: '',
-          coordinates: '',
-          shard: ''
+          coordinates: ''
         })
+        setShowForm(false)
       } else {
         toast({
           title: "Error",
@@ -200,16 +197,11 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
                   <span className="font-medium">Description:</span> {submission.description}
                 </div>
               )}
-              {submission.coordinates && (
-                <div>
-                  <span className="font-medium">Coordinates:</span> {submission.coordinates}
-                </div>
-              )}
-              {submission.shard && (
-                <div>
-                  <span className="font-medium">Shard:</span> {submission.shard}
-                </div>
-              )}
+                             {submission.coordinates && (
+                 <div>
+                   <span className="font-medium">Coordinates:</span> {submission.coordinates}
+                 </div>
+               )}
               {submission.points_awarded && (
                 <div className="text-green-600 font-medium">
                   <span>Points Awarded:</span> {submission.points_awarded}
@@ -230,13 +222,13 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
     )
   }
 
-  // Show submission form
+  // Show submission form or add button
   return (
     <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
       <CardHeader>
         <CardTitle className="text-lg flex items-center space-x-2">
           <MapPin className="h-5 w-5" />
-          <span>Submit Spawn Location</span>
+          <span>Spawn Location</span>
         </CardTitle>
         <p className="text-sm text-gray-600">
           Help other players by submitting spawn location information for {productName}. 
@@ -244,91 +236,86 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
         </p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="spawnLocation" className="text-gray-700 font-medium">
-              Spawn Location *
-            </Label>
-            <Input
-              id="spawnLocation"
-              value={formData.spawnLocation}
-              onChange={(e) => setFormData({ ...formData, spawnLocation: e.target.value })}
-              placeholder="e.g., Britannia, Yew, or specific coordinates"
-              className="mt-1"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="description" className="text-gray-700 font-medium">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Additional details about the spawn location, conditions, or tips"
-              className="mt-1"
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="coordinates" className="text-gray-700 font-medium">
-              Coordinates (Optional)
-            </Label>
-            <Input
-              id="coordinates"
-              value={formData.coordinates}
-              onChange={(e) => setFormData({ ...formData, coordinates: e.target.value })}
-              placeholder="e.g., 123, 456"
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="shard" className="text-gray-700 font-medium">
-              Shard (Optional)
-            </Label>
-            <Select value={formData.shard} onValueChange={(value) => setFormData({ ...formData, shard: value })}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select a shard" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Atlantic">Atlantic</SelectItem>
-                <SelectItem value="Baja">Baja</SelectItem>
-                <SelectItem value="Catskills">Catskills</SelectItem>
-                <SelectItem value="Chessie">Chessie</SelectItem>
-                <SelectItem value="Drachenfels">Drachenfels</SelectItem>
-                <SelectItem value="Europa">Europa</SelectItem>
-                <SelectItem value="Formosa">Formosa</SelectItem>
-                <SelectItem value="Great Lakes">Great Lakes</SelectItem>
-                <SelectItem value="Lake Austin">Lake Austin</SelectItem>
-                <SelectItem value="Lake Superior">Lake Superior</SelectItem>
-                <SelectItem value="Legends">Legends</SelectItem>
-                <SelectItem value="Napa Valley">Napa Valley</SelectItem>
-                <SelectItem value="Origin">Origin</SelectItem>
-                <SelectItem value="Pacific">Pacific</SelectItem>
-                <SelectItem value="Siege Perilous">Siege Perilous</SelectItem>
-                <SelectItem value="Sonoma">Sonoma</SelectItem>
-                <SelectItem value="Test Center">Test Center</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
+        {!showForm ? (
           <Button 
-            type="submit" 
-            disabled={isSubmitting || !formData.spawnLocation.trim()}
+            onClick={() => setShowForm(true)}
             className="w-full bg-amber-600 hover:bg-amber-700"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Spawn Location'}
+            <MapPin className="h-4 w-4 mr-2" />
+            Add Spawn Location
           </Button>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="spawnLocation" className="text-gray-700 font-medium">
+                Spawn Location *
+              </Label>
+              <Input
+                id="spawnLocation"
+                value={formData.spawnLocation}
+                onChange={(e) => setFormData({ ...formData, spawnLocation: e.target.value })}
+                placeholder="e.g., Britannia, Yew, or specific coordinates"
+                className="mt-1"
+                required
+              />
+            </div>
 
-          <div className="text-xs text-gray-500 text-center">
-            Your submission will be reviewed by our team. If approved, you'll receive 20 points!
-          </div>
-        </form>
+            <div>
+              <Label htmlFor="description" className="text-gray-700 font-medium">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Additional details about the spawn location, conditions, or tips"
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="coordinates" className="text-gray-700 font-medium">
+                Coordinates (Optional)
+              </Label>
+              <Input
+                id="coordinates"
+                value={formData.coordinates}
+                onChange={(e) => setFormData({ ...formData, coordinates: e.target.value })}
+                placeholder="e.g., 123, 456"
+                className="mt-1"
+              />
+            </div>
+
+            <div className="flex space-x-2">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !formData.spawnLocation.trim()}
+                className="flex-1 bg-amber-600 hover:bg-amber-700"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Spawn Location'}
+              </Button>
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowForm(false)
+                  setFormData({
+                    spawnLocation: '',
+                    description: '',
+                    coordinates: ''
+                  })
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+
+            <div className="text-xs text-gray-500 text-center">
+              Your submission will be reviewed by our team. If approved, you'll receive 20 points!
+            </div>
+          </form>
+        )}
       </CardContent>
     </Card>
   )
