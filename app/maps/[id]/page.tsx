@@ -74,7 +74,9 @@ export default function MapPage({ params }: { params: { id: string } }) {
   // Check if admin mode is enabled via URL parameter
   useEffect(() => {
     const adminParam = searchParams.get('admin')
-    setIsAdminMode(adminParam === 'true' && session?.user?.isAdmin)
+    const isAdmin = adminParam === 'true' && session?.user?.isAdmin
+    console.log('Setting admin mode:', { adminParam, isAdminUser: session?.user?.isAdmin, isAdmin })
+    setIsAdminMode(isAdmin)
   }, [searchParams, session])
 
   // Load map data
@@ -194,7 +196,10 @@ export default function MapPage({ params }: { params: { id: string } }) {
 
     // Add click listener for admin mode
     if (isAdminMode) {
+      console.log('Adding click listener to map')
       googleMapRef.current.addListener('click', handleMapClick)
+    } else {
+      console.log('Not in admin mode, not adding click listener')
     }
   }
 
@@ -247,10 +252,17 @@ export default function MapPage({ params }: { params: { id: string } }) {
   }
 
   const handleMapClick = (event: any) => {
-    if (!isAdminMode) return
+    console.log('Map clicked!', { isAdminMode, event })
+    
+    if (!isAdminMode) {
+      console.log('Not in admin mode, ignoring click')
+      return
+    }
 
     const lat = event.latLng.lat()
     const lng = event.latLng.lng()
+    
+    console.log('Creating new plot at coordinates:', { lat, lng })
 
     // Create new plot
     setSelectedPlot({
@@ -265,6 +277,8 @@ export default function MapPage({ params }: { params: { id: string } }) {
     })
     setEditForm({ name: '', description: '', pointsPrice: 0 })
     setIsEditing(true)
+    
+    console.log('Modal should now be open')
   }
 
   const handleSavePlot = async () => {
