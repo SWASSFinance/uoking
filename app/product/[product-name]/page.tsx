@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
@@ -5,29 +8,89 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, Star, Shield, CreditCard, MessageCircle, Truck, CheckCircle } from 'lucide-react'
-import { getProductBySlug, getProductReviews } from '@/lib/db'
-import { notFound } from 'next/navigation'
+
+import { notFound, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { ProductImageGallery } from '@/components/product-image-gallery'
 import { ProductReviewForm } from '@/components/product-review-form'
 import { ProductReviews } from '@/components/product-reviews'
 import { SpawnLocationForm } from '@/components/spawn-location-form'
+import { useCart } from '@/contexts/cart-context'
+import { useToast } from '@/hooks/use-toast'
 
-interface ProductPageProps {
-  params: Promise<{ 'product-name': string }>
-}
+export default function ProductPage() {
+  const [product, setProduct] = useState<any>(null)
+  const [reviews, setReviews] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const { addItem } = useCart()
+  const { toast } = useToast()
+  const paramsHook = useParams()
+  const productSlug = paramsHook['product-name'] as string
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const { 'product-name': productSlug } = await params;
-  
-  // Fetch product and reviews from database
-  const [product, reviews] = await Promise.all([
-    getProductBySlug(productSlug),
-    getProductBySlug(productSlug).then(product => 
-      product ? getProductReviews(product.id) : []
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Fetch product and reviews from API
+        const response = await fetch(`/api/products/by-slug/${productSlug}`)
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            notFound();
+          }
+          throw new Error('Failed to fetch product')
+        }
+
+        const data = await response.json()
+        setProduct(data.product)
+        setReviews(data.reviews)
+      } catch (error) {
+        console.error('Error loading product:', error)
+        notFound();
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (productSlug) {
+      loadData()
+    }
+  }, [productSlug])
+
+  const handleAddToCart = () => {
+    if (!product) return
+    
+    addItem({
+      id: String(product.id),
+      name: product.name,
+      price: parseFloat(product.sale_price || product.price),
+      image_url: product.image_url || '',
+      category: product.category_name || ''
+    })
+    
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+      variant: "default",
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <Header />
+        <main className="py-16 px-4">
+          <div className="container mx-auto">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading product...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
     )
-  ]);
+  }
 
-  // If product not found, return 404
   if (!product) {
     notFound();
   }
@@ -49,13 +112,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Breadcrumb */}
           <div className="mb-8">
             <nav className="text-sm text-gray-600">
-              <a href="/" className="hover:text-amber-600">Home</a>
+              <Link href="/" className="hover:text-amber-600">Home</Link>
               <span className="mx-2">/</span>
               {product.category_slug && (
                 <>
-                  <a href={`/UO/${product.category_slug}`} className="hover:text-amber-600">
+                  <Link href={`/UO/${product.category_slug}`} className="hover:text-amber-600">
                     {product.category_name}
-                  </a>
+                  </Link>
                   <span className="mx-2">/</span>
                 </>
               )}
@@ -135,6 +198,38 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </div>
                 </div>
 
+                {/* Purchase Buttons */}
+                <div className="flex space-x-4 mb-4">
+                  <Button 
+                    size="lg" 
+                    className="flex-1 bg-amber-600 hover:bg-amber-700"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Add to Cart
+                  </Button>
+                  <Button size="lg" variant="outline" className="flex-1">
+                    <MessageCircle className="h-5 w-5 mr-2" />
+                    Live Chat
+                  </Button>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center space-x-1">
+                    <Shield className="h-4 w-4" />
+                    <span>Secure Payment</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Truck className="h-4 w-4" />
+                    <span>Fast Delivery</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <CreditCard className="h-4 w-4" />
+                    <span>PayPal Accepted</span>
+                  </div>
+                </div>
+
                 {/* Short Description */}
                 {product.short_description && (
                   <pre className="whitespace-pre-wrap font-sans text-gray-700">{product.short_description}</pre>
@@ -175,38 +270,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 currentSpawnLocation={product.spawn_location}
               />
 
-              {/* Purchase Options */}
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex space-x-4">
-                      <Button size="lg" className="flex-1 bg-amber-600 hover:bg-amber-700">
-                        <ShoppingCart className="h-5 w-5 mr-2" />
-                        Add to Cart
-                      </Button>
-                      <Button size="lg" variant="outline" className="flex-1">
-                        <MessageCircle className="h-5 w-5 mr-2" />
-                        Live Chat
-                      </Button>
-                    </div>
 
-                    <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
-                      <div className="flex items-center space-x-1">
-                        <Shield className="h-4 w-4" />
-                        <span>Secure Payment</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Truck className="h-4 w-4" />
-                        <span>Fast Delivery</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <CreditCard className="h-4 w-4" />
-                        <span>PayPal Accepted</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
 

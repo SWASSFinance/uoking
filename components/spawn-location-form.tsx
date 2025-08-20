@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -243,13 +244,22 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
       </CardHeader>
       <CardContent>
         {!showForm ? (
-          <Button 
-            onClick={() => setShowForm(true)}
-            className="w-full bg-amber-600 hover:bg-amber-700"
-          >
-            <MapPin className="h-4 w-4 mr-2" />
-            Add Spawn Location
-          </Button>
+          session ? (
+            <Button 
+              onClick={() => setShowForm(true)}
+              className="w-full bg-amber-600 hover:bg-amber-700"
+            >
+              <MapPin className="h-4 w-4 mr-2" />
+              Add Spawn Location
+            </Button>
+          ) : (
+            <div className="text-center space-y-3">
+              <p className="text-sm text-gray-500">Please log in to submit spawn locations.</p>
+              <Button asChild className="w-full bg-amber-600 hover:bg-amber-700">
+                <Link href="/login">Log In to Submit</Link>
+              </Button>
+            </div>
+          )
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

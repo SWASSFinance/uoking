@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
@@ -99,7 +100,7 @@ export function ProductReviewForm({ productId, onReviewSubmitted }: ProductRevie
       <div className="text-center py-8">
         <p className="text-gray-600 mb-4">Please log in to write a review.</p>
         <Button asChild>
-          <a href="/login">Log In</a>
+                          <Link href="/login">Log In</Link>
         </Button>
       </div>
     )

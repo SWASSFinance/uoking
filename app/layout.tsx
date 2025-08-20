@@ -5,18 +5,12 @@ import { Providers } from '@/components/providers'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
 import { GoogleMapsLoader } from '@/components/google-maps-loader'
-import dynamic from 'next/dynamic'
+import { LazyMusicPlayer } from '@/components/lazy-music-player'
 import './globals.css'
 
 // Configure fonts with display swap for better performance
 const geistSans = GeistSans
 const geistMono = GeistMono
-
-// Lazy load music player to avoid blocking initial render
-const MusicPlayer = dynamic(() => import('@/components/music-player').then(mod => ({ default: mod.MusicPlayer })), {
-  ssr: false,
-  loading: () => null
-})
 
 export const metadata: Metadata = {
   title: 'UOKing - Premium Ultima Online Items & Gold',
@@ -75,7 +69,7 @@ export default function RootLayout({
             <ErrorBoundary>
               {children}
               <Toaster />
-              <MusicPlayer />
+              <LazyMusicPlayer />
             </ErrorBoundary>
           </Providers>
         </GoogleMapsLoader>

@@ -7,11 +7,11 @@ import Link from "next/link"
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white border-t border-gray-700">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-gradient-to-br from-gray-900 via-amber-900 to-gray-900 text-white border-t border-amber-700">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Company Info */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Link href="/" className="flex items-center space-x-2">
               <div className="relative w-32 h-12">
                 <Image
@@ -40,31 +40,31 @@ export function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600">Quick Links</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="/UO/Gold" className="text-gray-300 hover:text-white transition-colors">Gold</a></li>
-              <li><a href="/suits" className="text-gray-300 hover:text-white transition-colors">Suits</a></li>
-              <li><a href="/scrolls" className="text-gray-300 hover:text-white transition-colors">Scrolls</a></li>
-              <li><a href="/tools" className="text-gray-300 hover:text-white transition-colors">Tools</a></li>
-              <li><a href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+              <li><Link href="/UO/Gold" className="text-gray-300 hover:text-white transition-colors">Gold</Link></li>
+              <li><Link href="/suits" className="text-gray-300 hover:text-white transition-colors">Suits</Link></li>
+              <li><Link href="/scrolls" className="text-gray-300 hover:text-white transition-colors">Scrolls</Link></li>
+              <li><Link href="/tools" className="text-gray-300 hover:text-white transition-colors">Tools</Link></li>
+              <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
             </ul>
           </div>
 
           {/* Categories */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600">Categories</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="/class" className="text-gray-300 hover:text-white transition-colors">By Class</a></li>
-              <li><a href="/slot" className="text-gray-300 hover:text-white transition-colors">By Slot</a></li>
-              <li><a href="/prop" className="text-gray-300 hover:text-white transition-colors">By Property</a></li>
-              <li><a href="/store" className="text-gray-300 hover:text-white transition-colors">Store Items</a></li>
-              <li><a href="/special-deals" className="text-gray-300 hover:text-white transition-colors">Special Deals</a></li>
+              <li><Link href="/class" className="text-gray-300 hover:text-white transition-colors">By Class</Link></li>
+              <li><Link href="/slot" className="text-gray-300 hover:text-white transition-colors">By Slot</Link></li>
+              <li><Link href="/prop" className="text-gray-300 hover:text-white transition-colors">By Property</Link></li>
+              <li><Link href="/store" className="text-gray-300 hover:text-white transition-colors">Store Items</Link></li>
+              <li><Link href="/special-deals" className="text-gray-300 hover:text-white transition-colors">Special Deals</Link></li>
             </ul>
           </div>
 
           {/* Contact & Support */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600">Contact & Support</h3>
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
@@ -92,53 +92,33 @@ export function Footer() {
         </div>
 
         {/* Trust Badges */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="border-t border-amber-800 mt-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center justify-center space-x-2">
-              <Shield className="h-6 w-6 text-green-500" />
+              <Shield className="h-5 w-5 text-amber-500" />
               <span className="text-sm text-gray-300">Trusted Ultima Online Gold Seller</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
-              <Crown className="h-6 w-6 text-amber-600" />
+              <Crown className="h-5 w-5 text-amber-600" />
               <span className="text-sm text-gray-300">Premium Quality Items</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
-              <Clock className="h-6 w-6 text-blue-500" />
+              <Clock className="h-5 w-5 text-amber-500" />
               <span className="text-sm text-gray-300">24/7 Customer Support</span>
             </div>
           </div>
         </div>
 
-        {/* Newsletter */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-amber-600 mb-2">Stay Connected</h3>
-            <p className="text-gray-300 text-sm mb-4">
-              Ultima Online updates, special offers, and coupons.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-amber-600"
-              />
-              <Button className="bg-amber-600 hover:bg-amber-700">
-                Join Newsletter
-              </Button>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
+        <div className="border-t border-amber-800 mt-6 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-400">
               <p>Game content © Electronic Arts Inc. All rights reserved | Ultima Online is trademark EA Games, All rights reserved</p>
             </div>
             <div className="flex space-x-6 text-sm">
-              <a href="/delivery-returns" className="text-gray-400 hover:text-white transition-colors">Delivery / Returns</a>
-              <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms & Conditions</a>
+              <Link href="/delivery-returns" className="text-gray-400 hover:text-white transition-colors">Delivery / Returns</Link>
+              <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms & Conditions</Link>
             </div>
             <div className="text-sm text-gray-400">
               © 2025 | UOKing

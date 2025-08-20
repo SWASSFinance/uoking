@@ -1,5 +1,6 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -194,7 +195,7 @@ export default function SpecialDealsPage() {
           {/* Terms */}
           <div className="mt-8 text-center text-gray-500 text-sm">
             <p>* All deals are subject to availability and may expire without notice.</p>
-            <p>See our <a href="/terms" className="text-amber-600 hover:underline">Terms & Conditions</a> for more details.</p>
+                            <p>See our <Link href="/terms" className="text-amber-600 hover:underline">Terms & Conditions</Link> for more details.</p>
           </div>
         </div>
       </main>

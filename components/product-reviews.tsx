@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -142,12 +143,59 @@ export function ProductReviews({
             <p className="text-gray-600 mb-4">
               Be the first to review this product and help other customers make informed decisions.
             </p>
-            <Button 
-              onClick={() => setShowReviewForm(true)}
-              variant="outline"
-            >
-              Write the First Review
-            </Button>
+            {session ? (
+              <Button 
+                onClick={() => setShowReviewForm(true)}
+                variant="outline"
+              >
+                Write the First Review
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500">Please log in to write a review.</p>
+                <Button asChild>
+                  <Link href="/login">Log In to Review</Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Write Review Button for existing reviews */}
+      {reviews.length > 0 && (
+        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+          <CardContent className="p-6 text-center">
+            {session ? (
+              <Button 
+                onClick={() => setShowReviewForm(true)}
+                variant="outline"
+              >
+                Write a Review
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500">Please log in to write a review.</p>
+                <Button asChild>
+                  <Link href="/login">Log In to Review</Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Review Form */}
+      {showReviewForm && (
+        <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+          <CardHeader>
+            <CardTitle>Write a Review</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProductReviewForm 
+              productId={productId} 
+              onReviewSubmitted={handleReviewSubmitted} 
+            />
           </CardContent>
         </Card>
       )}

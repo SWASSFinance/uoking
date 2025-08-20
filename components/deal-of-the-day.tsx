@@ -123,7 +123,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
               height={300}
               className="rounded-lg object-contain w-full max-h-64"
             />
-            <Badge className="absolute top-2 left-2 bg-red-600 text-white">
+            <Badge className="absolute top-2 left-2 bg-amber-600 text-white">
               -{deal.discount_percentage}%
             </Badge>
           </div>
@@ -142,14 +142,14 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
             {/* Pricing */}
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold text-green-600">
+                <span className="text-2xl font-bold text-amber-600">
                   ${deal.sale_price.toFixed(2)}
                 </span>
                 <span className="text-lg text-gray-500 line-through">
                   ${deal.price.toFixed(2)}
                 </span>
               </div>
-              <p className="text-sm text-green-600 font-medium">
+              <p className="text-sm text-amber-600 font-medium">
                 You save ${savings.toFixed(2)} ({savingsPercentage}% off!)
               </p>
             </div>
