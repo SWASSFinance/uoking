@@ -1779,4 +1779,123 @@ export async function deleteMap(mapId: string) {
   }
 }
 
+// Plot purchase functions
+export async function getPlotById(plotId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        p.*,
+        m.name as map_name,
+        m.slug as map_slug,
+        u.username as created_by_name,
+        o.username as owner_name
+      FROM plots p
+      LEFT JOIN maps m ON p.map_id = m.id
+      LEFT JOIN users u ON p.created_by = u.id
+      LEFT JOIN users o ON p.owner_id = o.id
+      WHERE p.id = $1
+    `, [plotId])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error fetching plot:', error)
+    throw error
+  }
+}
+
+export async function purchasePlot(plotId: string, userId: string) {
+  const client = await pool.connect()
+  
+  try {
+    await client.query('BEGIN')
+    
+    // Get plot details and check availability
+    const plotResult = await client.query(`
+      SELECT id, name, points_price, is_available, owner_id
+      FROM plots 
+      WHERE id = $1
+    `, [plotId])
+    
+    if (plotResult.rows.length === 0) {
+      throw new Error('Plot not found')
+    }
+    
+    const plot = plotResult.rows[0]
+    
+    if (!plot.is_available) {
+      throw new Error('Plot is not available for purchase')
+    }
+    
+    if (plot.owner_id) {
+      throw new Error('Plot is already owned')
+    }
+    
+    // Check user has enough points
+    const userPointsResult = await client.query(`
+      SELECT current_points FROM user_points WHERE user_id = $1
+    `, [userId])
+    
+    if (userPointsResult.rows.length === 0) {
+      throw new Error('User points record not found')
+    }
+    
+    const userPoints = userPointsResult.rows[0]
+    
+    if (userPoints.current_points < plot.points_price) {
+      throw new Error('Insufficient points')
+    }
+    
+    // Deduct points from user
+    await client.query(`
+      UPDATE user_points 
+      SET current_points = current_points - $1, 
+          points_spent = points_spent + $1,
+          updated_at = NOW()
+      WHERE user_id = $2
+    `, [plot.points_price, userId])
+    
+    // Update plot ownership
+    const updateResult = await client.query(`
+      UPDATE plots 
+      SET owner_id = $1, 
+          purchased_at = NOW(),
+          is_available = false,
+          updated_at = NOW()
+      WHERE id = $2
+      RETURNING *
+    `, [userId, plotId])
+    
+    await client.query('COMMIT')
+    
+    return updateResult.rows[0]
+    
+  } catch (error) {
+    await client.query('ROLLBACK')
+    console.error('Error purchasing plot:', error)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export async function getUserOwnedPlots(userId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        p.*,
+        m.name as map_name,
+        m.slug as map_slug
+      FROM plots p
+      LEFT JOIN maps m ON p.map_id = m.id
+      WHERE p.owner_id = $1
+      ORDER BY p.purchased_at DESC
+    `, [userId])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching user owned plots:', error)
+    throw error
+  }
+}
+
 export default pool; 

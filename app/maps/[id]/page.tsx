@@ -316,6 +316,18 @@ export default function MapPage({ params }: { params: { id: string } }) {
               <p style="margin: 0; font-size: 14px; color: #059669;">
                 <strong>${plot.points_price} points</strong>
               </p>
+              <div style="margin-top: 10px; text-align: center;">
+                <a href="/plot/${plot.id}" style="
+                  display: inline-block;
+                  background: #3b82f6;
+                  color: white;
+                  text-decoration: none;
+                  padding: 6px 12px;
+                  border-radius: 4px;
+                  font-size: 12px;
+                  font-weight: bold;
+                ">View Plot</a>
+              </div>
             </div>
           `
         })
@@ -608,6 +620,13 @@ export default function MapPage({ params }: { params: { id: string } }) {
                                  <span className="text-sm font-medium text-green-600">
                                    {plot.points_price} pts
                                  </span>
+                                 <a 
+                                   href={`/plot/${plot.id}`}
+                                   className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                                   onClick={(e) => e.stopPropagation()}
+                                 >
+                                   View
+                                 </a>
                                  {isAdminMode && (
                                    <Edit className="h-4 w-4 text-gray-400" />
                                  )}

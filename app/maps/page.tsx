@@ -430,6 +430,28 @@ export default function MapsPage() {
             color: #ffd700;
             opacity: 0.7;
           ">⚔️</div>
+          
+          <!-- View Plot Link -->
+          <div style="
+            margin-top: 12px;
+            text-align: center;
+          ">
+            <a href="/plot/${plot.id}" style="
+              display: inline-block;
+              background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+              color: white;
+              text-decoration: none;
+              padding: 8px 16px;
+              border-radius: 6px;
+              font-weight: bold;
+              font-size: 14px;
+              border: 1px solid #1d4ed8;
+              box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+              transition: all 0.2s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+              View Plot Details
+            </a>
+          </div>
         </div>
       `
       
@@ -598,23 +620,32 @@ export default function MapsPage() {
                                 {plot.description && (
                                   <p className="text-xs text-gray-300 line-clamp-1 ml-6">{plot.description}</p>
                                 )}
-                        </div>
-                              <div className="flex items-center">
+                              </div>
+                              <div className="flex items-center space-x-2">
                                 <div className="bg-gradient-to-r from-red-500 to-red-600 px-2 py-1 rounded-full border border-amber-400/50">
                                   <span className="text-xs font-bold text-white">
                                     {plot.points_price.toLocaleString()} pts
-                          </span>
-                        </div>
+                                  </span>
+                                </div>
+                                <a 
+                                  href={`/plot/${plot.id}`}
+                                  className="bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded-full border border-blue-400/50 hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <span className="text-xs font-bold text-white">
+                                    View
+                                  </span>
+                                </a>
+                              </div>
                         </div>
                       </div>
-                    </div>
-              ))}
-            </div>
-          )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
             {/* Toggle Plots Button */}
             {!showPlotsOverlay && (

@@ -760,7 +760,7 @@ export default function AccountPage() {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 bg-white/80 backdrop-blur-sm border border-amber-200">
+            <TabsList className="grid w-full grid-cols-8 bg-white/80 backdrop-blur-sm border border-amber-200">
               <TabsTrigger value="profile" className="flex items-center space-x-2">
                 <User className="h-4 w-4" />
                 <span>Profile</span>
@@ -776,6 +776,10 @@ export default function AccountPage() {
               <TabsTrigger value="points" className="flex items-center space-x-2">
                 <Gift className="h-4 w-4" />
                 <span>Points</span>
+              </TabsTrigger>
+              <TabsTrigger value="plots" className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4" />
+                <span>Plots</span>
               </TabsTrigger>
               <TabsTrigger value="checkin" className="flex items-center space-x-2">
                 <CalendarCheck className="h-4 w-4" />
@@ -1465,6 +1469,31 @@ export default function AccountPage() {
                       <p className="text-gray-600">Start reviewing products to earn points!</p>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Plots Tab */}
+            <TabsContent value="plots" className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-gray-900">My Plots</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">View Your Plots</h3>
+                    <p className="text-gray-600 mb-6">
+                      Manage and view all your owned plots in one place.
+                    </p>
+                    <Button 
+                      onClick={() => router.push('/account/plots')}
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      View My Plots
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
