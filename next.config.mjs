@@ -9,7 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  serverComponentsExternalPackages: ['pg'],
+  serverExternalPackages: ['pg'],
   experimental: {
     // Remove deprecated options
   },
