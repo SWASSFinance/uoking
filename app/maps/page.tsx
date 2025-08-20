@@ -548,11 +548,11 @@ export default function MapsPage() {
                     {plots.length === 0 ? (
                       <p className="text-gray-500 text-center py-4">No plots available</p>
                     ) : (
-                      <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto">
+                      <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto p-1">
                         {plots.map((plot) => (
                           <div 
                             key={plot.id} 
-                            className="p-3 bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-amber-400/30 rounded-lg hover:from-gray-700/90 hover:to-gray-600/90 hover:border-amber-400/60 transition-all duration-300 cursor-pointer transform hover:scale-105"
+                            className="p-3 bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-amber-400/30 rounded-lg hover:from-gray-700/90 hover:to-gray-600/90 hover:border-amber-400/60 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
                             onClick={() => {
                               // Center map on the plot
                               const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
