@@ -181,6 +181,7 @@ export default function MapsPage() {
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
+      mapId: 'DEMO_MAP_ID', // Add Map ID for Advanced Markers
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false, // Hide map type controls since we only want the custom overlay
       streetViewControl: false,
@@ -526,7 +527,7 @@ export default function MapsPage() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <Header />
       <main className="py-16 px-4">
-        <div className="container mx-auto max-w-7xl">
+        <div className="w-full">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
@@ -560,11 +561,11 @@ export default function MapsPage() {
           )}
 
           {/* Full Screen Map Container */}
-          <div className="relative w-full h-[calc(100vh-200px)] min-h-[600px]">
+          <div className="relative w-screen h-[calc(100vh-200px)] min-h-[600px] -mx-4">
             {/* Map */}
             <div 
               ref={mapRef} 
-              className="w-full h-full rounded-lg border border-gray-200"
+              className="w-full h-full"
             />
             
             {/* Map Selection Dropdown */}
