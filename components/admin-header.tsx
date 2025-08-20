@@ -15,7 +15,8 @@ import {
   Globe,
   MessageCircle,
   Map,
-  GraduationCap
+  GraduationCap,
+  MapPin
 } from "lucide-react"
 
 const adminNavItems = [
@@ -68,6 +69,11 @@ const adminNavItems = [
     name: "Maps",
     href: "/admin/maps",
     icon: Map
+  },
+  {
+    name: "Spawn Locations",
+    href: "/admin/spawn-locations",
+    icon: MapPin
   },
   {
     name: "Settings",
