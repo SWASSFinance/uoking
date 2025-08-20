@@ -150,19 +150,70 @@ export default function MapsPage() {
   const initializeGoogleMap = () => {
     if (!window.google || !mapRef.current || !mapData) return
 
+    // Create a completely blank styled map type
+    const blankMapType = new window.google.maps.StyledMapType([
+      {
+        featureType: 'all',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'administrative',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'landscape',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'poi',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'road',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'transit',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'water',
+        elementType: 'all',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'all',
+        elementType: 'geometry',
+        stylers: [{ visibility: 'off' }]
+      },
+      {
+        featureType: 'all',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }]
+      }
+    ], { name: 'Blank' })
+
     // Initialize map with completely blank base
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
-      mapId: '8c076335599ed916e9755ca6', // Custom Map ID for Advanced Markers
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
+      mapTypeId: 'blank',
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
       zoomControl: true,
       gestureHandling: 'greedy',
-
+      backgroundColor: '#e6f3ff' // Light blue background
     })
+
+    // Register the blank map type
+    googleMapRef.current.mapTypes.set('blank', blankMapType)
 
     // Create an overlay that displays the custom map image
     const imageBounds = new window.google.maps.LatLngBounds(
