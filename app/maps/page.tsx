@@ -150,70 +150,96 @@ export default function MapsPage() {
   const initializeGoogleMap = () => {
     if (!window.google || !mapRef.current || !mapData) return
 
-    // Create a completely blank styled map type
-    const blankMapType = new window.google.maps.StyledMapType([
-      {
-        featureType: 'all',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'administrative',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'landscape',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'poi',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'road',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'transit',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'water',
-        elementType: 'all',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'all',
-        elementType: 'geometry',
-        stylers: [{ visibility: 'off' }]
-      },
-      {
-        featureType: 'all',
-        elementType: 'labels',
-        stylers: [{ visibility: 'off' }]
-      }
-    ], { name: 'Blank' })
-
-    // Initialize map with completely blank base
+    // Initialize map with completely blank base (no Map ID needed for simple markers)
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
-      mapTypeId: 'blank',
+      mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true,
       zoomControl: true,
       gestureHandling: 'greedy',
-      backgroundColor: '#e6f3ff' // Light blue background
+      backgroundColor: '#64777c', // Dark gray background
+      styles: [
+        // Nuclear option - hide EVERYTHING
+        {
+          featureType: 'all',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'administrative',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'landscape',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'poi',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'road',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'transit',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'water',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text.fill',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text.stroke',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.icon',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry.fill',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry.stroke',
+          stylers: [{ visibility: 'off' }]
+        }
+      ]
     })
-
-    // Register the blank map type
-    googleMapRef.current.mapTypes.set('blank', blankMapType)
 
     // Create an overlay that displays the custom map image
     const imageBounds = new window.google.maps.LatLngBounds(
@@ -247,34 +273,21 @@ export default function MapsPage() {
     const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
     const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
 
-    // Create custom marker element
-    const markerElement = document.createElement('div')
-    markerElement.innerHTML = `
-      <div style="
-        width: 24px;
-        height: 24px;
-        background-color: #3b82f6;
-        border: 2px solid white;
-        border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        color: white;
-        font-weight: bold;
-      ">
-        📍
-      </div>
-    `
-
-    // Create advanced marker
-    const marker = new window.google.maps.marker.AdvancedMarkerElement({
+    // Create simple marker
+    const marker = new window.google.maps.Marker({
       position: { lat, lng },
       map: googleMapRef.current,
       title: plot.name,
-      content: markerElement
+      icon: {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#3b82f6" stroke="white" stroke-width="2"/>
+            <text x="12" y="16" text-anchor="middle" fill="white" font-size="12" font-weight="bold">📍</text>
+          </svg>
+        `),
+        scaledSize: new window.google.maps.Size(24, 24),
+        anchor: new window.google.maps.Point(12, 12)
+      }
     })
 
     // Add click listener
@@ -339,10 +352,10 @@ export default function MapsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <Header />
-      <main className="py-16 px-4">
+      <main className="px-4">
         <div className="w-full">
           {/* Full Screen Map Container */}
-          <div className="relative w-screen h-[calc(100vh-200px)] min-h-[600px] -mx-4">
+          <div className="relative w-screen h-[calc(100vh-120px)] min-h-[600px] -mx-4">
             {/* Map */}
             <div 
               ref={mapRef} 
@@ -354,7 +367,7 @@ export default function MapsPage() {
               <div className="relative">
                 <Button
                   variant="secondary"
-                  className="bg-white/95 backdrop-blur-sm border border-amber-200 shadow-lg min-w-[200px] justify-between"
+                  className="bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none min-w-[200px] justify-between"
                   onClick={() => setShowMapDropdown(!showMapDropdown)}
                 >
                   <div className="flex items-center">
@@ -367,7 +380,7 @@ export default function MapsPage() {
                 </Button>
                 
                 {showMapDropdown && (
-                  <div className="absolute top-full left-0 mt-1 w-full bg-white/95 backdrop-blur-sm border border-amber-200 shadow-lg rounded-lg overflow-hidden z-10">
+                  <div className="absolute top-full left-0 mt-1 w-full bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none overflow-hidden z-10">
                     {allMaps.map((map) => (
                       <button
                         key={map.id}
@@ -389,8 +402,8 @@ export default function MapsPage() {
 
             {/* Plots List Overlay */}
             {showPlotsOverlay && (
-              <div className="absolute top-4 right-4 w-80 max-h-[calc(100vh-250px)] overflow-hidden">
-                <Card className="bg-white/95 backdrop-blur-sm border border-amber-200 shadow-lg">
+              <div className="absolute top-4 right-16 w-80 max-h-[calc(100vh-250px)] overflow-hidden">
+                <Card className="bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-bold text-gray-900 flex items-center justify-between">
                       <span>Plots ({plots.length})</span>
@@ -412,7 +425,14 @@ export default function MapsPage() {
                         {plots.map((plot) => (
                           <div 
                             key={plot.id} 
-                            className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                            onClick={() => {
+                              // Center map on the plot
+                              const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
+                              const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
+                              googleMapRef.current?.panTo({ lat, lng })
+                              googleMapRef.current?.setZoom(12)
+                            }}
                           >
                             <div className="flex items-center justify-between">
                               <div>
@@ -438,11 +458,11 @@ export default function MapsPage() {
 
             {/* Toggle Plots Button */}
             {!showPlotsOverlay && (
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-16">
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="bg-white/95 backdrop-blur-sm border border-amber-200 shadow-lg"
+                  className="bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none"
                   onClick={() => setShowPlotsOverlay(true)}
                 >
                   <MapPin className="h-4 w-4 mr-2" />

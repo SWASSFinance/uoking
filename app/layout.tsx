@@ -96,6 +96,8 @@ declare global {
         ImageMapType: any
         Size: any
         StyledMapType: any
+        Marker: any
+        Point: any
         marker: {
           AdvancedMarkerElement: any
         }
