@@ -26,7 +26,18 @@ import Image from "next/image"
 // Google Maps types
 declare global {
   interface Window {
-    google: any
+    google: {
+      maps: {
+        Map: any
+        LatLngBounds: any
+        LatLng: any
+        GroundOverlay: any
+        InfoWindow: any
+        marker: {
+          AdvancedMarkerElement: any
+        }
+      }
+    }
   }
 }
 
@@ -89,7 +100,7 @@ export default function MapPage({ params }: { params: { id: string } }) {
     if (mapData && mapRef.current) {
       // Clear existing map if it exists
       if (googleMapRef.current) {
-        markersRef.current.forEach(marker => marker.setMap(null))
+        markersRef.current.forEach(marker => marker.map = null)
         markersRef.current = []
         googleMapRef.current = null
       }
@@ -228,19 +239,34 @@ export default function MapPage({ params }: { params: { id: string } }) {
     const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
     const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
 
-    const marker = new window.google.maps.Marker({
+    // Create custom marker element
+    const markerElement = document.createElement('div')
+    markerElement.innerHTML = `
+      <div style="
+        width: 24px;
+        height: 24px;
+        background-color: ${isAdminMode ? '#ef4444' : '#3b82f6'};
+        border: 2px solid white;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      ">
+        📍
+      </div>
+    `
+
+    // Create advanced marker
+    const marker = new window.google.maps.marker.AdvancedMarkerElement({
       position: { lat, lng },
       map: googleMapRef.current,
       title: plot.name,
-      icon: {
-        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${isAdminMode ? '#ef4444' : '#3b82f6'}"/>
-          </svg>
-        `),
-        scaledSize: new window.google.maps.Size(24, 24),
-        anchor: new window.google.maps.Point(12, 12)
-      }
+      content: markerElement
     })
 
     // Add click listener
@@ -355,7 +381,7 @@ export default function MapPage({ params }: { params: { id: string } }) {
         await loadMapData()
         
         // Clear markers and reinitialize map
-        markersRef.current.forEach(marker => marker.setMap(null))
+        markersRef.current.forEach(marker => marker.map = null)
         markersRef.current = []
         googleMapRef.current = null
         setTimeout(() => initializeGoogleMap(), 100)
@@ -402,7 +428,7 @@ export default function MapPage({ params }: { params: { id: string } }) {
         await loadMapData()
         
         // Clear markers and reinitialize map
-        markersRef.current.forEach(marker => marker.setMap(null))
+        markersRef.current.forEach(marker => marker.map = null)
         markersRef.current = []
         googleMapRef.current = null
         setTimeout(() => initializeGoogleMap(), 100)

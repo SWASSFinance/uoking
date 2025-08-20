@@ -65,7 +65,7 @@ export default function RootLayout({
         <script
           async
           defer
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,marker`}
         />
       </head>
       <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen font-sans" suppressHydrationWarning>
