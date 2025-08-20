@@ -75,6 +75,8 @@ export default function MapsPage() {
 
   // Initialize Google Maps
   useEffect(() => {
+    let retryTimeout: NodeJS.Timeout
+    
     if (mapData && mapRef.current) {
       // Clear existing map if it exists
       if (googleMapRef.current) {
@@ -82,7 +84,31 @@ export default function MapsPage() {
         markersRef.current = []
         googleMapRef.current = null
       }
-      initializeGoogleMap()
+      
+      // Wait for Google Maps API to be loaded
+      const initializeMap = () => {
+        if (window.google && window.google.maps) {
+          initializeGoogleMap()
+        } else {
+          // Retry after a short delay
+          retryTimeout = setTimeout(initializeMap, 100)
+        }
+      }
+      
+      initializeMap()
+    }
+    
+    // Cleanup function
+    return () => {
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+      }
+      // Clean up map when component unmounts
+      if (googleMapRef.current) {
+        markersRef.current.forEach(marker => marker.map = null)
+        markersRef.current = []
+        googleMapRef.current = null
+      }
     }
   }, [mapData])
 
@@ -149,7 +175,11 @@ export default function MapsPage() {
   }
 
   const initializeGoogleMap = () => {
-    if (!window.google || !mapRef.current || !mapData) return
+    if (!window.google || !window.google.maps || !mapRef.current || !mapData) {
+      console.log('Google Maps API not ready, retrying...')
+      setTimeout(initializeGoogleMap, 100)
+      return
+    }
 
     // Initialize map with completely blank base (no Map ID needed for simple markers)
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
