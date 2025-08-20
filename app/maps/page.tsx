@@ -552,7 +552,7 @@ export default function MapsPage() {
                         {plots.map((plot) => (
                           <div 
                             key={plot.id} 
-                            className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                            className="p-3 bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-amber-400/30 rounded-lg hover:from-gray-700/90 hover:to-gray-600/90 hover:border-amber-400/60 transition-all duration-300 cursor-pointer transform hover:scale-105"
                             onClick={() => {
                               // Center map on the plot
                               const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
@@ -577,16 +577,21 @@ export default function MapsPage() {
                             }}
                           >
                             <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="font-medium text-gray-900">{plot.name}</h4>
+                              <div className="flex-1">
+                                <div className="flex items-center mb-1">
+                                  <span className="text-amber-400 mr-2">💎</span>
+                                  <h4 className="font-bold text-amber-300 text-sm">{plot.name}</h4>
+                                </div>
                                 {plot.description && (
-                                  <p className="text-sm text-gray-600 line-clamp-1">{plot.description}</p>
+                                  <p className="text-xs text-gray-300 line-clamp-1 ml-6">{plot.description}</p>
                                 )}
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm font-medium text-green-600">
-                                  {plot.points_price} pts
-                                </span>
+                              <div className="flex items-center">
+                                <div className="bg-gradient-to-r from-red-500 to-red-600 px-2 py-1 rounded-full border border-amber-400/50">
+                                  <span className="text-xs font-bold text-white">
+                                    {plot.points_price.toLocaleString()} pts
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
