@@ -59,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
+
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#d97706" />
@@ -81,4 +82,22 @@ export default function RootLayout({
       </body>
     </html>
   )
+}
+
+declare global {
+  interface Window {
+    google: {
+      maps: {
+        Map: any
+        LatLngBounds: any
+        LatLng: any
+        GroundOverlay: any
+        InfoWindow: any
+        MapTypeId: any
+        marker: {
+          AdvancedMarkerElement: any
+        }
+      }
+    }
+  }
 }
