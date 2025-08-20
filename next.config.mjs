@@ -18,8 +18,8 @@ const nextConfig = {
     },
     responseLimit: false,
   },
-  // Optimize font loading
-  optimizeFonts: true,
+  // Disable font optimization to prevent preload warnings
+  optimizeFonts: false,
 }
 
 export default nextConfig
