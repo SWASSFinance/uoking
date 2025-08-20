@@ -1,60 +1,208 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Volume2, VolumeX, Play, Pause } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// Global audio manager that exists outside React lifecycle
+class AudioManager {
+  private audio: HTMLAudioElement | null = null
+  private listeners: Set<(isPlaying: boolean) => void> = new Set()
+  private volumeListeners: Set<(volume: number) => void> = new Set()
+  private muteListeners: Set<(isMuted: boolean) => void> = new Set()
+  
+  private state = {
+    isPlaying: false,
+    volume: 0.5,
+    isMuted: false,
+    isInitialized: false
+  }
+
+  constructor() {
+    this.initialize()
+  }
+
+  private initialize() {
+    if (this.audio) return
+
+    this.audio = new Audio('/music.mp3')
+    this.audio.loop = true
+    this.audio.preload = 'auto'
+    
+    // Load saved state
+    try {
+      const savedVolume = localStorage.getItem('music-volume')
+      const savedMuted = localStorage.getItem('music-muted')
+      const savedPlaying = localStorage.getItem('music-playing')
+      
+      if (savedVolume) {
+        this.state.volume = parseFloat(savedVolume)
+        this.audio.volume = this.state.volume
+      }
+      if (savedMuted) {
+        this.state.isMuted = savedMuted === 'true'
+        if (this.state.isMuted) {
+          this.audio.volume = 0
+        }
+      }
+      if (savedPlaying === 'true') {
+        this.state.isPlaying = true
+        this.audio.play().catch(() => {
+          // Auto-play might be blocked, that's okay
+        })
+      }
+      
+      this.state.isInitialized = true
+    } catch (error) {
+      console.error('Error loading music state:', error)
+    }
+
+    // Set up event listeners
+    this.audio.addEventListener('play', () => {
+      this.state.isPlaying = true
+      this.notifyListeners()
+      this.saveState()
+    })
+
+    this.audio.addEventListener('pause', () => {
+      this.state.isPlaying = false
+      this.notifyListeners()
+      this.saveState()
+    })
+
+    this.audio.addEventListener('ended', () => {
+      if (this.audio && this.audio.currentTime >= this.audio.duration) {
+        this.audio.currentTime = 0
+        this.audio.play().catch(() => {})
+      }
+    })
+  }
+
+  private saveState() {
+    try {
+      localStorage.setItem('music-volume', this.state.volume.toString())
+      localStorage.setItem('music-muted', this.state.isMuted.toString())
+      localStorage.setItem('music-playing', this.state.isPlaying.toString())
+    } catch (error) {
+      console.error('Error saving music state:', error)
+    }
+  }
+
+  private notifyListeners() {
+    this.listeners.forEach(listener => listener(this.state.isPlaying))
+  }
+
+  private notifyVolumeListeners() {
+    this.volumeListeners.forEach(listener => listener(this.state.volume))
+  }
+
+  private notifyMuteListeners() {
+    this.muteListeners.forEach(listener => listener(this.state.isMuted))
+  }
+
+  // Public methods
+  play() {
+    if (this.audio) {
+      this.audio.play().catch(() => {})
+    }
+  }
+
+  pause() {
+    if (this.audio) {
+      this.audio.pause()
+    }
+  }
+
+  togglePlay() {
+    if (this.state.isPlaying) {
+      this.pause()
+    } else {
+      this.play()
+    }
+  }
+
+  setVolume(volume: number) {
+    this.state.volume = volume
+    if (this.audio) {
+      this.audio.volume = this.state.isMuted ? 0 : volume
+    }
+    this.notifyVolumeListeners()
+    this.saveState()
+  }
+
+  setMuted(isMuted: boolean) {
+    this.state.isMuted = isMuted
+    if (this.audio) {
+      this.audio.volume = isMuted ? 0 : this.state.volume
+    }
+    this.notifyMuteListeners()
+    this.saveState()
+  }
+
+  getState() {
+    return { ...this.state }
+  }
+
+  // Event listener management
+  onPlayStateChange(listener: (isPlaying: boolean) => void) {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
+  }
+
+  onVolumeChange(listener: (volume: number) => void) {
+    this.volumeListeners.add(listener)
+    return () => this.volumeListeners.delete(listener)
+  }
+
+  onMuteChange(listener: (isMuted: boolean) => void) {
+    this.muteListeners.add(listener)
+    return () => this.muteListeners.delete(listener)
+  }
+}
+
+// Global audio manager instance
+const audioManager = new AudioManager()
+
 export function MusicPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState(0.5)
-  const [isMuted, setIsMuted] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(audioManager.getState().isPlaying)
+  const [volume, setVolume] = useState(audioManager.getState().volume)
+  const [isMuted, setIsMuted] = useState(audioManager.getState().isMuted)
   const [showControls, setShowControls] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
   const pathname = usePathname()
   
   // Memoize homepage check to prevent unnecessary re-renders
   const isHomepage = useMemo(() => pathname === "/", [pathname])
 
+  // Subscribe to audio manager events
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume
-    }
-  }, [volume])
+    const unsubscribePlay = audioManager.onPlayStateChange(setIsPlaying)
+    const unsubscribeVolume = audioManager.onVolumeChange(setVolume)
+    const unsubscribeMute = audioManager.onMuteChange(setIsMuted)
 
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isMuted) {
-        audioRef.current.volume = 0
-      } else {
-        audioRef.current.volume = volume
-      }
+    return () => {
+      unsubscribePlay()
+      unsubscribeVolume()
+      unsubscribeMute()
     }
-  }, [isMuted, volume])
+  }, [])
 
   const togglePlay = useCallback(() => {
-    if (audioRef.current) {
+    audioManager.togglePlay()
+    // If on homepage, also control video mute state
+    if (isHomepage) {
       if (isPlaying) {
-        audioRef.current.pause()
-        // If on homepage, also mute the video
-        if (isHomepage) {
-          window.dispatchEvent(new CustomEvent('muteVideo'))
-        }
+        window.dispatchEvent(new CustomEvent('muteVideo'))
       } else {
-        audioRef.current.play()
-        // If on homepage, also unmute the video
-        if (isHomepage) {
-          window.dispatchEvent(new CustomEvent('unmuteVideo'))
-        }
+        window.dispatchEvent(new CustomEvent('unmuteVideo'))
       }
-      setIsPlaying(!isPlaying)
     }
   }, [isPlaying, isHomepage])
 
   const toggleMute = useCallback(() => {
-    setIsMuted(!isMuted)
+    audioManager.setMuted(!isMuted)
     // If on homepage, also control video mute state
     if (isHomepage) {
       if (!isMuted) {
@@ -67,15 +215,16 @@ export function MusicPlayer() {
 
   const handleVolumeChange = useCallback((value: number[]) => {
     const newVolume = value[0] / 100
-    setVolume(newVolume)
+    audioManager.setVolume(newVolume)
+    
     if (newVolume === 0) {
-      setIsMuted(true)
+      audioManager.setMuted(true)
       // If on homepage, also mute the video
       if (isHomepage) {
         window.dispatchEvent(new CustomEvent('muteVideo'))
       }
     } else if (isMuted) {
-      setIsMuted(false)
+      audioManager.setMuted(false)
       // If on homepage, also unmute the video
       if (isHomepage) {
         window.dispatchEvent(new CustomEvent('unmuteVideo'))
@@ -83,24 +232,8 @@ export function MusicPlayer() {
     }
   }, [isMuted, isHomepage])
 
-  const handleAudioEnded = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0
-      audioRef.current.play()
-    }
-  }, [])
-
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <audio
-        ref={audioRef}
-        src="/music.mp3"
-        loop
-        onEnded={handleAudioEnded}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      />
-      
       <div className="relative">
         {/* Main toggle button */}
         <Button
