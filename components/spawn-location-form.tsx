@@ -172,7 +172,8 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
   }
 
   // If there's already a spawn location for this product, don't show the form
-  if (currentSpawnLocation) {
+  // Handle NULL values from database (they come as "NULL" string)
+  if (currentSpawnLocation && currentSpawnLocation !== "NULL" && currentSpawnLocation.trim() !== "") {
     return null
   }
 
