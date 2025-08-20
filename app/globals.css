@@ -179,4 +179,38 @@
   .admin-page .text-input {
     @apply text-black;
   }
+  
+  /* Make all Google Maps InfoWindow elements transparent */
+  .gm-style-iw,
+  .gm-style-iw-d,
+  .gm-style-iw-c,
+  .gm-style-iw-t,
+  .gm-style-iw-a,
+  .gm-style-iw-b,
+  .gm-style-iw-e,
+  .gm-style-iw-f,
+  .gm-style-iw-g,
+  .gm-style-iw-h,
+  .gm-style-iw-i,
+  .gm-style-iw-j,
+  .gm-style-iw-k,
+  .gm-style-iw-l,
+  .gm-style-iw-m,
+  .gm-style-iw-n,
+  .gm-style-iw-o,
+  .gm-style-iw-p,
+  .gm-style-iw-q,
+  .gm-style-iw-r,
+  .gm-style-iw-s,
+  .gm-style-iw-u,
+  .gm-style-iw-v,
+  .gm-style-iw-w,
+  .gm-style-iw-x,
+  .gm-style-iw-y,
+  .gm-style-iw-z {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
 }

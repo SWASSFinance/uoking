@@ -44,6 +44,7 @@ export default function MapsPage() {
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<any>(null)
   const markersRef = useRef<any[]>([])
+  const currentInfoWindowRef = useRef<any>(null)
   
   const [allMaps, setAllMaps] = useState<MapData[]>([])
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null)
@@ -328,107 +329,119 @@ export default function MapsPage() {
 
     // Add click listener
     marker.addListener('click', () => {
-      // Show gamified info window for users
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `
+      // Close any existing info window first
+      if (currentInfoWindowRef.current) {
+        currentInfoWindowRef.current.close()
+      }
+
+      // Create gamified content
+      const content = `
+        <div style="
+          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+          border: 2px solid #ffd700;
+          border-radius: 8px;
+          padding: 16px;
+          width: 280px;
+          color: white;
+          font-family: 'Arial', sans-serif;
+          box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+          position: relative;
+          overflow: hidden;
+        ">
+          <!-- Glow effect -->
           <div style="
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border: 2px solid #ffd700;
-            border-radius: 8px;
-            padding: 16px;
-            max-width: 280px;
-            color: white;
-            font-family: 'Arial', sans-serif;
-            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-          ">
-            <!-- Glow effect -->
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+          "></div>
+          
+          <!-- Header with treasure icon -->
+          <div style="display: flex; align-items: center; margin-bottom: 12px;">
             <div style="
-              position: absolute;
-              top: -50%;
-              left: -50%;
-              width: 200%;
-              height: 200%;
-              background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-              pointer-events: none;
-            "></div>
-            
-            <!-- Header with treasure icon -->
-            <div style="display: flex; align-items: center; margin-bottom: 12px;">
-              <div style="
-                background: linear-gradient(45deg, #ff6b35, #f7931e);
-                border-radius: 50%;
-                width: 32px;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 12px;
-                box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
-              ">
-                <span style="font-size: 16px;">💎</span>
-              </div>
-              <h3 style="
-                margin: 0;
-                font-weight: bold;
-                font-size: 18px;
-                background: linear-gradient(45deg, #ffd700, #ffed4e);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-              ">${plot.name}</h3>
-            </div>
-            
-            ${plot.description ? `
-              <div style="
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                padding: 8px;
-                margin-bottom: 12px;
-                border-left: 3px solid #ffd700;
-              ">
-                <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #e0e0e0;">
-                  ${plot.description}
-                </p>
-              </div>
-            ` : ''}
-            
-            <!-- Points display -->
-            <div style="
-              background: linear-gradient(45deg, #ff4444, #ff6b6b);
-              border-radius: 8px;
-              padding: 12px;
-              text-align: center;
-              border: 1px solid #ffd700;
-              box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+              background: linear-gradient(45deg, #ff6b35, #f7931e);
+              border-radius: 50%;
+              width: 32px;
+              height: 32px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 12px;
+              box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
             ">
-              <div style="font-size: 12px; color: #ffd700; margin-bottom: 4px; font-weight: bold;">
-                REWARD POINTS
-              </div>
-              <div style="
-                font-size: 24px;
-                font-weight: bold;
-                color: white;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-              ">
-                ${plot.points_price.toLocaleString()}
-              </div>
+              <span style="font-size: 16px;">💎</span>
             </div>
-            
-            <!-- Decorative elements -->
-            <div style="
-              position: absolute;
-              top: 8px;
-              right: 8px;
-              font-size: 12px;
-              color: #ffd700;
-              opacity: 0.7;
-            ">⚔️</div>
+            <h3 style="
+              margin: 0;
+              font-weight: bold;
+              font-size: 18px;
+              background: linear-gradient(45deg, #ffd700, #ffed4e);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+            ">${plot.name}</h3>
           </div>
-        `
+          
+          ${plot.description ? `
+            <div style="
+              background: rgba(255, 255, 255, 0.1);
+              border-radius: 6px;
+              padding: 8px;
+              margin-bottom: 12px;
+              border-left: 3px solid #ffd700;
+            ">
+              <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #e0e0e0;">
+                ${plot.description}
+              </p>
+            </div>
+          ` : ''}
+          
+          <!-- Points display -->
+          <div style="
+            background: linear-gradient(45deg, #ff4444, #ff6b6b);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ffd700;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+          ">
+            <div style="font-size: 12px; color: #ffd700; margin-bottom: 4px; font-weight: bold;">
+              REWARD POINTS
+            </div>
+            <div style="
+              font-size: 24px;
+              font-weight: bold;
+              color: white;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            ">
+              ${plot.points_price.toLocaleString()}
+            </div>
+          </div>
+          
+          <!-- Decorative elements -->
+          <div style="
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 12px;
+            color: #ffd700;
+            opacity: 0.7;
+          ">⚔️</div>
+        </div>
+      `
+      
+      // Create and open info window
+      const infoWindow = new window.google.maps.InfoWindow({
+        content: content,
+        disableAutoPan: false,
+        pixelOffset: new window.google.maps.Size(0, -10)
       })
+      
       infoWindow.open(googleMapRef.current, marker)
+      currentInfoWindowRef.current = infoWindow
     })
 
     markersRef.current.push(marker)
@@ -456,20 +469,20 @@ export default function MapsPage() {
   }
 
   if (allMaps.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <Header />
-        <main className="py-16 px-4">
-          <div className="container mx-auto max-w-6xl">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+      <Header />
+      <main className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
             <div className="text-center py-12">
-              <Map className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Maps Available</h3>
+                  <Map className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Maps Available</h3>
               <p className="text-gray-600">No maps have been created yet.</p>
             </div>
           </div>
         </main>
         <Footer />
-      </div>
+                </div>
     )
   }
 
@@ -519,10 +532,10 @@ export default function MapsPage() {
                         )}
                       </button>
                     ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                        </div>
+                      )}
+                      </div>
+                    </div>
 
             {/* Plots List Overlay */}
             {showPlotsOverlay && (
@@ -576,7 +589,7 @@ export default function MapsPage() {
                               }, 500) // Small delay to ensure map has finished panning
                             }}
                           >
-                            <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center mb-1">
                                   <span className="text-amber-400 mr-2">💎</span>
@@ -585,19 +598,19 @@ export default function MapsPage() {
                                 {plot.description && (
                                   <p className="text-xs text-gray-300 line-clamp-1 ml-6">{plot.description}</p>
                                 )}
-                              </div>
+                        </div>
                               <div className="flex items-center">
                                 <div className="bg-gradient-to-r from-red-500 to-red-600 px-2 py-1 rounded-full border border-amber-400/50">
                                   <span className="text-xs font-bold text-white">
                                     {plot.points_price.toLocaleString()} pts
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          </span>
+                        </div>
+                        </div>
                       </div>
-                    )}
+                    </div>
+              ))}
+            </div>
+          )}
                   </CardContent>
                 </Card>
               </div>

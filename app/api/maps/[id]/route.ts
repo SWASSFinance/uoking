@@ -3,12 +3,13 @@ import { getMapById, getPlotsByMapId } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const [map, plots] = await Promise.all([
-      getMapById(params.id),
-      getPlotsByMapId(params.id)
+      getMapById(id),
+      getPlotsByMapId(id)
     ])
     
     if (!map) {
