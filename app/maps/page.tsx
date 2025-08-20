@@ -188,44 +188,75 @@ export default function MapsPage() {
       fullscreenControl: true,
       zoomControl: true,
       gestureHandling: 'greedy', // Allow zooming without Ctrl key
-      styles: [
-        // Make the entire map completely blank/transparent
-        {
-          featureType: "all",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "administrative",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "landscape",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "poi",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "road",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "transit",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "water",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        }
-      ]
+             styles: [
+         // Make the entire map completely blank with light blue background
+         {
+           featureType: "all",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "administrative",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "landscape",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "poi",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "road",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "transit",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "water",
+           elementType: "all",
+           stylers: [{ visibility: "off" }]
+         },
+         // Set the background to light blue
+         {
+           featureType: "all",
+           elementType: "geometry",
+           stylers: [{ color: "#e6f3ff" }] // Light blue background
+         },
+         {
+           featureType: "all",
+           elementType: "labels",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "all",
+           elementType: "labels.text",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "all",
+           elementType: "labels.text.fill",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "all",
+           elementType: "labels.text.stroke",
+           stylers: [{ visibility: "off" }]
+         },
+         {
+           featureType: "all",
+           elementType: "labels.icon",
+           stylers: [{ visibility: "off" }]
+         }
+       ]
     })
 
     // Create an overlay that displays the custom map image
@@ -506,11 +537,11 @@ export default function MapsPage() {
   }
 
   if (allMaps.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <Header />
-        <main className="py-16 px-4">
-          <div className="container mx-auto max-w-6xl">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+      <Header />
+      <main className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
             <div className="text-center py-12">
               <Map className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No Maps Available</h3>
@@ -601,10 +632,10 @@ export default function MapsPage() {
                         )}
                       </button>
                     ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                        </div>
+                      )}
+                      </div>
+                    </div>
 
             {/* Plots List Overlay */}
             {showPlotsOverlay && (
@@ -704,7 +735,7 @@ export default function MapsPage() {
                       placeholder="Enter plot name"
                       className="mt-1"
                     />
-                  </div>
+                        </div>
 
                   <div>
                     <Label htmlFor="plotDescription" className="text-gray-700 font-medium">Description</Label>
@@ -716,7 +747,7 @@ export default function MapsPage() {
                       className="mt-1"
                       rows={3}
                     />
-                  </div>
+                        </div>
 
                   <div>
                     <Label htmlFor="pointsPrice" className="text-gray-700 font-medium">Points Price</Label>
@@ -728,11 +759,11 @@ export default function MapsPage() {
                       placeholder="0"
                       className="mt-1"
                     />
-                  </div>
+                        </div>
 
                   <div className="text-sm text-gray-600">
                     <p>Location: {typeof selectedPlot.latitude === 'number' ? selectedPlot.latitude.toFixed(6) : selectedPlot.latitude}, {typeof selectedPlot.longitude === 'number' ? selectedPlot.longitude.toFixed(6) : selectedPlot.longitude}</p>
-                  </div>
+                      </div>
 
                   <div className="flex space-x-2">
                     <Button 
@@ -751,7 +782,7 @@ export default function MapsPage() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
-                    <Button 
+                      <Button 
                       onClick={() => {
                         setIsEditing(false)
                         setSelectedPlot(null)
@@ -759,10 +790,10 @@ export default function MapsPage() {
                       variant="outline"
                     >
                       <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
             </div>
           )}
         </div>
