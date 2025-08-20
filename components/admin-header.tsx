@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { 
   Settings, 
@@ -16,7 +17,8 @@ import {
   MessageCircle,
   Map,
   GraduationCap,
-  MapPin
+  MapPin,
+  ChevronDown
 } from "lucide-react"
 
 const adminNavItems = [
@@ -34,11 +36,6 @@ const adminNavItems = [
     name: "Categories",
     href: "/admin/categories",
     icon: FolderOpen
-  },
-  {
-    name: "Classes",
-    href: "/admin/classes",
-    icon: GraduationCap
   },
   {
     name: "Orders",
@@ -61,11 +58,6 @@ const adminNavItems = [
     icon: Users
   },
   {
-    name: "Shards",
-    href: "/admin/shard",
-    icon: Globe
-  },
-  {
     name: "Maps",
     href: "/admin/maps",
     icon: Map
@@ -74,16 +66,34 @@ const adminNavItems = [
     name: "Spawn Locations",
     href: "/admin/spawn-locations",
     icon: MapPin
-  },
+  }
+]
+
+const settingsSubItems = [
   {
-    name: "Settings",
+    name: "General Settings",
     href: "/admin/settings",
     icon: Settings
+  },
+  {
+    name: "Shards",
+    href: "/admin/shard",
+    icon: Globe
+  },
+  {
+    name: "Classes",
+    href: "/admin/classes",
+    icon: GraduationCap
   }
 ]
 
 export function AdminHeader() {
   const pathname = usePathname()
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+  const isSettingsActive = pathname === "/admin/settings" || 
+                          pathname === "/admin/shard" || 
+                          pathname === "/admin/classes"
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
@@ -122,6 +132,52 @@ export function AdminHeader() {
                 </Link>
               )
             })}
+
+            {/* Settings Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsSettingsOpen(true)}
+              onMouseLeave={() => setIsSettingsOpen(false)}
+            >
+              <Button
+                variant={isSettingsActive ? "default" : "ghost"}
+                size="sm"
+                className={`flex items-center space-x-2 ${
+                  isSettingsActive 
+                    ? "bg-blue-600 text-white hover:bg-blue-700" 
+                    : "text-black hover:bg-gray-100"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+
+              {/* Dropdown Menu */}
+              {isSettingsOpen && (
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                  {settingsSubItems.map((item) => {
+                    const IconComponent = item.icon
+                    const isActive = pathname === item.href
+                    
+                    return (
+                      <Link key={item.name} href={item.href}>
+                        <div className={`
+                          flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
+                          ${isActive 
+                            ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
+                            : "text-gray-700 hover:bg-gray-50"
+                          }
+                        `}>
+                          <IconComponent className="h-4 w-4" />
+                          <span>{item.name}</span>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Right side actions */}
@@ -133,10 +189,33 @@ export function AdminHeader() {
           </div>
         </div>
 
-                 {/* Mobile navigation */}
-         <div className="lg:hidden py-4 border-t border-gray-200">
-           <div className="grid grid-cols-3 gap-2">
-             {adminNavItems.map((item) => {
+        {/* Mobile navigation */}
+        <div className="lg:hidden py-4 border-t border-gray-200">
+          <div className="grid grid-cols-3 gap-2">
+            {adminNavItems.map((item) => {
+              const IconComponent = item.icon
+              const isActive = pathname === item.href
+              
+              return (
+                <Link key={item.name} href={item.href}>
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    className={`flex flex-col items-center space-y-1 p-2 h-auto ${
+                      isActive 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "text-black hover:bg-gray-100"
+                    }`}
+                  >
+                    <IconComponent className="h-4 w-4" />
+                    <span className="text-xs">{item.name}</span>
+                  </Button>
+                </Link>
+              )
+            })}
+            
+            {/* Mobile Settings - show all sub-items */}
+            {settingsSubItems.map((item) => {
               const IconComponent = item.icon
               const isActive = pathname === item.href
               

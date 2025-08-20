@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { AdminHeader } from '@/components/admin-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -183,11 +184,17 @@ export default function SpawnLocationsAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Spawn Location Submissions</h1>
-          <p className="text-gray-600">Review and manage user-submitted spawn locations</p>
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader />
+      <main className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Spawn Location Submissions</h1>
+            <p className="text-gray-600 mt-2">
+              Review and manage user-submitted spawn locations
+            </p>
+          </div>
         </div>
 
         {/* Status Filter */}
@@ -218,15 +225,14 @@ export default function SpawnLocationsAdminPage() {
               <p className="mt-2 text-gray-600">Loading submissions...</p>
             </div>
           ) : submissions.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
-                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No {currentStatus} submissions found.</p>
-              </CardContent>
-            </Card>
+            <div className="text-center py-12">
+              <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No {currentStatus} submissions found</h3>
+              <p className="text-gray-600">There are no {currentStatus} spawn location submissions to review.</p>
+            </div>
           ) : (
             submissions.map((submission) => (
-              <Card key={submission.id} className="bg-white/90 backdrop-blur-sm border-amber-200">
+              <Card key={submission.id} className="relative">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -418,7 +424,7 @@ export default function SpawnLocationsAdminPage() {
             </Card>
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }
