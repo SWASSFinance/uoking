@@ -171,6 +171,11 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
     }
   }
 
+  // If there's already a spawn location for this product, don't show the form
+  if (currentSpawnLocation) {
+    return null
+  }
+
   // If user has an existing submission, show status
   if (submission) {
     return (
