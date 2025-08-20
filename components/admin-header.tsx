@@ -14,7 +14,8 @@ import {
   Video,
   Globe,
   MessageCircle,
-  Map
+  Map,
+  GraduationCap
 } from "lucide-react"
 
 const adminNavItems = [
@@ -32,6 +33,11 @@ const adminNavItems = [
     name: "Categories",
     href: "/admin/categories",
     icon: FolderOpen
+  },
+  {
+    name: "Classes",
+    href: "/admin/classes",
+    icon: GraduationCap
   },
   {
     name: "Orders",
