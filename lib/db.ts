@@ -153,7 +153,10 @@ export async function getProducts(filters?: {
     }
 
     if (filters?.classId) {
-      whereConditions.push(`p.class_id = $${++paramCount}`);
+      whereConditions.push(`EXISTS (
+        SELECT 1 FROM product_classes pc 
+        WHERE pc.product_id = p.id AND pc.class_id = $${++paramCount}
+      )`);
       params.push(filters.classId);
     }
 
@@ -184,17 +187,18 @@ export async function getProducts(filters?: {
         p.*,
         STRING_AGG(DISTINCT c.name, ', ') as category_names,
         STRING_AGG(DISTINCT c.slug, ', ') as category_slugs,
-        cl.name as class_name,
-        cl.slug as class_slug,
+        STRING_AGG(DISTINCT cl.name, ', ') as class_names,
+        STRING_AGG(DISTINCT cl.slug, ', ') as class_slugs,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(DISTINCT pr.id) as review_count
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
-      LEFT JOIN classes cl ON p.class_id = cl.id
+      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
+      LEFT JOIN classes cl ON pc2.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE ${whereClause}
-      GROUP BY p.id, cl.name, cl.slug
+      GROUP BY p.id
       ORDER BY p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       ${limitClause} ${offsetClause}
     `, params);
@@ -213,16 +217,17 @@ export async function getProductBySlug(slug: string) {
         p.*,
         c.name as category_name,
         c.slug as category_slug,
-        cl.name as class_name,
-        cl.slug as class_slug,
+        STRING_AGG(DISTINCT cl.name, ', ') as class_names,
+        STRING_AGG(DISTINCT cl.slug, ', ') as class_slugs,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(pr.id) as review_count
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN classes cl ON p.class_id = cl.id
+      LEFT JOIN product_classes pc ON p.id = pc.product_id
+      LEFT JOIN classes cl ON pc.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE p.slug = $1 AND p.status = 'active'
-      GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
+      GROUP BY p.id, c.name, c.slug
     `, [slug]);
     
     const product = result.rows[0];

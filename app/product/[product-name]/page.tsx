@@ -159,10 +159,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       <span className="font-medium">{product.drop_rate}</span>
                     </div>
                   )}
-                  {product.class_name && (
+                  {product.class_names && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Recommended Class:</span>
-                      <span className="font-medium">{product.class_name}</span>
+                      <span className="font-medium">{product.class_names}</span>
                     </div>
                   )}
                 </CardContent>
