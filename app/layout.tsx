@@ -98,6 +98,7 @@ declare global {
         StyledMapType: any
         Marker: any
         Point: any
+        event: any
         marker: {
           AdvancedMarkerElement: any
         }

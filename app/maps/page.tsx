@@ -273,34 +273,158 @@ export default function MapsPage() {
     const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
     const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
 
-    // Create simple marker
+    // Create gamified marker
     const marker = new window.google.maps.Marker({
       position: { lat, lng },
       map: googleMapRef.current,
       title: plot.name,
       icon: {
         url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="#3b82f6" stroke="white" stroke-width="2"/>
-            <text x="12" y="16" text-anchor="middle" fill="white" font-size="12" font-weight="bold">📍</text>
+          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer glow -->
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge> 
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <!-- Background circle with gradient -->
+            <circle cx="16" cy="16" r="14" fill="url(#gradient)" stroke="#ffd700" stroke-width="2" filter="url(#glow)"/>
+            
+            <!-- Gradient definition -->
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#f7931e;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#ffd700;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            
+            <!-- Inner circle -->
+            <circle cx="16" cy="16" r="10" fill="#1a1a1a" stroke="#ffd700" stroke-width="1"/>
+            
+            <!-- Treasure chest icon -->
+            <g transform="translate(8, 8)">
+              <rect x="0" y="4" width="16" height="8" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+              <rect x="2" y="6" width="12" height="4" fill="#daa520"/>
+              <rect x="0" y="2" width="16" height="2" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+              <circle cx="4" cy="3" r="1" fill="#ffd700"/>
+              <circle cx="12" cy="3" r="1" fill="#ffd700"/>
+            </g>
+            
+            <!-- Points indicator -->
+            <circle cx="24" cy="8" r="6" fill="#ff4444" stroke="#ffffff" stroke-width="1"/>
+            <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">${plot.points_price > 999 ? 'K' : plot.points_price}</text>
           </svg>
         `),
-        scaledSize: new window.google.maps.Size(24, 24),
-        anchor: new window.google.maps.Point(12, 12)
+        scaledSize: new window.google.maps.Size(32, 32),
+        anchor: new window.google.maps.Point(16, 16)
       }
     })
 
     // Add click listener
     marker.addListener('click', () => {
-      // Show info window for users
+      // Show gamified info window for users
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
-          <div style="padding: 10px; max-width: 200px;">
-            <h3 style="margin: 0 0 5px 0; font-weight: bold;">${plot.name}</h3>
-            ${plot.description ? `<p style="margin: 0 0 5px 0; font-size: 14px;">${plot.description}</p>` : ''}
-            <p style="margin: 0; font-size: 14px; color: #059669;">
-              <strong>${plot.points_price} points</strong>
-            </p>
+          <div style="
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 280px;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+          ">
+            <!-- Glow effect -->
+            <div style="
+              position: absolute;
+              top: -50%;
+              left: -50%;
+              width: 200%;
+              height: 200%;
+              background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+              pointer-events: none;
+            "></div>
+            
+            <!-- Header with treasure icon -->
+            <div style="display: flex; align-items: center; margin-bottom: 12px;">
+              <div style="
+                background: linear-gradient(45deg, #ff6b35, #f7931e);
+                border-radius: 50%;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 12px;
+                box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+              ">
+                <span style="font-size: 16px;">💎</span>
+              </div>
+              <h3 style="
+                margin: 0;
+                font-weight: bold;
+                font-size: 18px;
+                background: linear-gradient(45deg, #ffd700, #ffed4e);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+              ">${plot.name}</h3>
+            </div>
+            
+            ${plot.description ? `
+              <div style="
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 8px;
+                margin-bottom: 12px;
+                border-left: 3px solid #ffd700;
+              ">
+                <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #e0e0e0;">
+                  ${plot.description}
+                </p>
+              </div>
+            ` : ''}
+            
+            <!-- Points display -->
+            <div style="
+              background: linear-gradient(45deg, #ff4444, #ff6b6b);
+              border-radius: 8px;
+              padding: 12px;
+              text-align: center;
+              border: 1px solid #ffd700;
+              box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+            ">
+              <div style="font-size: 12px; color: #ffd700; margin-bottom: 4px; font-weight: bold;">
+                REWARD POINTS
+              </div>
+              <div style="
+                font-size: 24px;
+                font-weight: bold;
+                color: white;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+              ">
+                ${plot.points_price.toLocaleString()}
+              </div>
+            </div>
+            
+            <!-- Decorative elements -->
+            <div style="
+              position: absolute;
+              top: 8px;
+              right: 8px;
+              font-size: 12px;
+              color: #ffd700;
+              opacity: 0.7;
+            ">⚔️</div>
           </div>
         `
       })
@@ -403,14 +527,17 @@ export default function MapsPage() {
             {/* Plots List Overlay */}
             {showPlotsOverlay && (
               <div className="absolute top-4 right-16 w-80 max-h-[calc(100vh-250px)] overflow-hidden">
-                <Card className="bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-bold text-gray-900 flex items-center justify-between">
-                      <span>Plots ({plots.length})</span>
+                <Card className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-md border-2 border-amber-400 shadow-2xl rounded-none">
+                  <CardHeader className="pb-3 border-b border-amber-400/30">
+                    <CardTitle className="text-lg font-bold text-amber-400 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span className="mr-2">🗺️</span>
+                        <span>Plots ({plots.length})</span>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0"
+                        className="h-6 w-6 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-400/20"
                         onClick={() => setShowPlotsOverlay(false)}
                       >
                         <X className="h-4 w-4" />
@@ -444,7 +571,7 @@ export default function MapsPage() {
                                 })
                                 if (targetMarker) {
                                   // Trigger the marker's click event
-                                  google.maps.event.trigger(targetMarker, 'click')
+                                  window.google.maps.event.trigger(targetMarker, 'click')
                                 }
                               }, 500) // Small delay to ensure map has finished panning
                             }}
