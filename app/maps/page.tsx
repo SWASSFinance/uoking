@@ -154,7 +154,6 @@ export default function MapsPage() {
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
-      mapId: 'DEMO_MAP_ID',
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
