@@ -36,6 +36,15 @@ export async function POST(request: NextRequest) {
         .replace(/^-|-$/g, '')
     }
     
+    // Validate difficulty_level
+    const difficultyLevel = parseInt(body.difficulty_level) || 3
+    if (difficultyLevel < 1 || difficultyLevel > 5) {
+      return NextResponse.json(
+        { error: 'Difficulty level must be between 1 and 5' },
+        { status: 400 }
+      )
+    }
+    
     const result = await query(`
       INSERT INTO classes (
         name, slug, description, image_url, primary_stats, skills, 
@@ -50,7 +59,7 @@ export async function POST(request: NextRequest) {
       JSON.stringify(body.primary_stats || []),
       JSON.stringify(body.skills || []),
       body.playstyle || '',
-      body.difficulty_level || 'medium',
+      difficultyLevel,
       body.is_active !== false
     ])
     

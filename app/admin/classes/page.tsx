@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { useToast } from "@/hooks/use-toast"
 import { 
   Plus, 
@@ -20,6 +21,7 @@ import {
   EyeOff,
   GraduationCap
 } from "lucide-react"
+import Image from "next/image"
 
 interface Class {
   id: string
@@ -30,7 +32,7 @@ interface Class {
   primary_stats: string[]
   skills: string[]
   playstyle: string
-  difficulty_level: string
+  difficulty_level: number
   is_active: boolean
   created_at: string
   updated_at: string
@@ -50,7 +52,7 @@ export default function AdminClassesPage() {
     primary_stats: [] as string[],
     skills: [] as string[],
     playstyle: "",
-    difficulty_level: "medium",
+    difficulty_level: 3,
     is_active: true
   })
 
@@ -216,7 +218,7 @@ export default function AdminClassesPage() {
       primary_stats: [],
       skills: [],
       playstyle: "",
-      difficulty_level: "medium",
+      difficulty_level: 3,
       is_active: true
     })
   }
@@ -329,28 +331,27 @@ export default function AdminClassesPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="image_url">Image URL</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
                   <Label htmlFor="difficulty_level">Difficulty Level</Label>
                   <select
                     id="difficulty_level"
                     value={formData.difficulty_level}
-                    onChange={(e) => setFormData({ ...formData, difficulty_level: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, difficulty_level: parseInt(e.target.value) })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
+                    <option value={1}>1 - Very Easy</option>
+                    <option value={2}>2 - Easy</option>
+                    <option value={3}>3 - Medium</option>
+                    <option value={4}>4 - Hard</option>
+                    <option value={5}>5 - Very Hard</option>
                   </select>
+                </div>
+
+                <div className="md:col-span-2">
+                  <ImageUpload
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    label="Class Image"
+                  />
                 </div>
 
                 <div>
@@ -442,8 +443,22 @@ export default function AdminClassesPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+                            <CardContent>
                 <div className="space-y-3">
+                  {/* Image Preview */}
+                  {classItem.image_url && (
+                    <div className="flex justify-center">
+                      <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                        <Image
+                          src={classItem.image_url}
+                          alt={classItem.name}
+                          width={96}
+                          height={96}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <span className="text-sm font-medium text-gray-600">Slug:</span>
                     <p className="text-sm text-gray-900 font-mono">{classItem.slug}</p>
@@ -458,8 +473,8 @@ export default function AdminClassesPage() {
 
                   <div>
                     <span className="text-sm font-medium text-gray-600">Difficulty:</span>
-                    <Badge variant="outline" className="ml-2 capitalize">
-                      {classItem.difficulty_level}
+                    <Badge variant="outline" className="ml-2">
+                      {classItem.difficulty_level}/5
                     </Badge>
                   </div>
 

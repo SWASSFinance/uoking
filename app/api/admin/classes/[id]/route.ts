@@ -44,6 +44,15 @@ export async function PUT(
         .replace(/^-|-$/g, '')
     }
     
+    // Validate difficulty_level
+    const difficultyLevel = parseInt(body.difficulty_level) || 3
+    if (difficultyLevel < 1 || difficultyLevel > 5) {
+      return NextResponse.json(
+        { error: 'Difficulty level must be between 1 and 5' },
+        { status: 400 }
+      )
+    }
+    
     const result = await query(`
       UPDATE classes SET 
         name = $1,
@@ -66,7 +75,7 @@ export async function PUT(
       JSON.stringify(body.primary_stats || []),
       JSON.stringify(body.skills || []),
       body.playstyle || '',
-      body.difficulty_level || 'medium',
+      difficultyLevel,
       body.is_active !== false,
       params.id
     ])
