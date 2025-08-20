@@ -9,17 +9,18 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverComponentsExternalPackages: ['pg'],
   experimental: {
-    serverComponentsExternalPackages: ['pg'],
+    // Remove deprecated options
   },
-  api: {
-    bodyParser: {
-      sizeLimit: '100mb',
+  serverRuntimeConfig: {
+    api: {
+      bodyParser: {
+        sizeLimit: '100mb',
+      },
+      responseLimit: false,
     },
-    responseLimit: false,
   },
-  // Disable font optimization to prevent preload warnings
-  optimizeFonts: false,
 }
 
 export default nextConfig

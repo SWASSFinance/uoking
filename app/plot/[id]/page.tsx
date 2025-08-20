@@ -89,7 +89,7 @@ export default function PlotPage({ params }: PlotPageProps) {
           const response = await fetch('/api/user/points')
           if (response.ok) {
             const data = await response.json()
-            setUserPoints(data.currentPoints || 0)
+            setUserPoints(data.points?.current_points || 0)
           }
         } catch (error) {
           console.error('Error loading user points:', error)
@@ -149,7 +149,7 @@ export default function PlotPage({ params }: PlotPageProps) {
         const pointsResponse = await fetch('/api/user/points')
         if (pointsResponse.ok) {
           const pointsData = await pointsResponse.json()
-          setUserPoints(pointsData.currentPoints || 0)
+          setUserPoints(pointsData.points?.current_points || 0)
         }
       } else {
         toast({
