@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       slug,
       body.description || '',
       body.image_url || '',
-      JSON.stringify(body.primary_stats || []),
-      JSON.stringify(body.skills || []),
+      body.primary_stats || [],
+      body.skills || [],
       body.playstyle || '',
       difficultyLevel,
       body.is_active !== false
