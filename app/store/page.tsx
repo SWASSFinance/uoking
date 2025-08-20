@@ -99,7 +99,7 @@ export default async function StorePage() {
                   <Card className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-amber-300 cursor-pointer overflow-hidden">
                     <CardHeader className="text-center bg-gradient-to-r from-amber-50 to-orange-50 group-hover:from-amber-100 group-hover:to-orange-100 transition-all duration-300 p-0">
                       {/* Category Image */}
-                      <div className="relative h-48 overflow-hidden">
+                      <div className="relative h-64 overflow-hidden">
                         {category.image_url ? (
                           <ProductImage
                             src={category.image_url}
