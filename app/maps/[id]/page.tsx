@@ -102,8 +102,19 @@ export default function MapPage({ params }: { params: { id: string } }) {
       const response = await fetch(`/api/maps/${params.id}`)
       if (response.ok) {
         const data = await response.json()
+        console.log('Loaded map data:', data)
         setMapData(data.map)
-        setPlots(data.plots || [])
+        
+        // Ensure plots have proper number types for coordinates
+        const processedPlots = (data.plots || []).map((plot: any) => ({
+          ...plot,
+          latitude: typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0,
+          longitude: typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0,
+          points_price: typeof plot.points_price === 'number' ? plot.points_price : parseInt(plot.points_price) || 0
+        }))
+        
+        console.log('Processed plots:', processedPlots)
+        setPlots(processedPlots)
       } else {
         toast({
           title: "Error",
@@ -213,8 +224,12 @@ export default function MapPage({ params }: { params: { id: string } }) {
   const addMarkerToMap = (plot: Plot) => {
     if (!googleMapRef.current) return
 
+    // Ensure coordinates are numbers
+    const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
+    const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
+
     const marker = new window.google.maps.Marker({
-      position: { lat: plot.latitude, lng: plot.longitude },
+      position: { lat, lng },
       map: googleMapRef.current,
       title: plot.name,
       icon: {
@@ -620,7 +635,7 @@ export default function MapPage({ params }: { params: { id: string } }) {
                   </div>
 
                   <div className="text-sm text-gray-600">
-                    <p>Location: {selectedPlot.latitude.toFixed(6)}, {selectedPlot.longitude.toFixed(6)}</p>
+                    <p>Location: {typeof selectedPlot.latitude === 'number' ? selectedPlot.latitude.toFixed(6) : selectedPlot.latitude}, {typeof selectedPlot.longitude === 'number' ? selectedPlot.longitude.toFixed(6) : selectedPlot.longitude}</p>
                   </div>
 
                   <div className="flex space-x-2">
