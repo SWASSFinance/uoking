@@ -182,15 +182,21 @@ export default function MapPage({ params }: { params: { id: string } }) {
       new window.google.maps.LatLng(1, 1)    // Northeast corner
     )
 
-    const mapOverlay = new window.google.maps.GroundOverlay(
-      mapData.map_file_url,
-      imageBounds,
-      {
-        opacity: 1.0
-      }
-    )
+         const mapOverlay = new window.google.maps.GroundOverlay(
+       mapData.map_file_url,
+       imageBounds,
+       {
+         opacity: 1.0
+       }
+     )
 
-    mapOverlay.setMap(googleMapRef.current)
+     mapOverlay.setMap(googleMapRef.current)
+
+     // Add click listener to the overlay for admin mode
+     if (isAdminMode) {
+       console.log('Adding click listener to map overlay')
+       mapOverlay.addListener('click', handleMapClick)
+     }
 
     // Fit the map to show the entire image
     googleMapRef.current.fitBounds(imageBounds)
@@ -200,13 +206,8 @@ export default function MapPage({ params }: { params: { id: string } }) {
       addMarkerToMap(plot)
     })
 
-    // Add click listener for admin mode
-    if (isAdminMode) {
-      console.log('Adding click listener to map')
-      googleMapRef.current.addListener('click', handleMapClick)
-    } else {
-      console.log('Not in admin mode, not adding click listener')
-    }
+         // Note: Click listener is now added to the overlay instead of the map
+     // This prevents conflicts between the overlay and map click events
   }
 
   const addMarkerToMap = (plot: Plot) => {
