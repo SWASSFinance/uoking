@@ -186,6 +186,7 @@ export default function MapsPage() {
       streetViewControl: false,
       fullscreenControl: true,
       zoomControl: true,
+      gestureHandling: 'greedy', // Allow zooming without Ctrl key
       styles: [
         // Make the entire map completely blank/transparent
         {
