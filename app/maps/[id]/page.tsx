@@ -33,6 +33,9 @@ declare global {
         LatLng: any
         GroundOverlay: any
         InfoWindow: any
+        Marker: any
+        Point: any
+        Size: any
         marker: {
           AdvancedMarkerElement: any
         }
@@ -240,34 +243,57 @@ export default function MapPage({ params }: { params: { id: string } }) {
     const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
     const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
 
-    // Create custom marker element
-    const markerElement = document.createElement('div')
-    markerElement.innerHTML = `
-      <div style="
-        width: 24px;
-        height: 24px;
-        background-color: ${isAdminMode ? '#ef4444' : '#3b82f6'};
-        border: 2px solid white;
-        border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        color: white;
-        font-weight: bold;
-      ">
-        📍
-      </div>
-    `
-
-    // Create advanced marker
-    const marker = new window.google.maps.marker.AdvancedMarkerElement({
+    // Create simple marker with custom icon
+    const marker = new window.google.maps.Marker({
       position: { lat, lng },
       map: googleMapRef.current,
       title: plot.name,
-      content: markerElement
+      icon: {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer glow -->
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <!-- Background circle with gradient -->
+            <circle cx="16" cy="16" r="14" fill="url(#gradient)" stroke="#ffd700" stroke-width="2" filter="url(#glow)"/>
+            
+            <!-- Gradient definition -->
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#f7931e;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#ffd700;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            
+            <!-- Inner circle -->
+            <circle cx="16" cy="16" r="10" fill="#1a1a1a" stroke="#ffd700" stroke-width="1"/>
+            
+            <!-- Treasure chest icon -->
+            <g transform="translate(8, 8)">
+              <rect x="0" y="4" width="16" height="8" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+              <rect x="2" y="6" width="12" height="4" fill="#daa520"/>
+              <rect x="0" y="2" width="16" height="2" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+              <circle cx="4" cy="3" r="1" fill="#ffd700"/>
+              <circle cx="12" cy="3" r="1" fill="#ffd700"/>
+            </g>
+            
+            <!-- Points indicator -->
+            <circle cx="24" cy="8" r="6" fill="#ff4444" stroke="#ffffff" stroke-width="1"/>
+            <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">${plot.points_price > 999 ? 'K' : plot.points_price}</text>
+          </svg>
+        `),
+        scaledSize: new window.google.maps.Size(32, 32),
+        anchor: new window.google.maps.Point(16, 16)
+      }
     })
 
     // Add click listener
