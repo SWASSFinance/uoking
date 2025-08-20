@@ -550,50 +550,66 @@ export default function MapPage({ params }: { params: { id: string } }) {
                        </Button>
                      </CardTitle>
                    </CardHeader>
-                 <CardContent className="pt-0">
-                   {plots.length === 0 ? (
-                     <p className="text-gray-500 text-center py-4">No plots available</p>
-                   ) : (
-                     <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto">
-                       {plots.map((plot) => (
-                         <div 
-                           key={plot.id} 
-                           className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                           onClick={() => {
-                             if (isAdminMode) {
-                               setSelectedPlot(plot)
-                               setEditForm({
-                                 name: plot.name,
-                                 description: plot.description,
-                                 pointsPrice: plot.points_price
-                               })
-                               setIsEditing(true)
-                             }
-                           }}
-                         >
-                           <div className="flex items-center justify-between">
-                             <div>
-                               <h4 className="font-medium text-gray-900">{plot.name}</h4>
-                               {plot.description && (
-                                 <p className="text-sm text-gray-600 line-clamp-1">{plot.description}</p>
-                               )}
-                             </div>
-                             <div className="flex items-center space-x-2">
-                               <span className="text-sm font-medium text-green-600">
-                                 {plot.points_price} pts
-                               </span>
-                               {isAdminMode && (
-                                 <Edit className="h-4 w-4 text-gray-400" />
-                               )}
+                   <CardContent className="pt-0">
+                     {plots.length === 0 ? (
+                       <p className="text-gray-500 text-center py-4">No plots available</p>
+                     ) : (
+                       <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto">
+                         {plots.map((plot) => (
+                           <div 
+                             key={plot.id} 
+                             className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                             onClick={() => {
+                               if (isAdminMode) {
+                                 setSelectedPlot(plot)
+                                 setEditForm({
+                                   name: plot.name,
+                                   description: plot.description,
+                                   pointsPrice: plot.points_price
+                                 })
+                                 setIsEditing(true)
+                               }
+                             }}
+                           >
+                             <div className="flex items-center justify-between">
+                               <div>
+                                 <h4 className="font-medium text-gray-900">{plot.name}</h4>
+                                 {plot.description && (
+                                   <p className="text-sm text-gray-600 line-clamp-1">{plot.description}</p>
+                                 )}
+                               </div>
+                               <div className="flex items-center space-x-2">
+                                 <span className="text-sm font-medium text-green-600">
+                                   {plot.points_price} pts
+                                 </span>
+                                 {isAdminMode && (
+                                   <Edit className="h-4 w-4 text-gray-400" />
+                                 )}
+                               </div>
                              </div>
                            </div>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                 </CardContent>
-               </Card>
-             </div>
+                         ))}
+                       </div>
+                     )}
+                   </CardContent>
+                 </Card>
+               </div>
+             )}
+
+             {/* Toggle Plots Button */}
+             {!showPlotsOverlay && (
+               <div className="absolute top-4 right-4">
+                 <Button
+                   variant="secondary"
+                   size="sm"
+                   className="bg-white/95 backdrop-blur-sm border border-amber-200 shadow-lg"
+                   onClick={() => setShowPlotsOverlay(true)}
+                 >
+                   <MapPin className="h-4 w-4 mr-2" />
+                   Show Plots ({plots.length})
+                 </Button>
+               </div>
+             )}
            </div>
 
           {/* Edit Plot Modal */}
