@@ -432,6 +432,21 @@ export default function MapsPage() {
                               const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
                               googleMapRef.current?.panTo({ lat, lng })
                               googleMapRef.current?.setZoom(12)
+                              
+                              // Find and click the corresponding marker to open info window
+                              setTimeout(() => {
+                                const markers = markersRef.current
+                                const targetMarker = markers.find(marker => {
+                                  const markerPos = marker.getPosition()
+                                  return markerPos && 
+                                         Math.abs(markerPos.lat() - lat) < 0.001 && 
+                                         Math.abs(markerPos.lng() - lng) < 0.001
+                                })
+                                if (targetMarker) {
+                                  // Trigger the marker's click event
+                                  google.maps.event.trigger(targetMarker, 'click')
+                                }
+                              }, 500) // Small delay to ensure map has finished panning
                             }}
                           >
                             <div className="flex items-center justify-between">
