@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 
 // Review a spawn location submission (admin only)
@@ -9,7 +8,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user?.id || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -127,7 +126,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user?.id || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },

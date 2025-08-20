@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 
 // Get all spawn location submissions (admin only)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user?.id || !session?.user?.isAdmin) {
       return NextResponse.json(
         { error: 'Admin access required' },
