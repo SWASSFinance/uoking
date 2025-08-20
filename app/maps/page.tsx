@@ -154,6 +154,7 @@ export default function MapsPage() {
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
       center: { lat: 0, lng: 0 },
       zoom: 2,
+      mapId: '8c076335599ed916e9755ca6', // Custom Map ID for Advanced Markers
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
