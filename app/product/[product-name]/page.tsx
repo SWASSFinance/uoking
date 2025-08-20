@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation'
 import { ProductImageGallery } from '@/components/product-image-gallery'
 import { ProductReviewForm } from '@/components/product-review-form'
 import { ProductReviews } from '@/components/product-reviews'
+import { SpawnLocationForm } from '@/components/spawn-location-form'
 
 interface ProductPageProps {
   params: Promise<{ 'product-name': string }>
@@ -166,6 +167,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Spawn Location Submission */}
+              <SpawnLocationForm 
+                productId={product.id}
+                productName={product.name}
+                currentSpawnLocation={product.spawn_location}
+              />
 
               {/* Purchase Options */}
               <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
