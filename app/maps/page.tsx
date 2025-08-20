@@ -161,75 +161,7 @@ export default function MapsPage() {
       fullscreenControl: true,
       zoomControl: true,
       gestureHandling: 'greedy',
-      backgroundColor: '#e6f3ff', // Light blue background
-      styles: [
-        // Nuclear option - hide EVERYTHING
-        {
-          featureType: "all",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "administrative",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "landscape",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "poi",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "road",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "transit",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "water",
-          elementType: "all",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "all",
-          elementType: "geometry",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "all",
-          elementType: "labels",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "all",
-          elementType: "labels.text",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "all",
-          elementType: "labels.text.fill",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "all",
-          elementType: "labels.text.stroke",
-          stylers: [{ visibility: "off" }]
-        },
-        {
-          featureType: "all",
-          elementType: "labels.icon",
-          stylers: [{ visibility: "off" }]
-        }
-      ]
+
     })
 
     // Create an overlay that displays the custom map image
