@@ -32,6 +32,8 @@ export function Header() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [classes, setClasses] = useState<Array<{ id: string; name: string; slug: string }>>([])
+  const [classesLoading, setClassesLoading] = useState(true)
 
   // Fetch cashback balance when user is authenticated
   useEffect(() => {
@@ -59,6 +61,21 @@ export function Header() {
       })
       .finally(() => {
         setCategoriesLoading(false)
+      })
+  }, [])
+
+  // Fetch classes
+  useEffect(() => {
+    fetch('/api/classes')
+      .then(res => res.json())
+      .then(data => {
+        setClasses(data || [])
+      })
+      .catch(error => {
+        console.error('Error fetching classes:', error)
+      })
+      .finally(() => {
+        setClassesLoading(false)
       })
   }, [])
 
@@ -124,15 +141,7 @@ export function Header() {
     }
   }
 
-  const classItems = [
-    "Getting Started",
-    "Mage",
-    "Tamer", 
-    "Melee",
-    "Ranged",
-    "Thief",
-    "Crafter"
-  ]
+
 
   const propItems = [
     "Damage Increase",
@@ -213,7 +222,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {/* Class Dropdown */}
+                        {/* Class Dropdown */}
             <div 
               className="relative"
               onMouseEnter={() => handleMouseEnter('class')}
@@ -229,15 +238,30 @@ export function Header() {
                 <div 
                   className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
                 >
-                  {classItems.map((item) => (
-                                              <Link
-                            key={item}
-                            href={`/class/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                          >
-                      {item}
-                    </Link>
-                  ))}
+                  {classesLoading ? (
+                    <div className="px-4 py-2 text-sm text-gray-500">Loading classes...</div>
+                  ) : (
+                    <>
+                      {/* Getting Started - static item */}
+                      <Link
+                        href="/class/getting-started"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                      >
+                        Getting Started
+                      </Link>
+                      
+                      {/* Dynamic classes from database */}
+                      {classes.map((cls) => (
+                        <Link
+                          key={cls.id}
+                          href={`/class/${cls.slug}`}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                        >
+                          {cls.name}
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -576,13 +600,27 @@ export function Header() {
                     {/* Class Section */}
                     <div className="space-y-1">
                       <h3 className="text-sm font-medium text-gray-700 px-2">Class</h3>
-                      {classItems.map((item) => (
-                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/class/${item.toLowerCase().replace(/\s+/g, '-')}`}>
-                            {item}
-                          </Link>
-                        </Button>
-                      ))}
+                      {classesLoading ? (
+                        <div className="px-2 text-sm text-gray-500">Loading classes...</div>
+                      ) : (
+                        <>
+                          {/* Getting Started - static item */}
+                          <Button variant="ghost" className="justify-start text-sm" asChild>
+                            <Link href="/class/getting-started">
+                              Getting Started
+                            </Link>
+                          </Button>
+                          
+                          {/* Dynamic classes from database */}
+                          {classes.map((cls) => (
+                            <Button key={cls.id} variant="ghost" className="justify-start text-sm" asChild>
+                              <Link href={`/class/${cls.slug}`}>
+                                {cls.name}
+                              </Link>
+                            </Button>
+                          ))}
+                        </>
+                      )}
                     </div>
 
                     {/* Prop Section */}
