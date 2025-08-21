@@ -619,8 +619,8 @@ export default function PlotPage({ params }: PlotPageProps) {
                 <CardContent>
                   <div 
                     ref={mapRef}
-                    className="w-full h-96 rounded-lg overflow-hidden border border-gray-200"
-                    style={{ minHeight: '384px' }}
+                    className="w-full h-[416px] rounded-lg overflow-hidden border border-gray-200"
+                    style={{ minHeight: '416px' }}
                   />
                 </CardContent>
               </Card>
