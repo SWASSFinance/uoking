@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 
 export async function DELETE(request: NextRequest) {
   try {
     // Get the current session
-    const session = await getServerSession(auth)
+    const session = await auth()
     
     if (!session?.user?.email) {
       return NextResponse.json(
