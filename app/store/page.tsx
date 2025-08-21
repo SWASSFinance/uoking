@@ -169,23 +169,7 @@ export default async function StorePage() {
             </div>
           )}
 
-          {/* Call to Action */}
-          <div className="mt-16 text-center bg-gradient-to-r from-amber-600 to-orange-600 rounded-2xl p-8 text-white">
-            <h2 className="text-3xl font-bold mb-4">Need Something Specific?</h2>
-            <p className="text-xl mb-6 text-amber-100">
-              Can't find what you're looking for? Our team can help you find the perfect UO items.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="outline" className="bg-white text-amber-600 border-white hover:bg-amber-50">
-                <Gift className="h-5 w-5 mr-2" />
-                Contact Support
-              </Button>
-              <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-amber-600">
-                <BookOpen className="h-5 w-5 mr-2" />
-                View All Products
-              </Button>
-            </div>
-          </div>
+
         </div>
       </main>
       <Footer />
