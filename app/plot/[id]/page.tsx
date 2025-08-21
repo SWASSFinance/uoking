@@ -182,8 +182,23 @@ export default function PlotPage({ params }: PlotPageProps) {
       allPlots.forEach(plotItem => {
         addMarkerToMap(plotItem)
       })
+
+      // Auto-open info window for the current plot
+      if (plot) {
+        setTimeout(() => {
+          const targetMarker = markersRef.current.find(m => {
+            const pos = m.getPosition()
+            return pos && 
+                   Math.abs(pos.lat() - plot.latitude) < 0.001 && 
+                   Math.abs(pos.lng() - plot.longitude) < 0.001
+          })
+          if (targetMarker) {
+            window.google.maps.event.trigger(targetMarker, 'click')
+          }
+        }, 500)
+      }
     }
-  }, [allPlots])
+  }, [allPlots, plot])
 
   const initializeMap = () => {
     if (!plot || !mapRef.current || !window.google?.maps) {
@@ -197,10 +212,10 @@ export default function PlotPage({ params }: PlotPageProps) {
 
     console.log('Initializing map for plot:', plot.name, 'at coordinates:', plot.latitude, plot.longitude)
 
-    // Initialize map with completely blank base (exactly like maps page)
+    // Initialize map centered on the plot location
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 0, lng: 0 },
-      zoom: 2,
+      center: { lat: plot.latitude, lng: plot.longitude },
+      zoom: 12,
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
@@ -487,31 +502,6 @@ export default function PlotPage({ params }: PlotPageProps) {
     })
 
     markersRef.current.push(marker)
-
-    // After map is loaded, center on the plot and open info window
-    setTimeout(() => {
-      if (!plot) return
-      console.log('Centering map on plot:', plot.name)
-      // Center map on the plot location
-      googleMapRef.current.panTo({ lat: plot.latitude, lng: plot.longitude })
-      googleMapRef.current.setZoom(12)
-      
-      // Trigger the marker's click event to open info window
-      setTimeout(() => {
-        if (!plot) return
-        console.log('Triggering marker click for plot:', plot.name)
-        // Find the marker for this specific plot and trigger its click
-        const targetMarker = markersRef.current.find(m => {
-          const pos = m.getPosition()
-          return pos && 
-                 Math.abs(pos.lat() - plot.latitude) < 0.001 && 
-                 Math.abs(pos.lng() - plot.longitude) < 0.001
-        })
-        if (targetMarker) {
-          window.google.maps.event.trigger(targetMarker, 'click')
-        }
-      }, 500) // Small delay to ensure map has finished panning
-    }, 1000) // Wait for map to be fully loaded
   }
 
   const handlePurchase = async () => {
