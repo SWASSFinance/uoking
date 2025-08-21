@@ -510,13 +510,22 @@ export default function PlotPage({ params }: PlotPageProps) {
         const plotResponse = await fetch(`/api/plots/${plot.id}/purchase`)
         if (plotResponse.ok) {
           const plotData = await plotResponse.json()
+          console.log('Updated plot data:', plotData.plot)
           setPlot(plotData.plot)
         }
+        
+        // Small delay to ensure database transaction is committed
+        await new Promise(resolve => setTimeout(resolve, 500))
         
         const pointsResponse = await fetch('/api/user/points')
         if (pointsResponse.ok) {
           const pointsData = await pointsResponse.json()
-          setUserPoints(pointsData.points?.current_points || 0)
+          console.log('Updated points data:', pointsData)
+          const newPoints = pointsData.points?.current_points || 0
+          console.log('Setting user points to:', newPoints)
+          setUserPoints(newPoints)
+        } else {
+          console.error('Failed to fetch updated points:', pointsResponse.status)
         }
       } else {
         toast({
