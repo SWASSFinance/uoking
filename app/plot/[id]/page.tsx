@@ -155,10 +155,10 @@ export default function PlotPage({ params }: PlotPageProps) {
 
     console.log('Initializing map for plot:', plot.name, 'at coordinates:', plot.latitude, plot.longitude)
 
-    // Create map centered on the plot location
+    // Initialize map with completely blank base (exactly like maps page)
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: plot.latitude, lng: plot.longitude },
-      zoom: 15,
+      center: { lat: 0, lng: 0 },
+      zoom: 2,
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
@@ -167,21 +167,86 @@ export default function PlotPage({ params }: PlotPageProps) {
       gestureHandling: 'greedy',
       backgroundColor: '#64777c', // Dark gray background
       styles: [
-        // Hide POI labels and some features but keep basic map
+        // Nuclear option - hide EVERYTHING (exactly like maps page)
+        {
+          featureType: 'all',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'administrative',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'landscape',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
         {
           featureType: 'poi',
-          elementType: 'labels',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'road',
+          elementType: 'all',
           stylers: [{ visibility: 'off' }]
         },
         {
           featureType: 'transit',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'water',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
           elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text.fill',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.text.stroke',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'labels.icon',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry.fill',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'all',
+          elementType: 'geometry.stroke',
           stylers: [{ visibility: 'off' }]
         }
       ]
     })
 
-    // Add custom map overlay if available
+    // Add custom map overlay if available (exactly like maps page)
     if (plot.map_file_url) {
       console.log('Adding custom map overlay:', plot.map_file_url)
       // Create an overlay that displays the custom map image
@@ -199,6 +264,9 @@ export default function PlotPage({ params }: PlotPageProps) {
       )
 
       mapOverlay.setMap(googleMapRef.current)
+
+      // Fit the map to show the entire image (exactly like maps page)
+      googleMapRef.current.fitBounds(imageBounds)
     }
 
     // Add marker for the plot (same as maps page)
@@ -361,7 +429,7 @@ export default function PlotPage({ params }: PlotPageProps) {
       infoWindowRef.current.open(googleMapRef.current, markerRef.current)
     })
 
-    // Center map on the plot and open info window (same as clicking on maps page)
+    // After map is loaded, center on the plot and open info window
     setTimeout(() => {
       console.log('Centering map on plot:', plot.name)
       // Center map on the plot location
@@ -372,8 +440,8 @@ export default function PlotPage({ params }: PlotPageProps) {
       setTimeout(() => {
         console.log('Triggering marker click for plot:', plot.name)
         window.google.maps.event.trigger(markerRef.current, 'click')
-      }, 300) // Small delay to ensure map has finished panning
-    }, 800) // Shorter delay to ensure map is loaded
+      }, 500) // Small delay to ensure map has finished panning
+    }, 1000) // Wait for map to be fully loaded
   }
 
   const handlePurchase = async () => {
