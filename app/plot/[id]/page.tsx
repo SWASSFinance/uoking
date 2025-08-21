@@ -38,6 +38,7 @@ interface Plot {
   created_at: string
   map_name?: string
   map_slug?: string
+  map_file_url?: string
 }
 
 interface PlotPageProps {
@@ -139,20 +140,73 @@ export default function PlotPage({ params }: PlotPageProps) {
       center: { lat: plot.latitude, lng: plot.longitude },
       zoom: 15,
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
-      disableDefaultUI: false,
-      zoomControl: true,
-      streetViewControl: true,
-      mapTypeControl: true,
+      mapTypeControl: false,
+      streetViewControl: false,
       fullscreenControl: true,
+      zoomControl: true,
       gestureHandling: 'greedy',
+      backgroundColor: '#64777c', // Dark gray background
       styles: [
+        // Hide all default map features
+        {
+          featureType: 'all',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'administrative',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'landscape',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
         {
           featureType: 'poi',
-          elementType: 'labels',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'road',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'transit',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        {
+          featureType: 'water',
+          elementType: 'all',
           stylers: [{ visibility: 'off' }]
         }
       ]
     })
+
+    // Add custom map overlay if available
+    if (plot.map_file_url) {
+      // Create an overlay that displays the custom map image
+      const imageBounds = new window.google.maps.LatLngBounds(
+        new window.google.maps.LatLng(-1, -1),
+        new window.google.maps.LatLng(1, 1)
+      )
+
+      const mapOverlay = new window.google.maps.GroundOverlay(
+        plot.map_file_url,
+        imageBounds,
+        {
+          opacity: 1.0
+        }
+      )
+
+      mapOverlay.setMap(googleMapRef.current)
+
+      // Fit the map to show the entire image
+      googleMapRef.current.fitBounds(imageBounds)
+    }
 
     // Add marker for the plot
     markerRef.current = new window.google.maps.Marker({

@@ -1792,6 +1792,7 @@ export async function getPlotById(plotId: string) {
         p.*,
         m.name as map_name,
         m.slug as map_slug,
+        m.map_file_url,
         u.username as created_by_name,
         o.username as owner_name
       FROM plots p
