@@ -367,6 +367,18 @@ export default function PlotPage({ params }: PlotPageProps) {
     markerRef.current.addListener('click', () => {
       infoWindow.open(googleMapRef.current, markerRef.current)
     })
+
+    // Center map on the plot and open info window (same as clicking on maps page)
+    setTimeout(() => {
+      // Center map on the plot location
+      googleMapRef.current.panTo({ lat: plot.latitude, lng: plot.longitude })
+      googleMapRef.current.setZoom(12)
+      
+      // Trigger the marker's click event to open info window
+      setTimeout(() => {
+        window.google.maps.event.trigger(markerRef.current, 'click')
+      }, 500) // Small delay to ensure map has finished panning
+    }, 1000) // Delay to ensure map is fully loaded
   }
 
   const handlePurchase = async () => {
