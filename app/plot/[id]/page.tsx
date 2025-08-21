@@ -445,17 +445,7 @@ export default function PlotPage({ params }: PlotPageProps) {
             border: 1px solid #e5e7eb;
             box-shadow: 0 2px 8px rgba(255, 68, 68, 0.2);
           ">
-            <div style="font-size: 12px; color: #ffd700; margin-bottom: 4px; font-weight: bold;">
-              REWARD POINTS
-            </div>
-            <div style="
-              font-size: 24px;
-              font-weight: bold;
-              color: white;
-              text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            ">
-              ${plotItem.points_price.toLocaleString()}
-            </div>
+          
           </div>
           
 
