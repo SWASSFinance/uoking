@@ -371,7 +371,9 @@ export default function PropertyPage({ params }: PropertyPageProps) {
                           id={`qty-${product.id}`}
                           type="number"
                           min="1"
+                          max="10000"
                           defaultValue="1"
+                          title="Maximum quantity: 10,000"
                           className="w-12 h-8 text-center text-sm border border-gray-300 rounded-md bg-white text-black font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
                         />
                         

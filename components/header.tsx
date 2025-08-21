@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -134,8 +134,7 @@ export function Header() {
 
   const handleSignOut = async () => {
     try {
-      await fetch('/api/auth/signout', { method: 'POST' })
-      window.location.href = '/'
+      await signOut({ callbackUrl: '/' })
     } catch (error) {
       console.error('Error signing out:', error)
     }

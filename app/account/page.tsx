@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useCart } from "@/contexts/cart-context"
@@ -1868,9 +1868,82 @@ export default function AccountPage() {
 
                   <div className="border-t pt-6">
                     <h4 className="font-semibold text-gray-900 mb-4">Danger Zone</h4>
-                    <Button variant="destructive">
-                      Delete Account
-                    </Button>
+                    <div className="space-y-4">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h5 className="font-medium text-red-800 mb-2">Delete Account</h5>
+                        <p className="text-sm text-red-700 mb-4">
+                          This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                        </p>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => {
+                            const confirmed = confirm(
+                              "Are you sure you want to delete your account?\n\n" +
+                              "This action will:\n" +
+                              "• Permanently delete your account\n" +
+                              "• Remove all your orders and reviews\n" +
+                              "• Delete your referral data and cashback balance\n" +
+                              "• Cancel any pending orders\n\n" +
+                              "This action cannot be undone.\n\n" +
+                              "Type 'DELETE' to confirm:"
+                            )
+                            
+                            if (confirmed) {
+                              const userInput = prompt("Please type 'DELETE' to confirm account deletion:")
+                              if (userInput === 'DELETE') {
+                                // Show loading state
+                                const button = event?.target as HTMLButtonElement
+                                const originalText = button.textContent
+                                button.disabled = true
+                                button.textContent = 'Deleting...'
+                                
+                                // Call the delete API
+                                fetch('/api/user/delete-account', {
+                                  method: 'DELETE',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                })
+                                .then(response => {
+                                  return response.json().then(data => {
+                                    if (response.ok) {
+                                      toast({
+                                        title: "Account Deleted",
+                                        description: "Your account has been successfully deleted.",
+                                        variant: "default",
+                                      })
+                                      // Sign out and redirect to home
+                                      signOut({ callbackUrl: '/' })
+                                    } else {
+                                      throw new Error(data.error || 'Failed to delete account')
+                                    }
+                                  })
+                                })
+                                .catch(error => {
+                                  console.error('Error deleting account:', error)
+                                  toast({
+                                    title: "Delete Failed",
+                                    description: error.message || "Failed to delete account. Please try again.",
+                                    variant: "destructive",
+                                  })
+                                  // Reset button
+                                  button.disabled = false
+                                  button.textContent = originalText
+                                })
+                              } else if (userInput !== null) {
+                                toast({
+                                  title: "Cancelled",
+                                  description: "Account deletion was cancelled.",
+                                  variant: "default",
+                                })
+                              }
+                            }
+                          }}
+                        >
+                          Delete Account
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

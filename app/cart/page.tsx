@@ -414,7 +414,7 @@ export default function CartPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          disabled={isUpdating === item.id}
+                          disabled={isUpdating === item.id || item.quantity >= 10000}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>

@@ -45,12 +45,18 @@ export const clientCart = {
     const cart = clientCart.getCart()
     const existingItemIndex = cart.items.findIndex(cartItem => cartItem.id === item.id)
     
+    // Validate quantity limit
+    const maxQuantity = 10000
+    const newQuantity = existingItemIndex > -1 
+      ? Math.min(cart.items[existingItemIndex].quantity + quantity, maxQuantity)
+      : Math.min(quantity, maxQuantity)
+    
     if (existingItemIndex > -1) {
       // Update existing item quantity
-      cart.items[existingItemIndex].quantity += quantity
+      cart.items[existingItemIndex].quantity = newQuantity
     } else {
       // Add new item
-      cart.items.push({ ...item, quantity })
+      cart.items.push({ ...item, quantity: newQuantity })
     }
     
     // Recalculate totals
@@ -88,8 +94,9 @@ export const clientCart = {
         // Remove item if quantity is 0 or negative
         cart.items.splice(itemIndex, 1)
       } else {
-        // Update quantity
-        cart.items[itemIndex].quantity = quantity
+        // Update quantity with maximum limit
+        const maxQuantity = 10000
+        cart.items[itemIndex].quantity = Math.min(quantity, maxQuantity)
       }
       
       // Recalculate totals
