@@ -256,30 +256,63 @@ export default function CartPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Create and submit PayPal form
-        const form = document.createElement('form')
-        form.method = 'POST'
-        form.action = data.paypalUrl
-        form.style.display = 'none'
+        // Check if this is a cashback-only order
+        const finalTotal = cart.total - (appliedCoupon?.discount_amount || 0) - cashbackToUse
+        if (finalTotal <= 0.01) {
+          // This is a cashback-only order, complete it directly
+          const completeResponse = await fetch('/api/user/complete-cashback-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              orderId: data.orderId
+            }),
+          })
 
-        // Add form fields
-        Object.entries(data.paypalFormData).forEach(([key, value]) => {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = key
-          input.value = value as string
-          form.appendChild(input)
-        })
+          const completeData = await completeResponse.json()
 
-        // Add cmd field for PayPal
-        const cmdInput = document.createElement('input')
-        cmdInput.type = 'hidden'
-        cmdInput.name = 'cmd'
-        cmdInput.value = '_xclick'
-        form.appendChild(cmdInput)
+          if (completeResponse.ok && completeData.success) {
+            toast({
+              title: "Order Completed!",
+              description: `Your order has been completed successfully using $${completeData.cashbackUsed.toFixed(2)} cashback.`,
+              variant: "default",
+            })
+            clearCart()
+            router.push('/account?tab=orders')
+          } else {
+            toast({
+              title: "Order Completion Failed",
+              description: completeData.error || "Failed to complete order with cashback.",
+              variant: "destructive",
+            })
+          }
+        } else {
+          // This requires PayPal payment, redirect to PayPal
+          const form = document.createElement('form')
+          form.method = 'POST'
+          form.action = data.paypalUrl
+          form.style.display = 'none'
 
-        document.body.appendChild(form)
-        form.submit()
+          // Add form fields
+          Object.entries(data.paypalFormData).forEach(([key, value]) => {
+            const input = document.createElement('input')
+            input.type = 'hidden'
+            input.name = key
+            input.value = value as string
+            form.appendChild(input)
+          })
+
+          // Add cmd field for PayPal
+          const cmdInput = document.createElement('input')
+          cmdInput.type = 'hidden'
+          cmdInput.name = 'cmd'
+          cmdInput.value = '_xclick'
+          form.appendChild(cmdInput)
+
+          document.body.appendChild(form)
+          form.submit()
+        }
       } else {
         toast({
           title: "Checkout Failed",
@@ -622,6 +655,21 @@ export default function CartPage() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Cashback Notice */}
+                  {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                        <div>
+                          <p className="font-medium text-green-800">Cashback Payment Available</p>
+                          <p className="text-sm text-green-700">
+                            Your order can be completed entirely with cashback. No PayPal payment required!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Checkout Button */}
                   <Button

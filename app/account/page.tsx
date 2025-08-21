@@ -615,30 +615,63 @@ export default function AccountPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Create and submit PayPal form
-        const form = document.createElement('form')
-        form.method = 'POST'
-        form.action = data.paypalUrl
-        form.style.display = 'none'
+        // Check if this is a cashback-only order
+        const finalTotal = parseFloat(order.total_amount)
+        if (finalTotal <= 0.01) {
+          // This is a cashback-only order, complete it directly
+          const completeResponse = await fetch('/api/user/complete-cashback-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              orderId: order.id
+            }),
+          })
 
-        // Add form fields
-        Object.entries(data.paypalFormData).forEach(([key, value]) => {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = key
-          input.value = value as string
-          form.appendChild(input)
-        })
+          const completeData = await completeResponse.json()
 
-        // Add cmd field for PayPal
-        const cmdInput = document.createElement('input')
-        cmdInput.type = 'hidden'
-        cmdInput.name = 'cmd'
-        cmdInput.value = '_xclick'
-        form.appendChild(cmdInput)
+          if (completeResponse.ok && completeData.success) {
+            toast({
+              title: "Order Completed!",
+              description: `Your order has been completed successfully using $${completeData.cashbackUsed.toFixed(2)} cashback.`,
+              variant: "default",
+            })
+            // Reload orders to reflect the change
+            loadUserData()
+          } else {
+            toast({
+              title: "Order Completion Failed",
+              description: completeData.error || "Failed to complete order with cashback.",
+              variant: "destructive",
+            })
+          }
+        } else {
+          // This requires PayPal payment, redirect to PayPal
+          const form = document.createElement('form')
+          form.method = 'POST'
+          form.action = data.paypalUrl
+          form.style.display = 'none'
 
-        document.body.appendChild(form)
-        form.submit()
+          // Add form fields
+          Object.entries(data.paypalFormData).forEach(([key, value]) => {
+            const input = document.createElement('input')
+            input.type = 'hidden'
+            input.name = key
+            input.value = value as string
+            form.appendChild(input)
+          })
+
+          // Add cmd field for PayPal
+          const cmdInput = document.createElement('input')
+          cmdInput.type = 'hidden'
+          cmdInput.name = 'cmd'
+          cmdInput.value = '_xclick'
+          form.appendChild(cmdInput)
+
+          document.body.appendChild(form)
+          form.submit()
+        }
       } else {
         toast({
           title: "Payment Failed",
@@ -651,6 +684,45 @@ export default function AccountPage() {
       toast({
         title: "Payment Error",
         description: "An error occurred while processing payment. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCompleteWithCashback = async (order: Order) => {
+    try {
+      const response = await fetch('/api/user/complete-cashback-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: order.id
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast({
+          title: "Order Completed!",
+          description: `Your order has been completed successfully using $${data.cashbackUsed.toFixed(2)} cashback.`,
+          variant: "default",
+        })
+        // Reload orders to reflect the change
+        loadUserData()
+      } else {
+        toast({
+          title: "Order Completion Failed",
+          description: data.error || "Failed to complete order with cashback.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Cashback completion error:', error)
+      toast({
+        title: "Error",
+        description: "An error occurred while completing the order.",
         variant: "destructive",
       })
     }
@@ -683,6 +755,17 @@ export default function AccountPage() {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
     
     return orderDate <= fiveMinutesAgo
+  }
+
+  const canCompleteWithCashback = (order: Order) => {
+    if (order.payment_status !== 'pending') return false
+    
+    const totalAmount = parseFloat(order.total_amount)
+    const cashbackUsed = parseFloat(order.cashback_used)
+    
+    // Order can be completed with cashback if total is 0 or very close to 0
+    // and cashback was used
+    return totalAmount <= 0.01 && cashbackUsed > 0
   }
 
   if (status === 'loading' || isLoading) {
@@ -1226,7 +1309,12 @@ export default function AccountPage() {
                                         <Clock className="h-5 w-5 text-amber-600" />
                                         <div>
                                           <p className="font-medium text-amber-900">Payment Pending</p>
-                                          <p className="text-sm text-amber-700">Complete your payment to process this order</p>
+                                          <p className="text-sm text-amber-700">
+                                            {canCompleteWithCashback(orderDetails[order.id]) 
+                                              ? "Complete your order with cashback or use PayPal"
+                                              : "Complete your payment to process this order"
+                                            }
+                                          </p>
                                         </div>
                                       </div>
                                       <div className="flex space-x-2">
@@ -1243,6 +1331,18 @@ export default function AccountPage() {
                                             Delete
                                           </Button>
                                         )}
+                                        {canCompleteWithCashback(orderDetails[order.id]) && (
+                                          <Button 
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleCompleteWithCashback(orderDetails[order.id])
+                                            }}
+                                            className="bg-green-600 hover:bg-green-700"
+                                          >
+                                            <DollarSign className="h-4 w-4 mr-2" />
+                                            Complete with Cashback
+                                          </Button>
+                                        )}
                                         <Button 
                                           onClick={(e) => {
                                             e.stopPropagation()
@@ -1251,7 +1351,7 @@ export default function AccountPage() {
                                           className="bg-amber-600 hover:bg-amber-700"
                                         >
                                           <CreditCard className="h-4 w-4 mr-2" />
-                                          Pay Now
+                                          {canCompleteWithCashback(orderDetails[order.id]) ? "Pay with PayPal" : "Pay Now"}
                                         </Button>
                                       </div>
                                     </div>
