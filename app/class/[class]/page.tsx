@@ -150,7 +150,7 @@ export default function ClassPage({ params }: ClassPageProps) {
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-4">
               {classData.image_url ? (
-                <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shadow-lg">
+                <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shadow-lg relative">
                   <ProductImage
                     src={classData.image_url}
                     alt={classData.name}
