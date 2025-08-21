@@ -458,15 +458,7 @@ export default function PlotPage({ params }: PlotPageProps) {
             </div>
           </div>
           
-          <!-- Decorative elements -->
-          <div style="
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 12px;
-            color: #ffd700;
-            opacity: 0.5;
-          ">⚔️</div>
+
         </div>
       `,
       disableAutoPan: false,
