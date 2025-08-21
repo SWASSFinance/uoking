@@ -144,7 +144,14 @@ export default function PlotPage({ params }: PlotPageProps) {
   }, [plot])
 
   const initializeMap = () => {
-    if (!plot || !mapRef.current || !window.google?.maps) return
+    if (!plot || !mapRef.current || !window.google?.maps) {
+      console.log('Map initialization failed:', { 
+        hasPlot: !!plot, 
+        hasMapRef: !!mapRef.current, 
+        hasGoogleMaps: !!window.google?.maps 
+      })
+      return
+    }
 
     console.log('Initializing map for plot:', plot.name, 'at coordinates:', plot.latitude, plot.longitude)
 
@@ -160,40 +167,15 @@ export default function PlotPage({ params }: PlotPageProps) {
       gestureHandling: 'greedy',
       backgroundColor: '#64777c', // Dark gray background
       styles: [
-        // Hide all default map features
-        {
-          featureType: 'all',
-          elementType: 'all',
-          stylers: [{ visibility: 'off' }]
-        },
-        {
-          featureType: 'administrative',
-          elementType: 'all',
-          stylers: [{ visibility: 'off' }]
-        },
-        {
-          featureType: 'landscape',
-          elementType: 'all',
-          stylers: [{ visibility: 'off' }]
-        },
+        // Hide POI labels and some features but keep basic map
         {
           featureType: 'poi',
-          elementType: 'all',
-          stylers: [{ visibility: 'off' }]
-        },
-        {
-          featureType: 'road',
-          elementType: 'all',
+          elementType: 'labels',
           stylers: [{ visibility: 'off' }]
         },
         {
           featureType: 'transit',
-          elementType: 'all',
-          stylers: [{ visibility: 'off' }]
-        },
-        {
-          featureType: 'water',
-          elementType: 'all',
+          elementType: 'labels',
           stylers: [{ visibility: 'off' }]
         }
       ]
@@ -201,6 +183,7 @@ export default function PlotPage({ params }: PlotPageProps) {
 
     // Add custom map overlay if available
     if (plot.map_file_url) {
+      console.log('Adding custom map overlay:', plot.map_file_url)
       // Create an overlay that displays the custom map image
       const imageBounds = new window.google.maps.LatLngBounds(
         new window.google.maps.LatLng(-1, -1),
@@ -216,8 +199,6 @@ export default function PlotPage({ params }: PlotPageProps) {
       )
 
       mapOverlay.setMap(googleMapRef.current)
-
-      // Don't fit bounds here - we'll center on the plot instead
     }
 
     // Add marker for the plot (same as maps page)
@@ -391,8 +372,8 @@ export default function PlotPage({ params }: PlotPageProps) {
       setTimeout(() => {
         console.log('Triggering marker click for plot:', plot.name)
         window.google.maps.event.trigger(markerRef.current, 'click')
-      }, 500) // Small delay to ensure map has finished panning
-    }, 1500) // Longer delay to ensure map overlay is fully loaded
+      }, 300) // Small delay to ensure map has finished panning
+    }, 800) // Shorter delay to ensure map is loaded
   }
 
   const handlePurchase = async () => {
