@@ -694,10 +694,7 @@ export default function PlotPage({ params }: PlotPageProps) {
                       <p className="text-gray-900">{plot.map_name || 'Unknown'}</p>
                     </div>
                     
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Created by:</span>
-                      <p className="text-gray-900">{plot.created_by_name || 'Unknown'}</p>
-                    </div>
+
                     
                     <div>
                       <span className="text-sm font-medium text-gray-600">Created:</span>
