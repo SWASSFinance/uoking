@@ -593,7 +593,7 @@ export default function PlotPage({ params }: PlotPageProps) {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <Header />
       <main className="py-16 px-4">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-6xl">
           {/* Breadcrumb */}
           <div className="mb-8">
             <nav className="text-sm text-gray-600">
