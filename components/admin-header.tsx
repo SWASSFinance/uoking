@@ -18,7 +18,8 @@ import {
   Map,
   GraduationCap,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  Newspaper
 } from "lucide-react"
 
 const adminNavItems = [
@@ -56,6 +57,11 @@ const adminNavItems = [
     name: "Users",
     href: "/admin/users",
     icon: Users
+  },
+  {
+    name: "News",
+    href: "/admin/news",
+    icon: Newspaper
   },
   {
     name: "Maps",

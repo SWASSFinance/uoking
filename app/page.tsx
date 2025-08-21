@@ -4,6 +4,7 @@ import { ClassSection } from "@/components/class-section"
 import { FeaturedProducts } from "@/components/featured-products"
 import { HelpSection } from "@/components/help-section"
 import { DealOfTheDay } from "@/components/deal-of-the-day"
+import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 import { getActiveBanners } from "@/lib/db"
 import { BannerSection } from "@/components/banner-section"
@@ -54,6 +55,9 @@ export default async function HomePage() {
           <section className="py-16 bg-white/80 backdrop-blur-sm">
             <FeaturedProducts />
           </section>
+
+          {/* News Section */}
+          <NewsSection />
 
           {/* Help Section */}
           <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 backdrop-blur-sm">
