@@ -106,10 +106,28 @@ export default function PlotPage({ params }: PlotPageProps) {
     loadUserPoints()
   }, [session])
 
-  // Initialize map when plot data is loaded
+  // Initialize map when plot data is loaded and Google Maps API is ready
   useEffect(() => {
-    if (plot && window.google && window.google.maps && mapRef.current) {
-      initializeMap()
+    let retryTimeout: NodeJS.Timeout
+    
+    if (plot && mapRef.current) {
+      const initializeMapWithRetry = () => {
+        if (window.google && window.google.maps) {
+          initializeMap()
+        } else {
+          // Retry after a short delay
+          retryTimeout = setTimeout(initializeMapWithRetry, 100)
+        }
+      }
+      
+      initializeMapWithRetry()
+    }
+    
+    // Cleanup function
+    return () => {
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+      }
     }
   }, [plot])
 
@@ -121,11 +139,19 @@ export default function PlotPage({ params }: PlotPageProps) {
       center: { lat: plot.latitude, lng: plot.longitude },
       zoom: 15,
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
-      disableDefaultUI: true,
+      disableDefaultUI: false,
       zoomControl: true,
-      streetViewControl: false,
-      mapTypeControl: false,
-      fullscreenControl: false
+      streetViewControl: true,
+      mapTypeControl: true,
+      fullscreenControl: true,
+      gestureHandling: 'greedy',
+      styles: [
+        {
+          featureType: 'poi',
+          elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        }
+      ]
     })
 
     // Add marker for the plot
@@ -135,9 +161,45 @@ export default function PlotPage({ params }: PlotPageProps) {
       title: plot.name,
       icon: {
         url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="16" cy="16" r="12" fill="#F59E0B" stroke="white" stroke-width="2"/>
-            <circle cx="16" cy="16" r="6" fill="white"/>
+          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer glow -->
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge> 
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <!-- Background circle with gradient -->
+            <circle cx="16" cy="16" r="14" fill="url(#gradient)" stroke="#ffd700" stroke-width="2" filter="url(#glow)"/>
+            
+            <!-- Gradient definition -->
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#f7931e;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#ffd700;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            
+            <!-- Inner circle -->
+            <circle cx="16" cy="16" r="10" fill="#1a1a1a" stroke="#ffd700" stroke-width="1"/>
+            
+            <!-- Treasure chest icon -->
+            <g transform="translate(8, 8)">
+              <rect x="0" y="4" width="16" height="8" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+              <rect x="2" y="6" width="12" height="4" fill="#daa520"/>
+              <rect x="0" y="2" width="16" height="2" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+              <circle cx="4" cy="3" r="1" fill="#ffd700"/>
+              <circle cx="12" cy="3" r="1" fill="#ffd700"/>
+            </g>
+            
+            <!-- Points indicator -->
+            <circle cx="24" cy="8" r="6" fill="#ff4444" stroke="#ffffff" stroke-width="1"/>
+            <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">${plot.points_price > 999 ? 'K' : plot.points_price}</text>
           </svg>
         `),
         scaledSize: new window.google.maps.Size(32, 32),
@@ -148,11 +210,104 @@ export default function PlotPage({ params }: PlotPageProps) {
     // Add info window
     const infoWindow = new window.google.maps.InfoWindow({
       content: `
-        <div style="padding: 8px; max-width: 200px;">
-          <h3 style="margin: 0 0 4px 0; font-weight: bold; color: #1F2937;">${plot.name}</h3>
-          <p style="margin: 0; color: #6B7280; font-size: 12px;">${plot.points_price} Points</p>
+        <div style="
+          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+          border: 2px solid #ffd700;
+          border-radius: 8px;
+          padding: 16px;
+          width: 280px;
+          color: white;
+          font-family: 'Arial', sans-serif;
+          box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+          position: relative;
+          overflow: hidden;
+        ">
+          <!-- Glow effect -->
+          <div style="
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+          "></div>
+          
+          <!-- Header with treasure icon -->
+          <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <div style="
+              background: linear-gradient(45deg, #ff6b35, #f7931e);
+              border-radius: 50%;
+              width: 32px;
+              height: 32px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 12px;
+              box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+            ">
+              <span style="font-size: 16px;">💎</span>
+            </div>
+            <h3 style="
+              margin: 0;
+              font-weight: bold;
+              font-size: 18px;
+              background: linear-gradient(45deg, #ffd700, #ffed4e);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+            ">${plot.name}</h3>
+          </div>
+          
+          ${plot.description ? `
+            <div style="
+              background: rgba(255, 255, 255, 0.1);
+              border-radius: 6px;
+              padding: 8px;
+              margin-bottom: 12px;
+              border-left: 3px solid #ffd700;
+            ">
+              <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #e0e0e0;">
+                ${plot.description}
+              </p>
+            </div>
+          ` : ''}
+          
+          <!-- Points display -->
+          <div style="
+            background: linear-gradient(45deg, #ff4444, #ff6b6b);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ffd700;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+          ">
+            <div style="font-size: 12px; color: #ffd700; margin-bottom: 4px; font-weight: bold;">
+              REWARD POINTS
+            </div>
+            <div style="
+              font-size: 24px;
+              font-weight: bold;
+              color: white;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            ">
+              ${plot.points_price.toLocaleString()}
+            </div>
+          </div>
+          
+          <!-- Decorative elements -->
+          <div style="
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 12px;
+            color: #ffd700;
+            opacity: 0.7;
+          ">⚔️</div>
         </div>
-      `
+      `,
+      disableAutoPan: false,
+      pixelOffset: new window.google.maps.Size(0, -10)
     })
 
     markerRef.current.addListener('click', () => {
@@ -281,6 +436,23 @@ export default function PlotPage({ params }: PlotPageProps) {
               </button>
             </nav>
           </div>
+
+          {/* Plot Location Map - Full Width Banner */}
+          <Card className="bg-white/90 backdrop-blur-sm border-amber-200 mb-8">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <Map className="h-5 w-5" />
+                <span>Plot Location</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                ref={mapRef}
+                className="w-full h-96 rounded-lg overflow-hidden border border-gray-200"
+                style={{ minHeight: '384px' }}
+              />
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Plot Details - 2/3 width */}
@@ -444,24 +616,7 @@ export default function PlotPage({ params }: PlotPageProps) {
                 </CardContent>
               </Card>
 
-              {/* Plot Location Map */}
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <Map className="h-5 w-5" />
-                    <span>Plot Location</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div 
-                    ref={mapRef}
-                    className="w-full h-64 rounded-lg overflow-hidden border border-gray-200"
-                    style={{ minHeight: '256px' }}
-                  />
-                </CardContent>
-              </Card>
 
- 
             </div>
           </div>
         </div>
