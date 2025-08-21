@@ -16,7 +16,8 @@ import {
   XCircle,
   ArrowLeft,
   Crown,
-  Map
+  Map,
+  X
 } from 'lucide-react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -51,12 +52,14 @@ export default function PlotPage({ params }: PlotPageProps) {
   const { toast } = useToast()
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<any>(null)
-  const markerRef = useRef<any>(null)
-  const infoWindowRef = useRef<any>(null)
+  const markersRef = useRef<any[]>([])
+  const currentInfoWindowRef = useRef<any>(null)
   const [plot, setPlot] = useState<Plot | null>(null)
+  const [allPlots, setAllPlots] = useState<Plot[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isPurchasing, setIsPurchasing] = useState(false)
   const [userPoints, setUserPoints] = useState<number>(0)
+  const [showPlotsOverlay, setShowPlotsOverlay] = useState(true)
 
   useEffect(() => {
     const loadPlot = async () => {
@@ -67,6 +70,11 @@ export default function PlotPage({ params }: PlotPageProps) {
         if (response.ok) {
           const data = await response.json()
           setPlot(data.plot)
+          
+          // Load all plots for this map
+          if (data.plot.map_id) {
+            loadAllPlots(data.plot.map_id)
+          }
         } else {
           toast({
             title: "Error",
@@ -89,6 +97,27 @@ export default function PlotPage({ params }: PlotPageProps) {
 
     loadPlot()
   }, [params, router, toast])
+
+  const loadAllPlots = async (mapId: string) => {
+    try {
+      const response = await fetch(`/api/maps/${mapId}`)
+      if (response.ok) {
+        const data = await response.json()
+        // Ensure plots have proper number types for coordinates
+        const processedPlots = (data.plots || []).map((plot: any) => ({
+          ...plot,
+          latitude: typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0,
+          longitude: typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0,
+          points_price: typeof plot.points_price === 'number' ? plot.points_price : parseInt(plot.points_price) || 0
+        }))
+        
+        console.log('Processed plots:', processedPlots)
+        setAllPlots(processedPlots)
+      }
+    } catch (error) {
+      console.error('Error loading all plots:', error)
+    }
+  }
 
   useEffect(() => {
     const loadUserPoints = async () => {
@@ -132,13 +161,12 @@ export default function PlotPage({ params }: PlotPageProps) {
       }
       // Clean up map when component unmounts
       if (googleMapRef.current) {
+        markersRef.current.forEach(marker => marker.map = null)
+        markersRef.current = []
         googleMapRef.current = null
       }
-      if (markerRef.current) {
-        markerRef.current = null
-      }
-      if (infoWindowRef.current) {
-        infoWindowRef.current = null
+      if (currentInfoWindowRef.current) {
+        currentInfoWindowRef.current = null
       }
     }
   }, [plot])
@@ -269,11 +297,24 @@ export default function PlotPage({ params }: PlotPageProps) {
       googleMapRef.current.fitBounds(imageBounds)
     }
 
-    // Add marker for the plot (same as maps page)
-    markerRef.current = new window.google.maps.Marker({
-      position: { lat: plot.latitude, lng: plot.longitude },
+    // Add all plot markers (same as maps page)
+    allPlots.forEach(plotItem => {
+      addMarkerToMap(plotItem)
+    })
+  }
+
+  const addMarkerToMap = (plotItem: Plot) => {
+    if (!googleMapRef.current) return
+
+    // Ensure coordinates are numbers
+    const lat = typeof plotItem.latitude === 'number' ? plotItem.latitude : parseFloat(plotItem.latitude) || 0
+    const lng = typeof plotItem.longitude === 'number' ? plotItem.longitude : parseFloat(plotItem.longitude) || 0
+
+    // Create gamified marker
+    const marker = new window.google.maps.Marker({
+      position: { lat, lng },
       map: googleMapRef.current,
-      title: plot.name,
+      title: plotItem.name,
       icon: {
         url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
           <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -314,7 +355,7 @@ export default function PlotPage({ params }: PlotPageProps) {
             
             <!-- Points indicator -->
             <circle cx="24" cy="8" r="6" fill="#ff4444" stroke="#ffffff" stroke-width="1"/>
-            <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">${plot.points_price > 999 ? 'K' : plot.points_price}</text>
+            <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">${plotItem.points_price > 999 ? 'K' : plotItem.points_price}</text>
           </svg>
         `),
         scaledSize: new window.google.maps.Size(32, 32),
@@ -323,7 +364,7 @@ export default function PlotPage({ params }: PlotPageProps) {
     })
 
     // Add info window
-    infoWindowRef.current = new window.google.maps.InfoWindow({
+    const infoWindow = new window.google.maps.InfoWindow({
       content: `
         <div style="
           background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
@@ -371,10 +412,10 @@ export default function PlotPage({ params }: PlotPageProps) {
               -webkit-background-clip: text;
               -webkit-text-fill-color: transparent;
               background-clip: text;
-            ">${plot.name}</h3>
+            ">${plotItem.name}</h3>
           </div>
           
-          ${plot.description ? `
+          ${plotItem.description ? `
             <div style="
               background: rgba(255, 255, 255, 0.1);
               border-radius: 6px;
@@ -383,7 +424,7 @@ export default function PlotPage({ params }: PlotPageProps) {
               border-left: 3px solid #ffd700;
             ">
               <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #e0e0e0;">
-                ${plot.description}
+                ${plotItem.description}
               </p>
             </div>
           ` : ''}
@@ -406,7 +447,7 @@ export default function PlotPage({ params }: PlotPageProps) {
               color: white;
               text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             ">
-              ${plot.points_price.toLocaleString()}
+              ${plotItem.points_price.toLocaleString()}
             </div>
           </div>
           
@@ -425,12 +466,20 @@ export default function PlotPage({ params }: PlotPageProps) {
       pixelOffset: new window.google.maps.Size(0, -10)
     })
 
-    markerRef.current.addListener('click', () => {
-      infoWindowRef.current.open(googleMapRef.current, markerRef.current)
+    marker.addListener('click', () => {
+      // Close any existing info window first
+      if (currentInfoWindowRef.current) {
+        currentInfoWindowRef.current.close()
+      }
+      infoWindow.open(googleMapRef.current, marker)
+      currentInfoWindowRef.current = infoWindow
     })
+
+    markersRef.current.push(marker)
 
     // After map is loaded, center on the plot and open info window
     setTimeout(() => {
+      if (!plot) return
       console.log('Centering map on plot:', plot.name)
       // Center map on the plot location
       googleMapRef.current.panTo({ lat: plot.latitude, lng: plot.longitude })
@@ -438,8 +487,18 @@ export default function PlotPage({ params }: PlotPageProps) {
       
       // Trigger the marker's click event to open info window
       setTimeout(() => {
+        if (!plot) return
         console.log('Triggering marker click for plot:', plot.name)
-        window.google.maps.event.trigger(markerRef.current, 'click')
+        // Find the marker for this specific plot and trigger its click
+        const targetMarker = markersRef.current.find(m => {
+          const pos = m.getPosition()
+          return pos && 
+                 Math.abs(pos.lat() - plot.latitude) < 0.001 && 
+                 Math.abs(pos.lng() - plot.longitude) < 0.001
+        })
+        if (targetMarker) {
+          window.google.maps.event.trigger(targetMarker, 'click')
+        }
       }, 500) // Small delay to ensure map has finished panning
     }, 1000) // Wait for map to be fully loaded
   }
@@ -566,22 +625,127 @@ export default function PlotPage({ params }: PlotPageProps) {
             </nav>
           </div>
 
-          {/* Plot Location Map - Full Width Banner */}
-          <Card className="bg-white/90 backdrop-blur-sm border-amber-200 mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center space-x-2">
-                <Map className="h-5 w-5" />
-                <span>Plot Location</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                ref={mapRef}
-                className="w-full h-96 rounded-lg overflow-hidden border border-gray-200"
-                style={{ minHeight: '384px' }}
-              />
-            </CardContent>
-          </Card>
+                      {/* Plot Location Map - Full Width Banner */}
+            <div className="relative mb-8">
+              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center space-x-2">
+                    <Map className="h-5 w-5" />
+                    <span>Plot Location</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div 
+                    ref={mapRef}
+                    className="w-full h-96 rounded-lg overflow-hidden border border-gray-200"
+                    style={{ minHeight: '384px' }}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Plots List Overlay */}
+              {showPlotsOverlay && (
+                <div className="absolute top-4 right-4 w-80 max-h-[calc(100vh-250px)] overflow-hidden">
+                  <Card className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-md border-2 border-amber-400 shadow-2xl rounded-none">
+                    <CardHeader className="pb-3 border-b border-amber-400/30">
+                      <CardTitle className="text-lg font-bold text-amber-400 flex items-center justify-between">
+                        <div className="flex items-center">
+                          <span className="mr-2">🗺️</span>
+                          <span>Plots ({allPlots.length})</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-400/20"
+                          onClick={() => setShowPlotsOverlay(false)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      {allPlots.length === 0 ? (
+                        <p className="text-gray-500 text-center py-4">No plots available</p>
+                      ) : (
+                        <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto p-1">
+                          {allPlots.map((plotItem) => (
+                            <div 
+                              key={plotItem.id} 
+                              className="p-3 bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-amber-400/30 rounded-lg hover:from-gray-700/90 hover:to-gray-600/90 hover:border-amber-400/60 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
+                              onClick={() => {
+                                // Center map on the plot
+                                const lat = typeof plotItem.latitude === 'number' ? plotItem.latitude : parseFloat(plotItem.latitude) || 0
+                                const lng = typeof plotItem.longitude === 'number' ? plotItem.longitude : parseFloat(plotItem.longitude) || 0
+                                googleMapRef.current?.panTo({ lat, lng })
+                                googleMapRef.current?.setZoom(12)
+                                
+                                // Find and click the corresponding marker to open info window
+                                setTimeout(() => {
+                                  const markers = markersRef.current
+                                  const targetMarker = markers.find(marker => {
+                                    const markerPos = marker.getPosition()
+                                    return markerPos && 
+                                           Math.abs(markerPos.lat() - lat) < 0.001 && 
+                                           Math.abs(markerPos.lng() - lng) < 0.001
+                                  })
+                                  if (targetMarker) {
+                                    // Trigger the marker's click event
+                                    window.google.maps.event.trigger(targetMarker, 'click')
+                                  }
+                                }, 500) // Small delay to ensure map has finished panning
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center mb-1">
+                                    <span className="text-amber-400 mr-2">💎</span>
+                                    <h4 className="font-bold text-amber-300 text-sm">{plotItem.name}</h4>
+                                  </div>
+                                  {plotItem.description && (
+                                    <p className="text-xs text-gray-300 line-clamp-1 ml-6">{plotItem.description}</p>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="bg-gradient-to-r from-red-500 to-red-600 px-2 py-1 rounded-full border border-amber-400/50">
+                                    <span className="text-xs font-bold text-white">
+                                      {plotItem.points_price.toLocaleString()} pts
+                                    </span>
+                                  </div>
+                                  <a 
+                                    href={`/plot/${plotItem.id}`}
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded-full border border-blue-400/50 hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <span className="text-xs font-bold text-white">
+                                      View
+                                    </span>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Toggle Plots Button */}
+              {!showPlotsOverlay && (
+                <div className="absolute top-4 right-4">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none"
+                    onClick={() => setShowPlotsOverlay(true)}
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Show Plots ({allPlots.length})
+                  </Button>
+                </div>
+              )}
+            </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Plot Details - 2/3 width */}
