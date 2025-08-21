@@ -706,32 +706,7 @@ export default function PlotPage({ params }: PlotPageProps) {
                 </CardContent>
               </Card>
 
-              {/* Owner Information */}
-              {plot.owner_id && (
-                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <Crown className="h-5 w-5 text-amber-500" />
-                      <span>Current Owner</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-sm font-medium text-gray-600">Owner:</span>
-                        <p className="text-gray-900">{plot.owner_name || 'Unknown'}</p>
-                      </div>
-                      
-                      <div>
-                        <span className="text-sm font-medium text-gray-600">Purchased:</span>
-                        <p className="text-gray-900">
-                          {plot.purchased_at ? new Date(plot.purchased_at).toLocaleDateString() : 'Unknown'}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+
             </div>
 
             {/* Plot Status Sidebar - 1/3 width */}
