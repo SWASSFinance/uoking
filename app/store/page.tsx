@@ -108,7 +108,7 @@ export default async function StorePage() {
                             src={category.image_url}
                             alt={category.name}
                             fill
-                            className="object-cover"
+                            className="object-contain"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
@@ -132,11 +132,6 @@ export default async function StorePage() {
                     </CardHeader>
                     
                     <CardContent className="p-6">
-                      <div 
-                        className="text-gray-600 text-center mb-4 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: category.description }}
-                      />
-                      
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-2">
                           <Star className="h-4 w-4 text-amber-500" />
