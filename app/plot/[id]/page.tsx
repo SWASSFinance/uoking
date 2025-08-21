@@ -388,27 +388,16 @@ export default function PlotPage({ params }: PlotPageProps) {
     const infoWindow = new window.google.maps.InfoWindow({
       content: `
         <div style="
-          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-          border: 2px solid #ffd700;
+          background: white;
           border-radius: 8px;
           padding: 16px;
           width: 280px;
-          color: white;
+          color: #333;
           font-family: 'Arial', sans-serif;
-          box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           position: relative;
           overflow: hidden;
         ">
-          <!-- Glow effect -->
-          <div style="
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-            pointer-events: none;
-          "></div>
           
           <!-- Header with treasure icon -->
           <div style="display: flex; align-items: center; margin-bottom: 12px;">
@@ -421,7 +410,7 @@ export default function PlotPage({ params }: PlotPageProps) {
               align-items: center;
               justify-content: center;
               margin-right: 12px;
-              box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+              box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
             ">
               <span style="font-size: 16px;">💎</span>
             </div>
@@ -429,22 +418,19 @@ export default function PlotPage({ params }: PlotPageProps) {
               margin: 0;
               font-weight: bold;
               font-size: 18px;
-              background: linear-gradient(45deg, #ffd700, #ffed4e);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              background-clip: text;
+              color: #333;
             ">${plotItem.name}</h3>
           </div>
           
           ${plotItem.description ? `
             <div style="
-              background: rgba(255, 255, 255, 0.1);
+              background: #f8f9fa;
               border-radius: 6px;
               padding: 8px;
               margin-bottom: 12px;
               border-left: 3px solid #ffd700;
             ">
-              <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #e0e0e0;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #666;">
                 ${plotItem.description}
               </p>
             </div>
@@ -456,8 +442,8 @@ export default function PlotPage({ params }: PlotPageProps) {
             border-radius: 8px;
             padding: 12px;
             text-align: center;
-            border: 1px solid #ffd700;
-            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(255, 68, 68, 0.2);
           ">
             <div style="font-size: 12px; color: #ffd700; margin-bottom: 4px; font-weight: bold;">
               REWARD POINTS
@@ -466,7 +452,7 @@ export default function PlotPage({ params }: PlotPageProps) {
               font-size: 24px;
               font-weight: bold;
               color: white;
-              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+              text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             ">
               ${plotItem.points_price.toLocaleString()}
             </div>
@@ -479,7 +465,7 @@ export default function PlotPage({ params }: PlotPageProps) {
             right: 8px;
             font-size: 12px;
             color: #ffd700;
-            opacity: 0.7;
+            opacity: 0.5;
           ">⚔️</div>
         </div>
       `,
