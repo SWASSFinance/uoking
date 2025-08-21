@@ -169,7 +169,7 @@ export default function UserPlotsPage() {
                       <div>
                         <span className="text-gray-600">Location:</span>
                         <p className="font-medium">
-                          {plot.latitude.toFixed(4)}, {plot.longitude.toFixed(4)}
+                          {typeof plot.latitude === 'number' ? plot.latitude.toFixed(4) : plot.latitude}, {typeof plot.longitude === 'number' ? plot.longitude.toFixed(4) : plot.longitude}
                         </p>
                       </div>
                       
