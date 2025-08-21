@@ -52,6 +52,7 @@ export default function PlotPage({ params }: PlotPageProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<any>(null)
   const markerRef = useRef<any>(null)
+  const infoWindowRef = useRef<any>(null)
   const [plot, setPlot] = useState<Plot | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isPurchasing, setIsPurchasing] = useState(false)
@@ -129,11 +130,23 @@ export default function PlotPage({ params }: PlotPageProps) {
       if (retryTimeout) {
         clearTimeout(retryTimeout)
       }
+      // Clean up map when component unmounts
+      if (googleMapRef.current) {
+        googleMapRef.current = null
+      }
+      if (markerRef.current) {
+        markerRef.current = null
+      }
+      if (infoWindowRef.current) {
+        infoWindowRef.current = null
+      }
     }
   }, [plot])
 
   const initializeMap = () => {
     if (!plot || !mapRef.current || !window.google?.maps) return
+
+    console.log('Initializing map for plot:', plot.name, 'at coordinates:', plot.latitude, plot.longitude)
 
     // Create map centered on the plot location
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
@@ -204,11 +217,10 @@ export default function PlotPage({ params }: PlotPageProps) {
 
       mapOverlay.setMap(googleMapRef.current)
 
-      // Fit the map to show the entire image
-      googleMapRef.current.fitBounds(imageBounds)
+      // Don't fit bounds here - we'll center on the plot instead
     }
 
-    // Add marker for the plot
+    // Add marker for the plot (same as maps page)
     markerRef.current = new window.google.maps.Marker({
       position: { lat: plot.latitude, lng: plot.longitude },
       map: googleMapRef.current,
@@ -262,7 +274,7 @@ export default function PlotPage({ params }: PlotPageProps) {
     })
 
     // Add info window
-    const infoWindow = new window.google.maps.InfoWindow({
+    infoWindowRef.current = new window.google.maps.InfoWindow({
       content: `
         <div style="
           background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
@@ -365,20 +377,22 @@ export default function PlotPage({ params }: PlotPageProps) {
     })
 
     markerRef.current.addListener('click', () => {
-      infoWindow.open(googleMapRef.current, markerRef.current)
+      infoWindowRef.current.open(googleMapRef.current, markerRef.current)
     })
 
     // Center map on the plot and open info window (same as clicking on maps page)
     setTimeout(() => {
+      console.log('Centering map on plot:', plot.name)
       // Center map on the plot location
       googleMapRef.current.panTo({ lat: plot.latitude, lng: plot.longitude })
       googleMapRef.current.setZoom(12)
       
       // Trigger the marker's click event to open info window
       setTimeout(() => {
+        console.log('Triggering marker click for plot:', plot.name)
         window.google.maps.event.trigger(markerRef.current, 'click')
       }, 500) // Small delay to ensure map has finished panning
-    }, 1000) // Delay to ensure map is fully loaded
+    }, 1500) // Longer delay to ensure map overlay is fully loaded
   }
 
   const handlePurchase = async () => {
