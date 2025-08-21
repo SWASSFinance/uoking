@@ -149,9 +149,20 @@ export default function ClassPage({ params }: ClassPageProps) {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-4">
-              <div className={`p-4 rounded-lg bg-gradient-to-r ${classColor}`}>
-                <IconComponent className="h-12 w-12 text-white" />
-              </div>
+              {classData.image_url ? (
+                <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shadow-lg">
+                  <ProductImage
+                    src={classData.image_url}
+                    alt={classData.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div className={`p-4 rounded-lg bg-gradient-to-r ${classColor}`}>
+                  <IconComponent className="h-12 w-12 text-white" />
+                </div>
+              )}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900">UO {classData.name} Items</h1>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto mt-4 leading-relaxed">

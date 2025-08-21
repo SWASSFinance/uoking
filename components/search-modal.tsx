@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ProductImage } from "@/components/ui/product-image"
 import { 
   Search, 
   X, 
@@ -29,6 +30,7 @@ interface SearchResult {
   type: 'product' | 'category' | 'class' | 'prop'
   url: string
   description?: string
+  image_url?: string
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
@@ -105,7 +107,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           name: product.name,
           type: 'product' as const,
           url: `/product/${product.slug}`,
-          description: product.short_description || `Price: $${product.price}`
+          description: product.short_description || `Price: $${product.price}`,
+          image_url: product.image_url
         })),
         
         // Categories
@@ -276,7 +279,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         className="flex items-center space-x-3 w-full p-3 text-left hover:bg-gray-50 rounded-lg transition-colors group"
                       >
                         <div className="flex-shrink-0">
-                          {getResultIcon(result.type)}
+                          {result.type === 'product' && result.image_url ? (
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                              <ProductImage
+                                src={result.image_url}
+                                alt={result.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            getResultIcon(result.type)
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2">
