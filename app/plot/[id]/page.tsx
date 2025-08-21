@@ -368,9 +368,15 @@ export default function PlotPage({ params }: PlotPageProps) {
               <circle cx="12" cy="3" r="1" fill="#ffd700"/>
             </g>
             
-            <!-- Points indicator -->
+            ${!plotItem.owner_id ? `
+            <!-- Points indicator for available plots -->
             <circle cx="24" cy="8" r="6" fill="#ff4444" stroke="#ffffff" stroke-width="1"/>
             <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">${plotItem.points_price > 999 ? 'K' : plotItem.points_price}</text>
+            ` : `
+            <!-- Owned indicator -->
+            <circle cx="24" cy="8" r="6" fill="#22c55e" stroke="#ffffff" stroke-width="1"/>
+            <text x="24" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">✓</text>
+            `}
           </svg>
         `),
         scaledSize: new window.google.maps.Size(32, 32),
@@ -811,20 +817,15 @@ export default function PlotPage({ params }: PlotPageProps) {
                       </p>
                     </div>
 
-                    {plot.owner_name && (
+                    {plot.purchased_at && (
                       <div className="bg-green-50 p-3 rounded-lg border border-green-200">
                         <div className="text-center">
                           <div className="text-sm font-medium text-green-800 mb-1">
-                            Current Owner
+                            Purchase Date
                           </div>
                           <div className="text-lg font-semibold text-green-900">
-                            {plot.owner_name}
+                            {new Date(plot.purchased_at).toLocaleDateString()}
                           </div>
-                          {plot.purchased_at && (
-                            <div className="text-xs text-green-700 mt-1">
-                              Purchased: {new Date(plot.purchased_at).toLocaleDateString()}
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
