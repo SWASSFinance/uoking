@@ -780,7 +780,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Points</p>
-                    <p className="text-2xl font-bold text-amber-600">{userPoints.current_points || 0}</p>
+                    <p className="text-2xl font-bold text-amber-600">{userPoints?.current_points || 0}</p>
                   </div>
                 </div>
               </CardContent>
