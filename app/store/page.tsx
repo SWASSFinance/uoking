@@ -125,7 +125,7 @@ export default async function StorePage() {
                       
                       {/* Category Title */}
                       <div className="p-6">
-                        <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
+                        <CardTitle className="text-xl font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">
                           {category.name}
                         </CardTitle>
                       </div>
