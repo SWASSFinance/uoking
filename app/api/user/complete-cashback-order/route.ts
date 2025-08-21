@@ -111,11 +111,11 @@ export async function POST(request: NextRequest) {
         WHERE user_id = $2
       `, [cashbackUsed, userId])
 
-      // Update order status to completed
+      // Update order status - payment completed, order processing
       await query(`
         UPDATE orders 
         SET payment_status = 'completed',
-            status = 'completed',
+            status = 'processing',
             payment_method = 'cashback',
             updated_at = NOW()
         WHERE id = $1 AND user_id = $2
