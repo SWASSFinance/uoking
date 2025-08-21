@@ -16,8 +16,7 @@ import {
   XCircle,
   ArrowLeft,
   Crown,
-  Map,
-  X
+  Map
 } from 'lucide-react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -59,7 +58,6 @@ export default function PlotPage({ params }: PlotPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isPurchasing, setIsPurchasing] = useState(false)
   const [userPoints, setUserPoints] = useState<number>(0)
-  const [showPlotsOverlay, setShowPlotsOverlay] = useState(true)
 
   useEffect(() => {
     const loadPlot = async () => {
@@ -165,11 +163,14 @@ export default function PlotPage({ params }: PlotPageProps) {
       // Auto-open info window for the current plot
       if (plot) {
         setTimeout(() => {
+          const plotLat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
+          const plotLng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
+          
           const targetMarker = markersRef.current.find(m => {
             const pos = m.getPosition()
             return pos && 
-                   Math.abs(pos.lat() - plot.latitude) < 0.001 && 
-                   Math.abs(pos.lng() - plot.longitude) < 0.001
+                   Math.abs(pos.lat() - plotLat) < 0.001 && 
+                   Math.abs(pos.lng() - plotLng) < 0.001
           })
           if (targetMarker) {
             window.google.maps.event.trigger(targetMarker, 'click')
@@ -189,12 +190,16 @@ export default function PlotPage({ params }: PlotPageProps) {
       return
     }
 
-    console.log('Initializing map for plot:', plot.name, 'at coordinates:', plot.latitude, plot.longitude)
+    // Ensure coordinates are valid numbers
+    const lat = typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0
+    const lng = typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0
+    
+    console.log('Initializing map for plot:', plot.name, 'at coordinates:', lat, lng)
 
     // Initialize map centered on the plot location
     googleMapRef.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: plot.latitude, lng: plot.longitude },
-      zoom: 12,
+      center: { lat, lng },
+      zoom: 11,
       mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       mapTypeControl: false,
       streetViewControl: false,
@@ -313,6 +318,12 @@ export default function PlotPage({ params }: PlotPageProps) {
     // Ensure coordinates are numbers
     const lat = typeof plotItem.latitude === 'number' ? plotItem.latitude : parseFloat(plotItem.latitude) || 0
     const lng = typeof plotItem.longitude === 'number' ? plotItem.longitude : parseFloat(plotItem.longitude) || 0
+
+    // Skip if coordinates are invalid
+    if (isNaN(lat) || isNaN(lng)) {
+      console.error('Invalid coordinates for plot:', plotItem.name, plotItem.latitude, plotItem.longitude)
+      return
+    }
 
     // Create gamified marker
     const marker = new window.google.maps.Marker({
@@ -622,108 +633,7 @@ export default function PlotPage({ params }: PlotPageProps) {
                 </CardContent>
               </Card>
 
-              {/* Plots List Overlay */}
-              {showPlotsOverlay && (
-                <div className="absolute top-4 right-4 w-80 max-h-[calc(100vh-250px)] overflow-hidden">
-                  <Card className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-md border-2 border-amber-400 shadow-2xl rounded-none">
-                    <CardHeader className="pb-3 border-b border-amber-400/30">
-                      <CardTitle className="text-lg font-bold text-amber-400 flex items-center justify-between">
-                        <div className="flex items-center">
-                          <span className="mr-2">🗺️</span>
-                          <span>Plots ({allPlots.length})</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-400/20"
-                          onClick={() => setShowPlotsOverlay(false)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      {allPlots.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">No plots available</p>
-                      ) : (
-                        <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto p-1">
-                          {allPlots.map((plotItem) => (
-                            <div 
-                              key={plotItem.id} 
-                              className="p-3 bg-gradient-to-r from-gray-800/80 to-gray-700/80 border border-amber-400/30 rounded-lg hover:from-gray-700/90 hover:to-gray-600/90 hover:border-amber-400/60 transition-all duration-300 cursor-pointer transform hover:scale-[1.02]"
-                              onClick={() => {
-                                // Center map on the plot
-                                const lat = typeof plotItem.latitude === 'number' ? plotItem.latitude : parseFloat(plotItem.latitude) || 0
-                                const lng = typeof plotItem.longitude === 'number' ? plotItem.longitude : parseFloat(plotItem.longitude) || 0
-                                googleMapRef.current?.panTo({ lat, lng })
-                                googleMapRef.current?.setZoom(12)
-                                
-                                // Find and click the corresponding marker to open info window
-                                setTimeout(() => {
-                                  const markers = markersRef.current
-                                  const targetMarker = markers.find(marker => {
-                                    const markerPos = marker.getPosition()
-                                    return markerPos && 
-                                           Math.abs(markerPos.lat() - lat) < 0.001 && 
-                                           Math.abs(markerPos.lng() - lng) < 0.001
-                                  })
-                                  if (targetMarker) {
-                                    // Trigger the marker's click event
-                                    window.google.maps.event.trigger(targetMarker, 'click')
-                                  }
-                                }, 500) // Small delay to ensure map has finished panning
-                              }}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center mb-1">
-                                    <span className="text-amber-400 mr-2">💎</span>
-                                    <h4 className="font-bold text-amber-300 text-sm">{plotItem.name}</h4>
-                                  </div>
-                                  {plotItem.description && (
-                                    <p className="text-xs text-gray-300 line-clamp-1 ml-6">{plotItem.description}</p>
-                                  )}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="bg-gradient-to-r from-red-500 to-red-600 px-2 py-1 rounded-full border border-amber-400/50">
-                                    <span className="text-xs font-bold text-white">
-                                      {plotItem.points_price.toLocaleString()} pts
-                                    </span>
-                                  </div>
-                                  <a 
-                                    href={`/plot/${plotItem.id}`}
-                                    className="bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded-full border border-blue-400/50 hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <span className="text-xs font-bold text-white">
-                                      View
-                                    </span>
-                                  </a>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
 
-              {/* Toggle Plots Button */}
-              {!showPlotsOverlay && (
-                <div className="absolute top-4 right-4">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="bg-white/80 backdrop-blur-md border-2 border-gray-300 shadow-xl rounded-none"
-                    onClick={() => setShowPlotsOverlay(true)}
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Show Plots ({allPlots.length})
-                  </Button>
-                </div>
-              )}
             </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

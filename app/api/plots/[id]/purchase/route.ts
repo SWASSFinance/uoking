@@ -4,7 +4,7 @@ import { purchasePlot, getPlotById } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -15,7 +15,7 @@ export async function POST(
       )
     }
 
-    const plotId = params.id
+    const { id: plotId } = await params
 
     // Get plot details first to validate it exists
     const plot = await getPlotById(plotId)
@@ -54,10 +54,11 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const plot = await getPlotById(params.id)
+    const { id } = await params
+    const plot = await getPlotById(id)
     
     if (!plot) {
       return NextResponse.json(
