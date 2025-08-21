@@ -169,7 +169,21 @@ export default function PlotPage({ params }: PlotPageProps) {
         currentInfoWindowRef.current = null
       }
     }
-  }, [plot])
+  }, [plot, allPlots])
+
+  // Add markers when all plots are loaded
+  useEffect(() => {
+    if (googleMapRef.current && allPlots.length > 0) {
+      // Clear existing markers
+      markersRef.current.forEach(marker => marker.map = null)
+      markersRef.current = []
+      
+      // Add all plot markers
+      allPlots.forEach(plotItem => {
+        addMarkerToMap(plotItem)
+      })
+    }
+  }, [allPlots])
 
   const initializeMap = () => {
     if (!plot || !mapRef.current || !window.google?.maps) {
@@ -297,10 +311,7 @@ export default function PlotPage({ params }: PlotPageProps) {
       googleMapRef.current.fitBounds(imageBounds)
     }
 
-    // Add all plot markers (same as maps page)
-    allPlots.forEach(plotItem => {
-      addMarkerToMap(plotItem)
-    })
+    // Markers will be added by separate effect when allPlots are loaded
   }
 
   const addMarkerToMap = (plotItem: Plot) => {
