@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -113,10 +115,13 @@ export function HelpSection() {
           <p className="text-lg mb-4">Use coupon code: <span className="font-bold text-yellow-300 text-xl">fiveoff</span></p>
           <p className="text-green-100 mb-6">Get 5% off your UO gold orders and items!</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white text-green-600 hover:bg-green-50">
+            <Button className="bg-white text-green-600 hover:bg-green-50 border-2 border-white">
               Shop Now
             </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-green-600">
+            <Button 
+              className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-green-600"
+              onClick={() => window.open('https://discord.gg/jAWgunBH', '_blank')}
+            >
               Join Discord
             </Button>
           </div>

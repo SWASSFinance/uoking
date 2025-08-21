@@ -1,7 +1,9 @@
+"use client"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Mail, MessageCircle, Clock, Shield, CreditCard, Facebook, Twitter, Instagram } from "lucide-react"
+import { Crown, Mail, MessageCircle, Clock, Shield, CreditCard, Facebook, Twitter, Instagram, MessageSquare } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -27,6 +29,14 @@ export function Footer() {
               Fast delivery, competitive prices, and 24/7 support.
             </p>
             <div className="flex space-x-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-gray-400 hover:text-white"
+                onClick={() => window.open('https://discord.gg/jAWgunBH', '_blank')}
+              >
+                <MessageSquare className="h-5 w-5" />
+              </Button>
               <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
                 <Facebook className="h-5 w-5" />
               </Button>
@@ -109,22 +119,22 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-amber-800 mt-6 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-sm text-gray-400">
-              <p>Game content © Electronic Arts Inc. All rights reserved | Ultima Online is trademark EA Games, All rights reserved</p>
-            </div>
-            <div className="flex space-x-6 text-sm">
-              <Link href="/delivery-returns" className="text-gray-400 hover:text-white transition-colors">Delivery / Returns</Link>
-              <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms & Conditions</Link>
-            </div>
-            <div className="text-sm text-gray-400">
-              © 2025 | UOKing
-            </div>
-          </div>
-        </div>
+                 {/* Bottom Bar */}
+         <div className="border-t border-amber-800 mt-6 pt-6">
+           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
+             <div className="text-sm text-gray-400 text-center lg:text-left max-w-md">
+               <p className="whitespace-normal">Game content © Electronic Arts Inc. All rights reserved | Ultima Online is trademark EA Games, All rights reserved</p>
+             </div>
+             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-sm">
+               <Link href="/delivery-returns" className="text-gray-400 hover:text-white transition-colors whitespace-nowrap">Delivery / Returns</Link>
+               <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors whitespace-nowrap">Privacy Policy</Link>
+               <Link href="/terms" className="text-gray-400 hover:text-white transition-colors whitespace-nowrap">Terms & Conditions</Link>
+             </div>
+             <div className="text-sm text-gray-400 text-center lg:text-right whitespace-nowrap">
+               © 2025 | UOKing
+             </div>
+           </div>
+         </div>
       </div>
     </footer>
   )
