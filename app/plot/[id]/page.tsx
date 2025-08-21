@@ -71,10 +71,8 @@ export default function PlotPage({ params }: PlotPageProps) {
           const data = await response.json()
           setPlot(data.plot)
           
-          // Load all plots for this map
-          if (data.plot.map_id) {
-            loadAllPlots(data.plot.map_id)
-          }
+          // Set the current plot as the only plot to show
+          setAllPlots([data.plot])
         } else {
           toast({
             title: "Error",
@@ -98,26 +96,7 @@ export default function PlotPage({ params }: PlotPageProps) {
     loadPlot()
   }, [params, router, toast])
 
-  const loadAllPlots = async (mapId: string) => {
-    try {
-      const response = await fetch(`/api/maps/${mapId}`)
-      if (response.ok) {
-        const data = await response.json()
-        // Ensure plots have proper number types for coordinates
-        const processedPlots = (data.plots || []).map((plot: any) => ({
-          ...plot,
-          latitude: typeof plot.latitude === 'number' ? plot.latitude : parseFloat(plot.latitude) || 0,
-          longitude: typeof plot.longitude === 'number' ? plot.longitude : parseFloat(plot.longitude) || 0,
-          points_price: typeof plot.points_price === 'number' ? plot.points_price : parseInt(plot.points_price) || 0
-        }))
-        
-        console.log('Processed plots:', processedPlots)
-        setAllPlots(processedPlots)
-      }
-    } catch (error) {
-      console.error('Error loading all plots:', error)
-    }
-  }
+
 
   useEffect(() => {
     const loadUserPoints = async () => {
@@ -303,7 +282,7 @@ export default function PlotPage({ params }: PlotPageProps) {
       ]
     })
 
-    // Add custom map overlay if available (exactly like maps page)
+    // Add custom map overlay if available
     if (plot.map_file_url) {
       console.log('Adding custom map overlay:', plot.map_file_url)
       // Create an overlay that displays the custom map image
@@ -322,8 +301,7 @@ export default function PlotPage({ params }: PlotPageProps) {
 
       mapOverlay.setMap(googleMapRef.current)
 
-      // Fit the map to show the entire image (exactly like maps page)
-      googleMapRef.current.fitBounds(imageBounds)
+      // Don't fit bounds - keep our custom center and zoom
     }
 
     // Markers will be added by separate effect when allPlots are loaded
