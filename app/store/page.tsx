@@ -29,6 +29,9 @@ import {
 import Link from "next/link"
 import { getCategories, getProducts } from "@/lib/db"
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic'
+
 const categoryIcons: { [key: string]: any } = {
   'weapons': Sword,
   'armor': Shield,
