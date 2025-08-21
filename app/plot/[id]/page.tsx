@@ -731,72 +731,106 @@ export default function PlotPage({ params }: PlotPageProps) {
               )}
             </div>
 
-            {/* Purchase Sidebar - 1/3 width */}
+            {/* Plot Status Sidebar - 1/3 width */}
             <div className="space-y-6">
-              {/* Purchase Card */}
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <Coins className="h-5 w-5" />
-                    <span>Purchase Plot</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-amber-600 mb-2">
-                      {plot.points_price} Points
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {plot.is_available ? 'Available for purchase' : 'Already owned'}
-                    </p>
-                  </div>
-
-                  {session?.user?.id && (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Your Points:</span>
-                        <span className="font-medium">{userPoints}</span>
+              {plot.is_available ? (
+                /* Purchase Card for Available Plots */
+                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center space-x-2">
+                      <Coins className="h-5 w-5" />
+                      <span>Purchase Plot</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-amber-600 mb-2">
+                        {plot.points_price} Points
                       </div>
-                      {plot.is_available && (
+                      <p className="text-sm text-gray-600 mb-4">
+                        Available for purchase
+                      </p>
+                    </div>
+
+                    {session?.user?.id && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Your Points:</span>
+                          <span className="font-medium">{userPoints}</span>
+                        </div>
                         <div className="flex items-center justify-between text-sm mt-1">
                           <span className="text-gray-600">After Purchase:</span>
                           <span className={`font-medium ${userPoints - plot.points_price < 0 ? 'text-red-600' : 'text-green-600'}`}>
                             {userPoints - plot.points_price}
                           </span>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    )}
 
-                  {!session?.user?.id ? (
-                    <Button 
-                      onClick={() => router.push('/login')}
-                      className="w-full bg-amber-600 hover:bg-amber-700"
-                    >
-                      Login to Purchase
-                    </Button>
-                  ) : plot.is_available ? (
-                    <Button 
-                      onClick={handlePurchase}
-                      disabled={isPurchasing || userPoints < plot.points_price}
-                      className="w-full bg-amber-600 hover:bg-amber-700"
-                    >
-                      {isPurchasing ? 'Purchasing...' : 'Purchase Plot'}
-                    </Button>
-                  ) : (
+                    {!session?.user?.id ? (
+                      <Button 
+                        onClick={() => router.push('/login')}
+                        className="w-full bg-amber-600 hover:bg-amber-700"
+                      >
+                        Login to Purchase
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handlePurchase}
+                        disabled={isPurchasing || userPoints < plot.points_price}
+                        className="w-full bg-amber-600 hover:bg-amber-700"
+                      >
+                        {isPurchasing ? 'Purchasing...' : 'Purchase Plot'}
+                      </Button>
+                    )}
+
+                    {session?.user?.id && userPoints < plot.points_price && (
+                      <div className="text-center text-sm text-red-600">
+                        Insufficient points to purchase this plot
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                /* Plot Status Card for Owned Plots */
+                <Card className="bg-white/90 backdrop-blur-sm border-green-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center space-x-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span>Plot Status</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <div className="text-center">
-                      <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Plot is owned</p>
+                      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                      <div className="text-xl font-bold text-green-600 mb-2">
+                        Plot Owned
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        This plot has been purchased
+                      </p>
                     </div>
-                  )}
 
-                  {plot.is_available && session?.user?.id && userPoints < plot.points_price && (
-                    <div className="text-center text-sm text-red-600">
-                      Insufficient points to purchase this plot
-                    </div>
-                                    )}
-                </CardContent>
-              </Card>
+                    {plot.owner_name && (
+                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                        <div className="text-center">
+                          <div className="text-sm font-medium text-green-800 mb-1">
+                            Current Owner
+                          </div>
+                          <div className="text-lg font-semibold text-green-900">
+                            {plot.owner_name}
+                          </div>
+                          {plot.purchased_at && (
+                            <div className="text-xs text-green-700 mt-1">
+                              Purchased: {new Date(plot.purchased_at).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
 
             </div>
