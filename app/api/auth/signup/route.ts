@@ -87,11 +87,6 @@ export async function POST(request: NextRequest) {
     // Generate username from email
     const username = email.split('@')[0] + Math.floor(Math.random() * 1000)
 
-    // Get client IP
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    '127.0.0.1'
-
     // Create user
     const userResult = await query(`
       INSERT INTO users (
@@ -141,6 +136,35 @@ export async function POST(request: NextRequest) {
       await getUserReferralCode(newUser.id)
     } catch (referralError) {
       console.error('Failed to create user referral code:', referralError)
+    }
+
+    // Send welcome email
+    try {
+      const { sendRegistrationEmail } = await import('@/lib/email')
+      await sendRegistrationEmail({
+        email: newUser.email,
+        name: newUser.first_name,
+        characterName: newUser.first_name
+      })
+    } catch (emailError) {
+      console.error('Failed to send registration email:', emailError)
+      // Don't fail signup if email fails
+    }
+
+    // Add to Mailchimp list
+    try {
+      const { addCustomerToMailchimp } = await import('@/lib/mailchimp')
+      await addCustomerToMailchimp({
+        email: newUser.email,
+        firstName: newUser.first_name,
+        lastName: newUser.last_name,
+        characterName: newUser.first_name,
+        mainShard: null, // Will be updated when user sets their shard
+        source: 'registration'
+      })
+    } catch (mailchimpError) {
+      console.error('Failed to add to Mailchimp list:', mailchimpError)
+      // Don't fail signup if Mailchimp fails
     }
 
     return NextResponse.json({

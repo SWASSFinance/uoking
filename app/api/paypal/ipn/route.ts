@@ -157,6 +157,52 @@ export async function POST(request: NextRequest) {
           ) VALUES ($1, $2, $3, $4, 'purchase_cashback', 'completed')
         `, [order.user_id, order.user_id, custom, cashbackAmount])
       }
+
+      // Send order confirmation email
+      try {
+        // Get order items for email
+        const orderItemsResult = await query(`
+          SELECT oi.quantity, oi.price, p.name
+          FROM order_items oi
+          JOIN products p ON oi.product_id = p.id
+          WHERE oi.order_id = $1
+        `, [custom])
+
+        const { sendOrderConfirmationEmail } = await import('@/lib/email')
+        await sendOrderConfirmationEmail({
+          orderId: custom,
+          customerName: order.customer_name || 'Customer',
+          email: order.user_email,
+          total: parseFloat(order.total_amount),
+          items: orderItemsResult.rows.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: parseFloat(item.price)
+          })),
+          deliveryCharacter: order.delivery_character,
+          shard: order.shard
+        })
+      } catch (emailError) {
+        console.error('Failed to send order confirmation email:', emailError)
+        // Don't fail IPN processing if email fails
+      }
+
+      // Add customer to Mailchimp with order data
+      try {
+        const { addOrderCustomerToMailchimp } = await import('@/lib/mailchimp')
+        await addOrderCustomerToMailchimp({
+          email: order.user_email,
+          firstName: order.customer_name?.split(' ')[0] || '',
+          lastName: order.customer_name?.split(' ').slice(1).join(' ') || '',
+          characterName: order.delivery_character || '',
+          mainShard: order.shard || '',
+          orderId: custom,
+          orderTotal: parseFloat(order.total_amount)
+        })
+      } catch (mailchimpError) {
+        console.error('Failed to add order customer to Mailchimp:', mailchimpError)
+        // Don't fail IPN processing if Mailchimp fails
+      }
     }
 
     console.log(`Order ${custom} updated to status: ${newStatus}`)

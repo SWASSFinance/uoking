@@ -179,9 +179,6 @@ export default function UsersAdminPage() {
     setBanForm({ reason: '', durationDays: '', banEmail: true, banIP: true })
     setShowBanModal(true)
   }
-      console.error('Error saving user:', error)
-    }
-  }
 
   const handleDelete = async (userId: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
