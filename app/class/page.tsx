@@ -6,67 +6,46 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Sword, Shield, Zap, Users, Target, Star, BookOpen } from "lucide-react"
 import Link from "next/link"
+import { getClasses } from '@/lib/db'
 
-const classTypes = [
-  {
-    name: "Getting Started",
-    description: "Begin your journey in Ultima Online",
-    icon: BookOpen,
-    color: "bg-blue-500",
-    difficulty: "Beginner",
-    features: ["Basic skills", "Equipment guide", "Combat tips"]
-  },
-  {
-    name: "Mage",
-    description: "Master of magic and spells",
-    icon: Zap,
-    color: "bg-purple-500",
-    difficulty: "Intermediate",
-    features: ["Spell casting", "Mana management", "Magical combat"]
-  },
-  {
-    name: "Tamer",
-    description: "Beast master and animal companion",
-    icon: Users,
-    color: "bg-green-500",
-    difficulty: "Advanced",
-    features: ["Pet training", "Animal control", "Companion combat"]
-  },
-  {
-    name: "Melee",
-    description: "Close combat warrior",
-    icon: Sword,
-    color: "bg-red-500",
-    difficulty: "Beginner",
-    features: ["Weapon mastery", "Armor proficiency", "Physical combat"]
-  },
-  {
-    name: "Ranged",
-    description: "Distance combat specialist",
-    icon: Target,
-    color: "bg-orange-500",
-    difficulty: "Intermediate",
-    features: ["Bow mastery", "Archery skills", "Distance tactics"]
-  },
-  {
-    name: "Thief",
-    description: "Stealth and subterfuge",
-    icon: Shield,
-    color: "bg-gray-500",
-    difficulty: "Advanced",
-    features: ["Stealth skills", "Lockpicking", "Sneak attacks"]
-  },
-  {
-    name: "Crafter",
-    description: "Master of crafting and trade",
-    icon: Star,
-    color: "bg-yellow-500",
-    difficulty: "Intermediate",
-    features: ["Item crafting", "Resource gathering", "Trade skills"]
+// Icon mapping for classes
+const classIcons: { [key: string]: any } = {
+  'mage': Zap,
+  'tamer': Users,
+  'warrior': Sword,
+  'archer': Target,
+  'paladin': Shield,
+  'necromancer': Star,
+  'default': Shield
+}
+
+// Color mapping for classes
+const classColors: { [key: string]: string } = {
+  'mage': 'bg-purple-500',
+  'tamer': 'bg-green-500',
+  'warrior': 'bg-red-500',
+  'archer': 'bg-orange-500',
+  'paladin': 'bg-blue-500',
+  'necromancer': 'bg-gray-500',
+  'default': 'bg-amber-500'
+}
+
+// Difficulty mapping
+const getDifficultyText = (level: number): string => {
+  switch (level) {
+    case 1: return 'Beginner'
+    case 2: return 'Easy'
+    case 3: return 'Intermediate'
+    case 4: return 'Advanced'
+    case 5: return 'Expert'
+    default: return 'Intermediate'
   }
-]
+}
 
-export default function ClassPage() {
+export default async function ClassPage() {
+  // Fetch actual classes from database
+  const dbClasses = await getClasses()
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <Header />
@@ -97,32 +76,35 @@ export default function ClassPage() {
 
           {/* Class Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {classTypes.map((classType) => {
-              const IconComponent = classType.icon
+            {dbClasses.map((classData) => {
+              const IconComponent = classIcons[classData.slug] || classIcons.default
+              const classColor = classColors[classData.slug] || classColors.default
+              const difficultyText = getDifficultyText(classData.difficulty_level)
+              
               return (
-                <Card key={classType.name} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
+                <Card key={classData.id} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-full ${classType.color} text-white`}>
+                      <div className={`p-3 rounded-full ${classColor} text-white`}>
                         <IconComponent className="h-6 w-6" />
                       </div>
                       <Badge variant="secondary" className="text-sm">
-                        {classType.difficulty}
+                        {difficultyText}
                       </Badge>
                     </div>
                     <CardTitle className="text-xl font-bold text-gray-900">
-                      {classType.name}
+                      {classData.name}
                     </CardTitle>
-                    <p className="text-gray-600">{classType.description}</p>
+                    <p className="text-gray-600">{classData.description}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900">Features:</h4>
+                      <h4 className="font-semibold text-gray-900">Skills:</h4>
                       <ul className="space-y-1">
-                        {classType.features.map((feature) => (
-                          <li key={feature} className="text-sm text-gray-600 flex items-center">
+                        {classData.skills?.map((skill: string) => (
+                          <li key={skill} className="text-sm text-gray-600 flex items-center">
                             <Star className="h-3 w-3 text-amber-500 mr-2" />
-                            {feature}
+                            {skill}
                           </li>
                         ))}
                       </ul>
@@ -131,7 +113,7 @@ export default function ClassPage() {
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       asChild
                     >
-                      <Link href={`/Class/${classType.name}`}>
+                      <Link href={`/class/${classData.slug}`}>
                         Learn More
                       </Link>
                     </Button>

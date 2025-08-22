@@ -115,7 +115,7 @@ export async function getClasses() {
   try {
     const result = await query(`
       SELECT id, name, slug, description, image_url, primary_stats, skills, 
-             playstyle, difficulty_level 
+             playstyle, difficulty_level, is_active 
       FROM classes 
       WHERE is_active = true 
       ORDER BY name

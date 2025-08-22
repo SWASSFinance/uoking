@@ -8,7 +8,7 @@ import { ProductImage } from "@/components/ui/product-image"
 import { Star, ShoppingCart, Crown, Shield, Zap, Target, Eye, Hand, Hammer, Users, Sword } from "lucide-react"
 import Link from "next/link"
 import { Metadata } from 'next'
-import { getProducts } from '@/lib/db'
+import { getProducts, getClasses } from '@/lib/db'
 
 interface ClassPageProps {
   params: Promise<{ class: string }>
@@ -73,17 +73,22 @@ export async function generateMetadata({ params }: ClassPageProps): Promise<Meta
   // Try to get a featured product image for OpenGraph/Twitter card (optional, won't break if it fails)
   let imageUrl: string | undefined
   try {
-    const products = await getProducts({ 
-      classId: classSlug, 
-      limit: 1 
-    })
-    if (products.length > 0 && products[0].image_url) {
-      // Check if the image URL is already a full URL (starts with http/https)
-      if (products[0].image_url.startsWith('http://') || products[0].image_url.startsWith('https://')) {
-        imageUrl = products[0].image_url
-      } else {
-        // Only prepend base URL if it's a relative path
-        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${products[0].image_url}`
+    // First get the class data to get the class ID
+    const classes = await getClasses()
+    const foundClass = classes.find((cls: any) => cls.slug === classSlug && cls.is_active)
+    if (foundClass) {
+      const products = await getProducts({ 
+        classId: foundClass.id, 
+        limit: 1 
+      })
+      if (products.length > 0 && products[0].image_url) {
+        // Check if the image URL is already a full URL (starts with http/https)
+        if (products[0].image_url.startsWith('http://') || products[0].image_url.startsWith('https://')) {
+          imageUrl = products[0].image_url
+        } else {
+          // Only prepend base URL if it's a relative path
+          imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${products[0].image_url}`
+        }
       }
     }
   } catch (error) {
@@ -132,11 +137,8 @@ export default async function ClassPage({ params }: ClassPageProps) {
   let products: any[] = []
   
   try {
-    const classResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/admin/classes`)
-    if (classResponse.ok) {
-      const classes = await classResponse.json()
-      classData = classes.find((cls: ClassData) => cls.slug === classSlug && cls.is_active)
-    }
+    const classes = await getClasses()
+    classData = classes.find((cls: ClassData) => cls.slug === classSlug && cls.is_active)
   } catch (error) {
     console.error('Error fetching class data:', error)
   }
@@ -148,17 +150,19 @@ export default async function ClassPage({ params }: ClassPageProps) {
 
   // Fetch products for this class
   try {
-    products = await getProducts({ 
-      classId: classSlug, 
-      limit: 100 
-    })
+    if (classData) {
+      products = await getProducts({ 
+        classId: classData.id, 
+        limit: 100 
+      })
+    }
   } catch (error) {
     console.error('Error fetching products:', error)
   }
 
   const IconComponent = classIcons[classData.slug] || classIcons.default
   const classColor = classColors[classData.slug] || classColors.default
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100">
       <Header />
