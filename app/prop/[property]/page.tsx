@@ -208,30 +208,37 @@ export default function PropertyPage({ params }: PropertyPageProps) {
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Breadcrumb */}
-          <div className="mb-8">
-            <Breadcrumb 
-              items={[
-                { label: "Prop", href: "/prop" },
-                { label: propertyName, current: true }
-              ]} 
-            />
-          </div>
+          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+            <Link href="/" className="hover:text-amber-600 transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <Link href="/prop" className="hover:text-amber-600 transition-colors">
+              Properties
+            </Link>
+            <span>/</span>
+            <span className="text-amber-600 font-medium">{propertyName}</span>
+          </nav>
 
-          {/* Hero Section - Compact */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-4 mb-3">
-              <div className={`p-2 rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'}`}>
-                <IconComponent className="h-8 w-8 text-white" />
+          {/* Property Header */}
+          <div className="mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 -mt-4">
+                  <div className={`w-full h-full rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'} flex items-center justify-center`}>
+                    <IconComponent className="h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {propertyName} Items</h1>
+                  <div className="prose prose-amber max-w-none">
+                    <div className="text-gray-600 leading-relaxed">
+                      {currentProperty?.description || `Items with ${propertyName} property`}
+                    </div>
+                  </div>
+                </div>
               </div>
-                             <div className="text-left">
-                 <h1 className="text-3xl font-bold text-gray-900">
-                   {propertyName} Property
-                 </h1>
-               </div>
             </div>
-                         <p className="text-sm text-gray-600 max-w-4xl mx-auto">
-               {currentProperty?.description || `Items with ${propertyName} property`}
-             </p>
           </div>
 
           {/* Property Details - Compact Version */}
@@ -287,115 +294,122 @@ export default function PropertyPage({ params }: PropertyPageProps) {
             </div>
           </div>
 
-          {/* Items with this Property */}
-          {products.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                Items with {propertyName}
+          {/* Products Section */}
+          <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {propertyName} Products
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {products.map((product) => (
-                  <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
-                    <CardContent className="p-3">
-                                        <Link href={`/product/${product.slug}`}>
-                    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
-                      <ProductImage
-                        src={product.image_url}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
-                      
-                      {/* Short Description Overlay */}
-                      {product.short_description && (
-                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
-                          <div className="text-white text-center max-w-full">
-                            <pre className="text-xs whitespace-pre-wrap font-sans text-left">
-                              {product.short_description}
-                            </pre>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {product.featured && (
-                        <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
-                          Featured
-                        </Badge>
-                      )}
-                    </div>
-                        
-                        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
-                          {product.name}
-                        </h3>
-                        
-                                            <div className="min-h-[3rem] mb-3">
-                      {product.short_description && (
-                        <pre className="text-xs text-gray-600 line-clamp-2 whitespace-pre-wrap font-sans">
-                          {product.short_description}
-                        </pre>
-                      )}
-                    </div>
-                        
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex flex-col">
-                            {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm font-bold text-amber-600">
-                                  ${parseFloat(product.sale_price).toFixed(2)}
-                                </span>
-                                <span className="text-xs text-gray-500 line-through">
-                                  ${parseFloat(product.price).toFixed(2)}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-sm font-bold text-amber-600">
-                                ${parseFloat(product.price).toFixed(2)}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {product.avg_rating > 0 && (
-                            <div className="flex items-center space-x-1">
-                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              <span className="text-xs font-medium">
-                                {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </Link>
+              <p className="text-gray-600">
+                {products.length} {products.length === 1 ? 'item' : 'items'} available
+              </p>
+            </div>
+          </div>
 
-                      {/* Quantity and Add to Cart Section */}
-                      <div className="flex items-center gap-2">
-                        <input
-                          id={`qty-${product.id}`}
-                          type="number"
-                          min="1"
-                          max="10000"
-                          defaultValue="1"
-                          title="Maximum quantity: 10,000"
-                          className="w-12 h-8 text-center text-sm border border-gray-300 rounded-md bg-white text-black font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                    {/* Products Grid */}
+          {products.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {products.map((product) => (
+                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                  <CardContent className="p-3">
+                    <Link href={`/product/${product.slug}`}>
+                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+                        <ProductImage
+                          src={product.image_url}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
                         />
                         
-                        <Button 
-                          onClick={() => {
-                            const input = document.getElementById(`qty-${product.id}`) as HTMLInputElement
-                            const quantity = parseInt(input?.value) || 1
-                            for (let i = 0; i < quantity; i++) {
-                              handleAddToCart(product)
-                            }
-                          }}
-                          size="sm"
-                          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                        >
-                          <ShoppingCart className="h-3 w-3 mr-1" />
-                          Add to Cart
-                        </Button>
+                        {/* Short Description Overlay */}
+                        {product.short_description && (
+                          <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
+                            <div className="text-white text-center max-w-full">
+                              <pre className="text-xs whitespace-pre-wrap font-sans text-left">
+                                {product.short_description}
+                              </pre>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {product.featured && (
+                          <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                            Featured
+                          </Badge>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      
+                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                        {product.name}
+                      </h3>
+                      
+                      <div className="min-h-[3rem] mb-3">
+                        {product.short_description && (
+                          <pre className="text-xs text-gray-600 line-clamp-2 whitespace-pre-wrap font-sans">
+                            {product.short_description}
+                          </pre>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col">
+                          {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-bold text-amber-600">
+                                ${parseFloat(product.sale_price).toFixed(2)}
+                              </span>
+                              <span className="text-xs text-gray-500 line-through">
+                                ${parseFloat(product.price).toFixed(2)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm font-bold text-amber-600">
+                              ${parseFloat(product.price).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {product.avg_rating > 0 && (
+                          <div className="flex items-center space-x-1">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span className="text-xs font-medium">
+                              {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+
+                    {/* Quantity and Add to Cart Section */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        id={`qty-${product.id}`}
+                        type="number"
+                        min="1"
+                        max="10000"
+                        defaultValue="1"
+                        title="Maximum quantity: 10,000"
+                        className="w-12 h-8 text-center text-sm border border-gray-300 rounded-md bg-white text-black font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                      />
+                      
+                      <Button 
+                        onClick={() => {
+                          const input = document.getElementById(`qty-${product.id}`) as HTMLInputElement
+                          const quantity = parseInt(input?.value) || 1
+                          for (let i = 0; i < quantity; i++) {
+                            handleAddToCart(product)
+                          }
+                        }}
+                        size="sm"
+                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                      >
+                        <ShoppingCart className="h-3 w-3 mr-1" />
+                        Add to Cart
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
 

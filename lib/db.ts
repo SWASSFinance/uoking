@@ -185,17 +185,17 @@ export async function getProducts(filters?: {
     const result = await query(`
       SELECT 
         p.*,
-        STRING_AGG(DISTINCT c.name, ', ') as category_names,
-        STRING_AGG(DISTINCT c.slug, ', ') as category_slugs,
         STRING_AGG(DISTINCT cl.name, ', ') as class_names,
-        STRING_AGG(DISTINCT cl.slug, ', ') as class_slugs,
+        STRING_AGG(DISTINCT cl.id::text, ',') as class_ids,
+        STRING_AGG(DISTINCT c.name, ', ') as category_names,
+        STRING_AGG(DISTINCT c.id::text, ',') as category_ids,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(DISTINCT pr.id) as review_count
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
-      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
-      LEFT JOIN classes cl ON pc2.class_id = cl.id
+      LEFT JOIN product_classes pcl ON p.id = pcl.product_id
+      LEFT JOIN classes cl ON pcl.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE ${whereClause}
       GROUP BY p.id
@@ -215,20 +215,12 @@ export async function getProductBySlug(slug: string) {
     const result = await query(`
       SELECT 
         p.*,
-        c.name as category_name,
-        c.slug as category_slug,
-        STRING_AGG(DISTINCT cl.name, ', ') as class_names,
-        STRING_AGG(DISTINCT cl.slug, ', ') as class_slugs,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(pr.id) as review_count
       FROM products p
-      LEFT JOIN product_categories pc ON p.id = pc.product_id
-      LEFT JOIN categories c ON pc.category_id = c.id
-      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
-      LEFT JOIN classes cl ON pc2.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE p.slug = $1 AND p.status = 'active'
-      GROUP BY p.id, c.name, c.slug
+      GROUP BY p.id
     `, [slug]);
     
     const product = result.rows[0];
@@ -744,17 +736,17 @@ export async function searchProducts(searchTerm: string, limit = 20) {
     const result = await query(`
       SELECT 
         p.*,
-        c.name as category_name,
-        c.slug as category_slug,
-        cl.name as class_name,
-        cl.slug as class_slug,
+        STRING_AGG(DISTINCT cl.name, ', ') as class_names,
+        STRING_AGG(DISTINCT cl.id::text, ',') as class_ids,
+        STRING_AGG(DISTINCT c.name, ', ') as category_names,
+        STRING_AGG(DISTINCT c.id::text, ',') as category_ids,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(pr.id) as review_count
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
-      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
-      LEFT JOIN classes cl ON pc2.class_id = cl.id
+      LEFT JOIN product_classes pcl ON p.id = pcl.product_id
+      LEFT JOIN classes cl ON pcl.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE 
         p.status = 'active' AND 
