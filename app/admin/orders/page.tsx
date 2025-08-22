@@ -648,25 +648,25 @@ export default function OrdersAdminPage() {
                                     <p className="font-medium mt-1 text-sm">{orderDetails[order.id].admin_notes || 'No notes'}</p>
                                   </div>
                                 </div>
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    onClick={() => handleEditOrder(orderDetails[order.id])}
-                                    className="bg-blue-600 hover:bg-blue-700 h-8"
-                                    size="sm"
-                                  >
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    Edit Order
-                                  </Button>
-                                  <Button 
-                                    onClick={() => handleDeleteOrder(order.id)}
-                                    variant="destructive"
-                                    size="sm"
-                                    className="h-8"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-1" />
-                                    Delete Order
-                                  </Button>
-                                </div>
+                                                                 <div className="flex justify-between items-center">
+                                   <Button 
+                                     onClick={() => handleEditOrder(orderDetails[order.id])}
+                                     className="bg-blue-600 hover:bg-blue-700 h-8"
+                                     size="sm"
+                                   >
+                                     <Edit className="h-4 w-4 mr-1" />
+                                     Edit Order
+                                   </Button>
+                                   <Button 
+                                     onClick={() => handleDeleteOrder(order.id)}
+                                     variant="destructive"
+                                     size="sm"
+                                     className="h-8"
+                                   >
+                                     <Trash2 className="h-4 w-4 mr-1" />
+                                     Delete Order
+                                   </Button>
+                                 </div>
                               </div>
                             )}
                           </div>
