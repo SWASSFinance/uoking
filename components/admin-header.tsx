@@ -25,19 +25,9 @@ import {
 
 const adminNavItems = [
   {
-    name: "Dashboard",
-    href: "/admin",
-    icon: Settings
-  },
-  {
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart
-  },
-  {
-    name: "Coupons",
-    href: "/admin/coupons",
-    icon: Tag
   }
 ]
 
@@ -51,6 +41,11 @@ const storeSubItems = [
     name: "Categories",
     href: "/admin/categories",
     icon: FolderOpen
+  },
+  {
+    name: "Coupons",
+    href: "/admin/coupons",
+    icon: Tag
   },
   {
     name: "Users",
@@ -111,6 +106,7 @@ export function AdminHeader() {
 
   const isStoreActive = pathname === "/admin/products" || 
                        pathname === "/admin/categories" || 
+                       pathname === "/admin/coupons" ||
                        pathname === "/admin/users" ||
                        pathname === "/admin/news"
 
