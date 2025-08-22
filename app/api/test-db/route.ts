@@ -1,60 +1,61 @@
-// API route to test database connection
-import { NextResponse } from 'next/server';
-
-const { Pool } = require('pg');
-
-const pool = new Pool({
-  connectionString: 'postgres://neondb_owner:npg_RPzI0AWebu8l@ep-royal-waterfall-adludrzw-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require',
-  ssl: {
-    rejectUnauthorized: false
-  },
-  max: 5,
-  connectionTimeoutMillis: 5000,
-});
+import { NextResponse } from 'next/server'
+import { query } from '@/lib/db'
 
 export async function GET() {
   try {
-    console.log('🔍 Testing database connection...');
-    
-    const client = await pool.connect();
+    console.log('Testing database connection...')
     
     // Test basic connection
-    const timeResult = await client.query('SELECT NOW() as current_time');
+    const connectionTest = await query('SELECT NOW() as timestamp')
+    console.log('Connection test result:', connectionTest.rows[0])
     
-    // Check our tables
-    const tablesResult = await client.query(`
-      SELECT table_name, 
-             (SELECT COUNT(*) FROM information_schema.columns WHERE table_name = t.table_name) as column_count
-      FROM information_schema.tables t
-      WHERE table_schema = 'public' 
-      AND table_name IN ('users', 'transactions', 'transaction_categories')
-      ORDER BY table_name
-    `);
+    // Test if orders table exists and has data
+    const ordersTest = await query('SELECT COUNT(*) as count FROM orders')
+    console.log('Orders table count:', ordersTest.rows[0].count)
     
-    // Count existing data
-    const userCountResult = await client.query('SELECT COUNT(*) as count FROM users');
-    const transactionCountResult = await client.query('SELECT COUNT(*) as count FROM transactions');
+    // Test if the specific order exists
+    const specificOrder = await query(`
+      SELECT id, status, created_at 
+      FROM orders 
+      WHERE id = '14f80fa9-519c-49b5-9378-3bb44501e8ac'
+    `)
+    console.log('Specific order test:', specificOrder.rows.length, 'rows found')
     
-    client.release();
+    // Test order_items table
+    const orderItemsTest = await query('SELECT COUNT(*) as count FROM order_items')
+    console.log('Order items table count:', orderItemsTest.rows[0].count)
+    
+    // Test products table
+    const productsTest = await query('SELECT COUNT(*) as count FROM products')
+    console.log('Products table count:', productsTest.rows[0].count)
+    
+    // Test categories table
+    const categoriesTest = await query('SELECT COUNT(*) as count FROM categories')
+    console.log('Categories table count:', categoriesTest.rows[0].count)
+    
+    // Test product_categories table
+    const productCategoriesTest = await query('SELECT COUNT(*) as count FROM product_categories')
+    console.log('Product categories table count:', productCategoriesTest.rows[0].count)
     
     return NextResponse.json({
       success: true,
-      message: 'Database connection successful!',
-      timestamp: timeResult.rows[0].current_time,
-      tables: tablesResult.rows,
-      data: {
-        users: parseInt(userCountResult.rows[0].count),
-        transactions: parseInt(transactionCountResult.rows[0].count)
-      }
-    });
+      connection: connectionTest.rows[0],
+      tables: {
+        orders: ordersTest.rows[0].count,
+        order_items: orderItemsTest.rows[0].count,
+        products: productsTest.rows[0].count,
+        categories: categoriesTest.rows[0].count,
+        product_categories: productCategoriesTest.rows[0].count
+      },
+      specificOrder: specificOrder.rows.length > 0 ? specificOrder.rows[0] : null
+    })
     
-  } catch (error: any) {
-    console.error('❌ Database connection failed:', error);
-    
+  } catch (error) {
+    console.error('Database test error:', error)
     return NextResponse.json({
       success: false,
-      message: error.message || 'Database connection failed',
-      error: error.code || 'UNKNOWN_ERROR'
-    }, { status: 500 });
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : null
+    }, { status: 500 })
   }
 } 

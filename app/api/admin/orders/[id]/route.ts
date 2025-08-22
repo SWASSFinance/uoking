@@ -4,30 +4,44 @@ import { auth } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: orderId } = await params
+    console.log('GET /api/admin/orders/[id] - Starting request')
+    console.log('Order ID:', orderId)
+    
     const session = await auth()
+    console.log('Session:', session ? 'Found' : 'Not found')
+    console.log('User email:', session?.user?.email)
+    
     if (!session?.user?.email) {
+      console.log('Unauthorized - No session or email')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check if user is admin
+    console.log('Checking admin status for user:', session.user.email)
     const userResult = await query(`
       SELECT id, is_admin FROM users WHERE email = $1
     `, [session.user.email])
 
+    console.log('User query result:', userResult.rows?.length || 0, 'rows')
+
     if (!userResult.rows || userResult.rows.length === 0) {
+      console.log('User not found in database')
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     if (!userResult.rows[0].is_admin) {
+      console.log('User is not admin')
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
-    const orderId = params.id
+    console.log('User is admin, proceeding with order lookup')
 
     // Get order details
+    console.log('Fetching order details for ID:', orderId)
     const orderResult = await query(`
       SELECT 
         o.*,
@@ -40,13 +54,18 @@ export async function GET(
       WHERE o.id = $1
     `, [orderId])
 
+    console.log('Order query result:', orderResult.rows?.length || 0, 'rows')
+
     if (!orderResult.rows || orderResult.rows.length === 0) {
+      console.log('Order not found in database')
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     const order = orderResult.rows[0]
+    console.log('Order found:', order.id, 'Status:', order.status)
 
     // Get order items with categories
+    console.log('Fetching order items for order ID:', orderId)
     const itemsResult = await query(`
       SELECT 
         oi.*,
@@ -62,8 +81,11 @@ export async function GET(
       ORDER BY oi.created_at
     `, [orderId])
 
+    console.log('Order items query result:', itemsResult.rows?.length || 0, 'rows')
+
     const orderItems = itemsResult.rows || []
 
+    console.log('Successfully returning order data')
     return NextResponse.json({
       order: {
         ...order,
@@ -73,8 +95,16 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching order details:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('Error message:', error instanceof Error ? error.message : 'No message')
+    
+    // Return more detailed error information in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? `Failed to fetch order details: ${error instanceof Error ? error.message : 'Unknown error'}`
+      : 'Failed to fetch order details'
+    
     return NextResponse.json(
-      { error: 'Failed to fetch order details' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
@@ -82,9 +112,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: orderId } = await params
     const session = await auth()
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -102,8 +133,6 @@ export async function PUT(
     if (!userResult.rows[0].is_admin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
-
-    const orderId = params.id
     const body = await request.json()
     const { status, payment_status, admin_notes } = body
 
@@ -150,9 +179,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: orderId } = await params
     const session = await auth()
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -170,8 +200,6 @@ export async function DELETE(
     if (!userResult.rows[0].is_admin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
-
-    const orderId = params.id
 
     // Get order details before deletion
     const orderResult = await query(`
