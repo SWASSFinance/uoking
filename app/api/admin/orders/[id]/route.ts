@@ -7,85 +7,116 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: orderId } = await params
-    console.log('GET /api/admin/orders/[id] - Starting request')
-    console.log('Order ID:', orderId)
+    console.log('=== STARTING ORDER DETAILS API ===')
     
-    const session = await auth()
-    console.log('Session:', session ? 'Found' : 'Not found')
-    console.log('User email:', session?.user?.email)
+    // Step 1: Extract params
+    let orderId: string
+    try {
+      const { id } = await params
+      orderId = id
+      console.log('✅ Params extracted successfully. Order ID:', orderId)
+    } catch (paramError) {
+      console.error('❌ Error extracting params:', paramError)
+      return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 })
+    }
+    
+    // Step 2: Get session
+    let session: any
+    try {
+      session = await auth()
+      console.log('✅ Session retrieved:', session ? 'Found' : 'Not found')
+      console.log('User email:', session?.user?.email)
+    } catch (sessionError) {
+      console.error('❌ Error getting session:', sessionError)
+      return NextResponse.json({ error: 'Session error' }, { status: 500 })
+    }
     
     if (!session?.user?.email) {
-      console.log('Unauthorized - No session or email')
+      console.log('❌ Unauthorized - No session or email')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    console.log('Checking admin status for user:', session.user.email)
-    const userResult = await query(`
-      SELECT id, is_admin FROM users WHERE email = $1
-    `, [session.user.email])
-
-    console.log('User query result:', userResult.rows?.length || 0, 'rows')
+    // Step 3: Check admin status
+    let userResult: any
+    try {
+      console.log('Checking admin status for user:', session.user.email)
+      userResult = await query(`
+        SELECT id, is_admin FROM users WHERE email = $1
+      `, [session.user.email])
+      console.log('✅ User query successful:', userResult.rows?.length || 0, 'rows')
+    } catch (userError) {
+      console.error('❌ Error checking user admin status:', userError)
+      return NextResponse.json({ error: 'Database error checking user' }, { status: 500 })
+    }
 
     if (!userResult.rows || userResult.rows.length === 0) {
-      console.log('User not found in database')
+      console.log('❌ User not found in database')
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     if (!userResult.rows[0].is_admin) {
-      console.log('User is not admin')
+      console.log('❌ User is not admin')
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
-    console.log('User is admin, proceeding with order lookup')
+    console.log('✅ User is admin, proceeding with order lookup')
 
-    // Get order details
-    console.log('Fetching order details for ID:', orderId)
-    const orderResult = await query(`
-      SELECT 
-        o.*,
-        u.email as user_email,
-        u.username,
-        u.first_name,
-        u.last_name
-      FROM orders o
-      LEFT JOIN users u ON o.user_id = u.id
-      WHERE o.id = $1
-    `, [orderId])
-
-    console.log('Order query result:', orderResult.rows?.length || 0, 'rows')
+    // Step 4: Get order details
+    let orderResult: any
+    try {
+      console.log('Fetching order details for ID:', orderId)
+      orderResult = await query(`
+        SELECT 
+          o.*,
+          u.email as user_email,
+          u.username,
+          u.first_name,
+          u.last_name
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        WHERE o.id = $1
+      `, [orderId])
+      console.log('✅ Order query successful:', orderResult.rows?.length || 0, 'rows')
+    } catch (orderError) {
+      console.error('❌ Error fetching order details:', orderError)
+      return NextResponse.json({ error: 'Database error fetching order' }, { status: 500 })
+    }
 
     if (!orderResult.rows || orderResult.rows.length === 0) {
-      console.log('Order not found in database')
+      console.log('❌ Order not found in database')
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     const order = orderResult.rows[0]
-    console.log('Order found:', order.id, 'Status:', order.status)
+    console.log('✅ Order found:', order.id, 'Status:', order.status)
 
-    // Get order items with categories
-    console.log('Fetching order items for order ID:', orderId)
-    const itemsResult = await query(`
-      SELECT 
-        oi.*,
-        p.name as product_name,
-        p.image_url as product_image,
-        STRING_AGG(DISTINCT c.name, ', ') as category
-      FROM order_items oi
-      LEFT JOIN products p ON oi.product_id = p.id
-      LEFT JOIN product_categories pc ON p.id = pc.product_id
-      LEFT JOIN categories c ON pc.category_id = c.id
-      WHERE oi.order_id = $1
-      GROUP BY oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.created_at, oi.updated_at, p.name, p.image_url
-      ORDER BY oi.created_at
-    `, [orderId])
-
-    console.log('Order items query result:', itemsResult.rows?.length || 0, 'rows')
+    // Step 5: Get order items with categories
+    let itemsResult: any
+    try {
+      console.log('Fetching order items for order ID:', orderId)
+      itemsResult = await query(`
+        SELECT 
+          oi.*,
+          p.name as product_name,
+          p.image_url as product_image,
+          STRING_AGG(DISTINCT c.name, ', ') as category
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        LEFT JOIN product_categories pc ON p.id = pc.product_id
+        LEFT JOIN categories c ON pc.category_id = c.id
+        WHERE oi.order_id = $1
+        GROUP BY oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.created_at, p.name, p.image_url
+        ORDER BY oi.created_at
+      `, [orderId])
+      console.log('✅ Order items query successful:', itemsResult.rows?.length || 0, 'rows')
+    } catch (itemsError) {
+      console.error('❌ Error fetching order items:', itemsError)
+      return NextResponse.json({ error: 'Database error fetching order items' }, { status: 500 })
+    }
 
     const orderItems = itemsResult.rows || []
 
-    console.log('Successfully returning order data')
+    console.log('✅ Successfully returning order data')
     return NextResponse.json({
       order: {
         ...order,
@@ -94,9 +125,12 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('Error fetching order details:', error)
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('=== CRITICAL ERROR IN ORDER DETAILS API ===')
+    console.error('Error type:', typeof error)
+    console.error('Error constructor:', error?.constructor?.name)
     console.error('Error message:', error instanceof Error ? error.message : 'No message')
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
     
     // Return more detailed error information in development
     const errorMessage = process.env.NODE_ENV === 'development' 
