@@ -46,7 +46,7 @@ export async function GET(
 
     const order = orderResult.rows[0]
 
-    // Get order items
+    // Get order items with categories
     const itemsResult = await query(`
       SELECT 
         oi.*,
