@@ -169,11 +169,6 @@ export default function GettingStartedPage() {
                   Browse All Classes
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-amber-600" asChild>
-                <Link href="/contact">
-                  Get Help
-                </Link>
-              </Button>
             </div>
           </div>
         </div>

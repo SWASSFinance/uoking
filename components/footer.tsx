@@ -68,7 +68,7 @@ export function Footer() {
               <li><Link href="/slot" className="text-gray-300 hover:text-white transition-colors">By Slot</Link></li>
               <li><Link href="/prop" className="text-gray-300 hover:text-white transition-colors">By Property</Link></li>
               <li><Link href="/store" className="text-gray-300 hover:text-white transition-colors">Store Items</Link></li>
-              <li><Link href="/special-deals" className="text-gray-300 hover:text-white transition-colors">Special Deals</Link></li>
+
             </ul>
           </div>
 
