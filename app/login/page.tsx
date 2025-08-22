@@ -78,14 +78,21 @@ export default function LoginPage() {
           variant: "destructive",
         })
       } else {
+        // Get session to check if user is admin
+        const session = await getSession()
+        
         toast({
           title: "Login Successful!",
           description: "Welcome back to UOKing!",
           variant: "default",
         })
         
-        // Redirect to home page or intended destination
-        router.push('/')
+        // Redirect based on admin status
+        if (session?.user?.isAdmin) {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
       }
     } catch (error) {
       toast({
@@ -102,7 +109,8 @@ export default function LoginPage() {
     setIsOAuthLoading(true)
     
     try {
-      await signIn(provider, { callbackUrl: '/' })
+      // For OAuth, we'll redirect to a callback page that checks admin status
+      await signIn(provider, { callbackUrl: '/login/callback' })
     } catch (error) {
       toast({
         title: "OAuth Login Failed",
