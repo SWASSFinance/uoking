@@ -174,7 +174,7 @@ export default function ProductsAdminPage() {
     const matchesClass = filterClass === "all" || (product.class_ids && product.class_ids.includes(filterClass))
     
     return matchesSearch && matchesStatus && matchesCategory && matchesClass
-  })
+  }).sort((a, b) => a.name.localeCompare(b.name))
 
   const ProductForm = ({ product, onSave, onCancel }: { 
     product?: Product | null, 
@@ -208,8 +208,8 @@ export default function ProductsAdminPage() {
     }
 
     return (
-      <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-black font-semibold">Product Name</Label>
                 <Input
@@ -249,7 +249,7 @@ export default function ProductsAdminPage() {
               
               <div>
                 <Label htmlFor="category" className="text-black font-semibold">Categories (Up to 3)</Label>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {[0, 1, 2].map((index) => (
                     <Select 
                       key={index}
@@ -278,7 +278,7 @@ export default function ProductsAdminPage() {
               
                              <div>
                  <Label htmlFor="class" className="text-black font-semibold">Classes (Up to 2)</Label>
-                 <div className="space-y-2">
+                 <div className="space-y-1">
                    {[0, 1].map((index) => (
                      <Select 
                        key={index}
@@ -355,7 +355,7 @@ export default function ProductsAdminPage() {
                 id="short_description"
                 value={formData.short_description}
                 onChange={(e) => setFormData({...formData, short_description: e.target.value})}
-                rows={3}
+                rows={2}
                 className="border-gray-300 bg-white text-black"
               />
             </div>
@@ -366,7 +366,7 @@ export default function ProductsAdminPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                rows={6}
+                rows={4}
                 className="border-gray-300 bg-white text-black"
               />
             </div>
@@ -379,7 +379,7 @@ export default function ProductsAdminPage() {
               />
             </div>
             
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Switch
                   id="featured"
