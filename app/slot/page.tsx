@@ -10,24 +10,7 @@ import { getCategories } from "@/lib/db"
 import Image from "next/image"
 import { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: "Equipment Slots - UO King | Ultima Online Items by Equipment Slot",
-  description: "Browse Ultima Online items by equipment slot at UO King. Find weapons, armor, jewelry, and equipment for head, chest, gloves, legs, feet, and more. Buy slot-specific items.",
-  keywords: "equipment slots, Ultima Online, UO King, weapons, armor, jewelry, head, chest, gloves, legs, feet, equipment",
-  openGraph: {
-    title: "Equipment Slots - UO King | Ultima Online Items by Equipment Slot",
-    description: "Browse Ultima Online items by equipment slot at UO King. Find weapons, armor, jewelry, and equipment for head, chest, gloves, legs, feet, and more. Buy slot-specific items.",
-    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/slot`,
-    siteName: 'UO King',
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: "Equipment Slots - UO King | Ultima Online Items by Equipment Slot",
-    description: "Browse Ultima Online items by equipment slot at UO King. Find weapons, armor, jewelry, and equipment for head, chest, gloves, legs, feet, and more. Buy slot-specific items.",
-  },
-}
+
 
 // Define slot types that map to categories
 const slotTypes = [
