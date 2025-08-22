@@ -749,11 +749,7 @@ export async function searchProducts(searchTerm: string, limit = 20) {
         cl.name as class_name,
         cl.slug as class_slug,
         COALESCE(AVG(pr.rating), 0) as avg_rating,
-        COUNT(pr.id) as review_count,
-        ts_rank(
-          to_tsvector('english', p.name || ' ' || COALESCE(p.description, '') || ' ' || COALESCE(p.short_description, '')),
-          plainto_tsquery('english', $1)
-        ) as search_rank
+        COUNT(pr.id) as review_count
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
@@ -763,15 +759,14 @@ export async function searchProducts(searchTerm: string, limit = 20) {
       WHERE 
         p.status = 'active' AND 
         (
-          to_tsvector('english', p.name || ' ' || COALESCE(p.description, '') || ' ' || COALESCE(p.short_description, '')) 
-          @@ plainto_tsquery('english', $1)
-          OR p.name ILIKE $2
-          OR p.description ILIKE $2
+          p.name ILIKE $1
+          OR COALESCE(p.description, '') ILIKE $1
+          OR COALESCE(p.short_description, '') ILIKE $1
         )
       GROUP BY p.id
-      ORDER BY search_rank DESC, p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
-      LIMIT $3
-    `, [searchTerm, `%${searchTerm}%`, limit]);
+      ORDER BY p.featured DESC, p.created_at DESC, p.name ASC
+      LIMIT $2
+    `, [`%${searchTerm}%`, limit]);
     return result.rows;
   } catch (error) {
     console.error('Error searching products:', error);

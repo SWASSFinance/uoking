@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { ProductImage } from "@/components/ui/product-image"
 import { Sword, ArrowUp, Star, Target, Zap, ShoppingCart } from "lucide-react"
 import Link from "next/link"
@@ -207,55 +208,91 @@ export default function PropertyPage({ params }: PropertyPageProps) {
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <Link href="/" className="hover:text-amber-600 transition-colors">
-              Home
-            </Link>
-            <span>/</span>
-            <Link href="/prop" className="hover:text-amber-600 transition-colors">
-              Properties
-            </Link>
-            <span>/</span>
-            <span className="text-amber-600 font-medium">{propertyName}</span>
-          </nav>
-
-          {/* Property Header */}
           <div className="mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 -mt-4">
-                  <div className={`w-full h-full rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'} flex items-center justify-center`}>
-                    <IconComponent className="h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 text-white" />
+            <Breadcrumb 
+              items={[
+                { label: "Prop", href: "/prop" },
+                { label: propertyName, current: true }
+              ]} 
+            />
+          </div>
+
+          {/* Hero Section - Compact */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <div className={`p-2 rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'}`}>
+                <IconComponent className="h-8 w-8 text-white" />
+              </div>
+                             <div className="text-left">
+                 <h1 className="text-3xl font-bold text-gray-900">
+                   {propertyName} Property
+                 </h1>
+               </div>
+            </div>
+                         <p className="text-sm text-gray-600 max-w-4xl mx-auto">
+               {currentProperty?.description || `Items with ${propertyName} property`}
+             </p>
+          </div>
+
+          {/* Property Details - Compact Version */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* What is Property */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <Star className="h-5 w-5 text-amber-500 mr-2" />
+                  What is {propertyName}?
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {propertyName} is a property that enhances your character's abilities in Ultima Online. 
+                  It's one of the most sought-after properties for optimizing your build.
+                </p>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div className="flex items-center">
+                    <Star className="h-3 w-3 text-amber-400 mr-1" />
+                    Enhances performance
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-3 w-3 text-amber-400 mr-1" />
+                    Works with various equipment
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-3 w-3 text-amber-400 mr-1" />
+                    Stacks with other properties
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-4 mt-6">{propertyName} Property</h1>
-                  <div className="prose prose-amber max-w-none">
-                    <div className="text-gray-600 leading-relaxed">
-                      {currentProperty?.description || `${propertyName} is a property that enhances your character's abilities in Ultima Online. It's one of the most sought-after properties for optimizing your build.`}
-                    </div>
+              </div>
+
+              {/* How to Get Property */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <Target className="h-5 w-5 text-blue-500 mr-2" />
+                  How to Get {propertyName}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center text-gray-600">
+                    <Target className="h-4 w-4 text-blue-400 mr-2" />
+                    Find items with {propertyName}
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Zap className="h-4 w-4 text-purple-400 mr-2" />
+                    Use enhancement materials
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Sword className="h-4 w-4 text-green-400 mr-2" />
+                    Craft items with {propertyName}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-
-
-          {/* Products Section */}
-          <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                {propertyName} Products
-              </h2>
-              <p className="text-gray-600">
-                {products.length} {products.length === 1 ? 'item' : 'items'} available
-              </p>
-            </div>
-          </div>
-
-          {/* Products Grid */}
+          {/* Items with this Property */}
           {products.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+                Items with {propertyName}
+              </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {products.map((product) => (
                   <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">

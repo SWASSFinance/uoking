@@ -147,36 +147,70 @@ export default function ClassPage({ params }: ClassPageProps) {
       
       <main className="py-16 px-4">
         <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center mb-4">
-              {classData.image_url ? (
-                <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shadow-lg relative">
-                  <ProductImage
-                    src={classData.image_url}
-                    alt={classData.name}
-                    fill
-                    className="object-cover"
-                  />
+          {/* Breadcrumb */}
+          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+            <Link href="/" className="hover:text-amber-600 transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <Link href="/class" className="hover:text-amber-600 transition-colors">
+              Classes
+            </Link>
+            <span>/</span>
+            <span className="text-amber-600 font-medium">{classData.name}</span>
+          </nav>
+
+          {/* Class Header */}
+          <div className="mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 -mt-4">
+                  {classData.image_url ? (
+                    <div className="w-full h-full rounded-lg overflow-hidden bg-gray-100 shadow-lg relative">
+                      <ProductImage
+                        src={classData.image_url}
+                        alt={classData.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className={`w-full h-full rounded-lg bg-gradient-to-r ${classColor} flex items-center justify-center`}>
+                      <IconComponent className="h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 text-white" />
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className={`p-4 rounded-lg bg-gradient-to-r ${classColor}`}>
-                  <IconComponent className="h-12 w-12 text-white" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-4 mt-6">
+                    <h1 className="text-3xl font-bold text-gray-800">UO {classData.name} Items</h1>
+                    {classData.difficulty_level <= 2 && (
+                      <Badge className="bg-amber-500 text-white">Popular Class</Badge>
+                    )}
+                  </div>
+                  <div className="prose prose-amber max-w-none">
+                    <div className="text-gray-600 leading-relaxed">
+                      {classData.description}
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">UO {classData.name} Items</h1>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto mt-4 leading-relaxed">
-              {classData.description}
-            </p>
-            {classData.difficulty_level <= 2 && (
-              <Badge className="mt-4 bg-amber-500 text-white">Popular Class</Badge>
-            )}
           </div>
 
-          {/* Class Items Grid */}
+          {/* Products Section */}
+          <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {classData.name} Products
+              </h2>
+              <p className="text-gray-600">
+                {products.length} {products.length === 1 ? 'item' : 'items'} available
+              </p>
+            </div>
+          </div>
+
+          {/* Products Grid */}
           {products && products.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{classData.name} Items</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {products.map((product: any) => (
                   <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
