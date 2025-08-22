@@ -1,6 +1,3 @@
-"use client"
-
-import { useState, useEffect } from 'react'
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,8 +7,8 @@ import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { ProductImage } from "@/components/ui/product-image"
 import { Sword, ArrowUp, Star, Target, Zap, ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
-import { useCart } from "@/contexts/cart-context"
+import { Metadata } from 'next'
+import { getProducts } from "@/lib/db"
 
 interface PropertyPageProps {
   params: Promise<{ property: string }>
@@ -32,174 +29,184 @@ interface Product {
   stats?: any[]
 }
 
-export default function PropertyPage({ params }: PropertyPageProps) {
-  const [propertyName, setPropertyName] = useState('')
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
-  const { addItem } = useCart()
+// Helper function to convert URL slug to property name
+function slugToPropertyName(slug: string) {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const { property } = await params
-        
-        // Convert URL slug back to property name (e.g., "damage-increase" -> "Damage Increase")
-        const propertyNameValue = property
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
+// Property descriptions and icons
+const propertyInfo = {
+  "Damage Increase": {
+    description: "Increase your weapon damage and become a more formidable fighter. Damage Increase is one of the most important combat properties in Ultima Online.",
+    icon: Sword,
+    color: "from-red-500 to-red-600",
+    category: "Combat"
+  },
+  "Defense Chance Increase": {
+    description: "Improve your chance to avoid attacks and increase your survivability in combat. Essential for any defensive build.",
+    icon: Target,
+    color: "from-blue-500 to-blue-600",
+    category: "Defense"
+  },
+  "Enhance Potions": {
+    description: "Make your potions more effective and get better value from your healing items. Perfect for characters who rely on potions.",
+    icon: Zap,
+    color: "from-green-500 to-green-600",
+    category: "Utility"
+  },
+  "Faster Cast Recovery": {
+    description: "Reduce spell casting delay and cast spells more frequently. Essential for mages and spellcasters.",
+    icon: Zap,
+    color: "from-purple-500 to-purple-600",
+    category: "Magic"
+  },
+  "Faster Casting": {
+    description: "Increase your spell casting speed and become a more effective spellcaster. Perfect for mage builds.",
+    icon: Zap,
+    color: "from-yellow-500 to-yellow-600",
+    category: "Magic"
+  },
+  "Hit Chance Increase": {
+    description: "Improve your accuracy in combat and land more successful attacks. Essential for any combat build.",
+    icon: Target,
+    color: "from-orange-500 to-orange-600",
+    category: "Combat"
+  },
+  "Hit Point Regeneration": {
+    description: "Automatically regenerate health over time and improve your survivability. Great for PvE and sustained combat.",
+    icon: Star,
+    color: "from-pink-500 to-pink-600",
+    category: "Defense"
+  },
+  "Lower Mana Cost": {
+    description: "Reduce spell mana consumption and cast more spells with the same mana pool. Essential for mage efficiency.",
+    icon: Zap,
+    color: "from-indigo-500 to-indigo-600",
+    category: "Magic"
+  },
+  "Lower Reagent Cost": {
+    description: "Reduce spell reagent usage and save on casting costs. Perfect for mages who cast frequently.",
+    icon: Star,
+    color: "from-teal-500 to-teal-600",
+    category: "Magic"
+  },
+  "Mana Regeneration": {
+    description: "Automatically regenerate mana over time and maintain sustained spellcasting. Essential for mage builds.",
+    icon: Zap,
+    color: "from-cyan-500 to-cyan-600",
+    category: "Magic"
+  },
+  "Spell Channeling": {
+    description: "Allow movement while casting spells and gain a significant advantage in combat. Perfect for mobile mages.",
+    icon: Zap,
+    color: "from-violet-500 to-violet-600",
+    category: "Magic"
+  },
+  "Spell Damage Increase": {
+    description: "Increase magical damage output and become a more powerful spellcaster. Essential for offensive mage builds.",
+    icon: Zap,
+    color: "from-rose-500 to-rose-600",
+    category: "Magic"
+  },
+  "Stamina Regeneration": {
+    description: "Automatically regenerate stamina and maintain peak performance in combat. Essential for melee characters.",
+    icon: Star,
+    color: "from-emerald-500 to-emerald-600",
+    category: "Utility"
+  },
+  "Swing Speed Increase": {
+    description: "Increase weapon attack speed and deal more damage over time. Perfect for melee DPS builds.",
+    icon: Sword,
+    color: "from-amber-500 to-amber-600",
+    category: "Combat"
+  }
+}
 
-        setPropertyName(propertyNameValue)
+// Generate metadata for the property page
+export async function generateMetadata({ params }: PropertyPageProps): Promise<Metadata> {
+  const { property: propertySlug } = await params
+  
+  // Convert URL parameter to readable property name
+  const propertyName = slugToPropertyName(propertySlug)
+  
+  // Create SEO-friendly title and description format (always use our format, ignore database meta fields)
+  const seoTitle = `UO ${propertyName} - Buy Ultima Online ${propertyName} At Cheap Prices | UO King`
+  const seoDescription = `Buy ${propertyName} for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support. Get your ${propertyName.toLowerCase()} now!`
 
-        // Search for products containing the property name
-        const response = await fetch(`/api/products?search=${encodeURIComponent(propertyNameValue)}&limit=50`)
-        if (response.ok) {
-          const productsData = await response.json()
-          setProducts(productsData)
-        }
-      } catch (error) {
-        console.error('Error loading property data:', error)
-      } finally {
-        setLoading(false)
+  // Try to get a featured product image for OpenGraph/Twitter card (optional, won't break if it fails)
+  let imageUrl: string | undefined
+  try {
+    const products = await getProducts({ 
+      search: propertyName, 
+      limit: 1 
+    })
+    if (products.length > 0 && products[0].image_url) {
+      // Check if the image URL is already a full URL (starts with http/https)
+      if (products[0].image_url.startsWith('http://') || products[0].image_url.startsWith('https://')) {
+        imageUrl = products[0].image_url
+      } else {
+        // Only prepend base URL if it's a relative path
+        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${products[0].image_url}`
       }
     }
-
-    loadData()
-  }, [params])
-
-  const handleAddToCart = (product: Product) => {
-    addItem({
-      id: String(product.id),
-      name: product.name,
-      price: parseFloat(product.sale_price || product.price),
-      image_url: product.image_url || '',
-      category: product.category || ''
-    })
-    
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-      variant: "default",
-    })
+  } catch (error) {
+    // Silently fail - image is optional for metadata
+    console.log('Could not fetch product image for metadata:', error)
   }
 
-  // Function to convert item name to URL-friendly slug
-  const createProductSlug = (itemName: string) => {
-    return itemName
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-      .trim()
+  return {
+    title: seoTitle,
+    description: seoDescription,
+    keywords: `${propertyName}, Ultima Online, UO, ${propertyName.toLowerCase()}, buy ${propertyName.toLowerCase()}, cheap ${propertyName.toLowerCase()}, gaming items`,
+    openGraph: {
+      title: seoTitle,
+      description: seoDescription,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/prop/${propertySlug}`,
+      siteName: 'UO King',
+      locale: 'en_US',
+      type: 'website',
+      ...(imageUrl && {
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${propertyName} - Ultima Online`,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+      ...(imageUrl && {
+        images: [imageUrl],
+      }),
+    },
   }
+}
 
-  // Property descriptions and icons
-  const propertyInfo = {
-    "Damage Increase": {
-      description: "Increase your weapon damage and become a more formidable fighter. Damage Increase is one of the most important combat properties in Ultima Online.",
-      icon: Sword,
-      color: "from-red-500 to-red-600",
-      category: "Combat"
-    },
-    "Defense Chance Increase": {
-      description: "Improve your chance to avoid attacks and increase your survivability in combat. Essential for any defensive build.",
-      icon: Target,
-      color: "from-blue-500 to-blue-600",
-      category: "Defense"
-    },
-    "Enhance Potions": {
-      description: "Make your potions more effective and get better value from your healing items. Perfect for characters who rely on potions.",
-      icon: Zap,
-      color: "from-green-500 to-green-600",
-      category: "Utility"
-    },
-    "Faster Cast Recovery": {
-      description: "Reduce spell casting delay and cast spells more frequently. Essential for mages and spellcasters.",
-      icon: Zap,
-      color: "from-purple-500 to-purple-600",
-      category: "Magic"
-    },
-    "Faster Casting": {
-      description: "Increase your spell casting speed and become a more effective spellcaster. Perfect for mage builds.",
-      icon: Zap,
-      color: "from-yellow-500 to-yellow-600",
-      category: "Magic"
-    },
-    "Hit Chance Increase": {
-      description: "Improve your accuracy in combat and land more successful attacks. Essential for any combat build.",
-      icon: Target,
-      color: "from-orange-500 to-orange-600",
-      category: "Combat"
-    },
-    "Hit Point Regeneration": {
-      description: "Automatically regenerate health over time and improve your survivability. Great for PvE and sustained combat.",
-      icon: Star,
-      color: "from-pink-500 to-pink-600",
-      category: "Defense"
-    },
-    "Lower Mana Cost": {
-      description: "Reduce spell mana consumption and cast more spells with the same mana pool. Essential for mage efficiency.",
-      icon: Zap,
-      color: "from-indigo-500 to-indigo-600",
-      category: "Magic"
-    },
-    "Lower Reagent Cost": {
-      description: "Reduce spell reagent usage and save on casting costs. Perfect for mages who cast frequently.",
-      icon: Star,
-      color: "from-teal-500 to-teal-600",
-      category: "Magic"
-    },
-    "Mana Regeneration": {
-      description: "Automatically regenerate mana over time and maintain sustained spellcasting. Essential for mage builds.",
-      icon: Zap,
-      color: "from-cyan-500 to-cyan-600",
-      category: "Magic"
-    },
-    "Spell Channeling": {
-      description: "Allow movement while casting spells and gain a significant advantage in combat. Perfect for mobile mages.",
-      icon: Zap,
-      color: "from-violet-500 to-violet-600",
-      category: "Magic"
-    },
-    "Spell Damage Increase": {
-      description: "Increase magical damage output and become a more powerful spellcaster. Essential for offensive mage builds.",
-      icon: Zap,
-      color: "from-rose-500 to-rose-600",
-      category: "Magic"
-    },
-    "Stamina Regeneration": {
-      description: "Automatically regenerate stamina and maintain peak performance in combat. Essential for melee characters.",
-      icon: Star,
-      color: "from-emerald-500 to-emerald-600",
-      category: "Utility"
-    },
-    "Swing Speed Increase": {
-      description: "Increase weapon attack speed and deal more damage over time. Perfect for melee DPS builds.",
-      icon: Sword,
-      color: "from-amber-500 to-amber-600",
-      category: "Combat"
-    }
-  }
-
+export default async function PropertyPage({ params }: PropertyPageProps) {
+  const { property: propertySlug } = await params
+  
+  // Convert URL slug back to property name
+  const propertyName = slugToPropertyName(propertySlug)
   const currentProperty = propertyInfo[propertyName as keyof typeof propertyInfo]
   const IconComponent = currentProperty?.icon || Sword
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <Header />
-        <main className="py-16 px-4">
-          <div className="container mx-auto">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading products...</p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    )
+  // Search for products containing the property name
+  let products: Product[] = []
+  try {
+    products = await getProducts({ 
+      search: propertyName, 
+      limit: 50 
+    })
+  } catch (error) {
+    console.error('Error loading property data:', error)
   }
 
   return (
@@ -208,17 +215,14 @@ export default function PropertyPage({ params }: PropertyPageProps) {
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <Link href="/" className="hover:text-amber-600 transition-colors">
-              Home
-            </Link>
-            <span>/</span>
-            <Link href="/prop" className="hover:text-amber-600 transition-colors">
-              Properties
-            </Link>
-            <span>/</span>
-            <span className="text-amber-600 font-medium">{propertyName}</span>
-          </nav>
+          <div className="mb-8">
+            <Breadcrumb 
+              items={[
+                { label: "Properties", href: "/prop" },
+                { label: propertyName, current: true }
+              ]} 
+            />
+          </div>
 
           {/* Property Header */}
           <div className="mb-8">
@@ -306,7 +310,7 @@ export default function PropertyPage({ params }: PropertyPageProps) {
             </div>
           </div>
 
-                    {/* Products Grid */}
+          {/* Products Grid */}
           {products.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {products.map((product) => (
@@ -380,33 +384,17 @@ export default function PropertyPage({ params }: PropertyPageProps) {
                       </div>
                     </Link>
 
-                    {/* Quantity and Add to Cart Section */}
-                    <div className="flex items-center gap-2">
-                      <input
-                        id={`qty-${product.id}`}
-                        type="number"
-                        min="1"
-                        max="10000"
-                        defaultValue="1"
-                        title="Maximum quantity: 10,000"
-                        className="w-12 h-8 text-center text-sm border border-gray-300 rounded-md bg-white text-black font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
-                      />
-                      
-                      <Button 
-                        onClick={() => {
-                          const input = document.getElementById(`qty-${product.id}`) as HTMLInputElement
-                          const quantity = parseInt(input?.value) || 1
-                          for (let i = 0; i < quantity; i++) {
-                            handleAddToCart(product)
-                          }
-                        }}
-                        size="sm"
-                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                      >
+                    {/* Add to Cart Button - Note: This will need client-side functionality */}
+                    <Button 
+                      size="sm"
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                      asChild
+                    >
+                      <Link href={`/product/${product.slug}`}>
                         <ShoppingCart className="h-3 w-3 mr-1" />
-                        Add to Cart
-                      </Button>
-                    </div>
+                        View Details
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
