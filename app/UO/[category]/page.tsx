@@ -74,7 +74,13 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     const categorySlug = createSlug(categoryName)
     const foundCategory = await getCategoryBySlug(categorySlug)
     if (foundCategory?.image_url) {
-      imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
+      // Check if the image URL is already a full URL (starts with http/https)
+      if (foundCategory.image_url.startsWith('http://') || foundCategory.image_url.startsWith('https://')) {
+        imageUrl = foundCategory.image_url
+      } else {
+        // Only prepend base URL if it's a relative path
+        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
+      }
     }
   } catch (error) {
     // Silently fail - image is optional for metadata
