@@ -182,15 +182,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           // Send welcome email using existing email library
           try {
+            console.log('Attempting to send OAuth welcome email to:', user.email)
             const { sendRegistrationEmail } = await import('@/lib/email')
-            await sendRegistrationEmail({
+            const emailResult = await sendRegistrationEmail({
               email: user.email!,
               name: firstName,
               characterName: firstName || 'there'
             })
-            console.log('Welcome email sent successfully to:', user.email)
+            console.log('OAuth welcome email sent successfully:', emailResult)
           } catch (error) {
-            console.error('Failed to send welcome email:', error)
+            console.error('Failed to send OAuth welcome email:', error)
           }
         }
 

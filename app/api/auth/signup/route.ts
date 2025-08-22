@@ -140,12 +140,14 @@ export async function POST(request: NextRequest) {
 
     // Send welcome email
     try {
+      console.log('Attempting to send welcome email to:', newUser.email)
       const { sendRegistrationEmail } = await import('@/lib/email')
-      await sendRegistrationEmail({
+      const emailResult = await sendRegistrationEmail({
         email: newUser.email,
         name: newUser.first_name,
         characterName: newUser.first_name
       })
+      console.log('Welcome email sent successfully:', emailResult)
     } catch (emailError) {
       console.error('Failed to send registration email:', emailError)
       // Don't fail signup if email fails
@@ -159,7 +161,7 @@ export async function POST(request: NextRequest) {
         firstName: newUser.first_name,
         lastName: newUser.last_name,
         characterName: newUser.first_name,
-        mainShard: null, // Will be updated when user sets their shard
+        mainShard: undefined, // Will be updated when user sets their shard
         source: 'registration'
       })
     } catch (mailchimpError) {
