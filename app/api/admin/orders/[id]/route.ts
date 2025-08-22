@@ -52,11 +52,13 @@ export async function GET(
         oi.*,
         p.name as product_name,
         p.image_url as product_image,
-        c.name as category
+        STRING_AGG(DISTINCT c.name, ', ') as category
       FROM order_items oi
       LEFT JOIN products p ON oi.product_id = p.id
-      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN categories c ON pc.category_id = c.id
       WHERE oi.order_id = $1
+      GROUP BY oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.created_at, oi.updated_at, p.name, p.image_url
       ORDER BY oi.created_at
     `, [orderId])
 
