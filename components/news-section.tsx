@@ -23,7 +23,7 @@ export function NewsSection() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await fetch('/api/news')
+        const response = await fetch('/api/news?limit=100')
         if (!response.ok) throw new Error('Failed to fetch news')
         
         const data = await response.json()
@@ -102,13 +102,7 @@ export function NewsSection() {
           </Accordion>
         </div>
 
-        {news.length > 0 && (
-          <div className="text-center mt-8">
-            <p className="text-sm text-gray-600">
-              Showing all {news.length} news posts
-            </p>
-          </div>
-        )}
+
       </div>
     </section>
   )

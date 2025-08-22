@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { pool } from '@/lib/db';
+import { query } from '@/lib/db';
 
 // GET - Get a specific news post
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await pool.query(`
+    const result = await query(`
       SELECT id, title, message, posted_by, date_posted, is_active, created_at, updated_at
       FROM news 
       WHERE id = $1
@@ -51,7 +51,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Title and message are required' }, { status: 400 });
     }
 
-    const result = await pool.query(`
+    const result = await query(`
       UPDATE news 
       SET title = $1, message = $2, date_posted = $3, is_active = $4, updated_at = NOW()
       WHERE id = $5
@@ -82,7 +82,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await pool.query(`
+    const result = await query(`
       DELETE FROM news 
       WHERE id = $1
       RETURNING id

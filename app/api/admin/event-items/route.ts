@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-});
+import { query } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,7 +57,7 @@ export async function GET(request: NextRequest) {
       FROM event_items
       ${whereClause}
     `;
-    const countResult = await pool.query(countQuery, queryParams);
+    const countResult = await query(countQuery, queryParams);
     const total = parseInt(countResult.rows[0].total);
 
     // Get items
@@ -77,7 +73,7 @@ export async function GET(request: NextRequest) {
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
     
-    const itemsResult = await pool.query(itemsQuery, [...queryParams, limit, offset]);
+    const itemsResult = await query(itemsQuery, [...queryParams, limit, offset]);
 
     // Get unique values for filters
     const seasonsResult = await pool.query(`

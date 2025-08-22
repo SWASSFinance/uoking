@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { query } from '@/lib/db';
 
 // GET - Get active news posts for public display
 export async function GET(request: NextRequest) {
@@ -10,13 +10,13 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Get total count of active news
-    const countResult = await pool.query(`
+    const countResult = await query(`
       SELECT COUNT(*) FROM news WHERE is_active = true
     `);
     const total = parseInt(countResult.rows[0].count);
 
     // Get active news posts with pagination
-    const result = await pool.query(`
+    const result = await query(`
       SELECT id, title, message, posted_by, date_posted, created_at
       FROM news 
       WHERE is_active = true

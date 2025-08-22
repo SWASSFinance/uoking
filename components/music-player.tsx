@@ -32,6 +32,18 @@ class AudioManager {
     this.audio.loop = true
     this.audio.preload = 'auto'
     
+    // Ensure audio is ready before allowing play
+    this.audio.addEventListener('canplaythrough', () => {
+      this.state.isInitialized = true
+    })
+    
+    // Fallback initialization after a short delay
+    setTimeout(() => {
+      if (!this.state.isInitialized) {
+        this.state.isInitialized = true
+      }
+    }, 1000)
+    
     // Load saved state
     try {
       const savedVolume = localStorage.getItem('music-volume')
@@ -49,13 +61,10 @@ class AudioManager {
         }
       }
       if (savedPlaying === 'true') {
-        this.state.isPlaying = true
-        this.audio.play().catch(() => {
-          // Auto-play might be blocked, that's okay
-        })
+        // Don't auto-play on load - let user click to start
+        this.state.isPlaying = false
       }
       
-      this.state.isInitialized = true
     } catch (error) {
       console.error('Error loading music state:', error)
     }
@@ -105,14 +114,21 @@ class AudioManager {
 
   // Public methods
   play() {
-    if (this.audio) {
-      this.audio.play().catch(() => {})
+    if (this.audio && this.state.isInitialized) {
+      this.audio.play().catch((error) => {
+        console.log('Play failed:', error)
+        // If play fails, ensure state is consistent
+        this.state.isPlaying = false
+        this.notifyListeners()
+      })
     }
   }
 
   pause() {
     if (this.audio) {
       this.audio.pause()
+      this.state.isPlaying = false
+      this.notifyListeners()
     }
   }
 
@@ -120,6 +136,11 @@ class AudioManager {
     if (this.state.isPlaying) {
       this.pause()
     } else {
+      // Set state immediately for responsive UI
+      this.state.isPlaying = true
+      this.notifyListeners()
+      
+      // Try to play - this will work after user interaction
       this.play()
     }
   }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { pool } from '@/lib/db';
+import { query } from '@/lib/db';
 
 // GET - List all news posts
 export async function GET(request: NextRequest) {
@@ -18,11 +18,11 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Get total count
-    const countResult = await pool.query('SELECT COUNT(*) FROM news');
+    const countResult = await query('SELECT COUNT(*) FROM news');
     const total = parseInt(countResult.rows[0].count);
 
     // Get news posts with pagination
-    const result = await pool.query(`
+    const result = await query(`
       SELECT id, title, message, posted_by, date_posted, is_active, created_at, updated_at
       FROM news 
       ORDER BY date_posted DESC, created_at DESC
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title and message are required' }, { status: 400 });
     }
 
-    const result = await pool.query(`
+    const result = await query(`
       INSERT INTO news (title, message, posted_by, date_posted, is_active)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING id, title, message, posted_by, date_posted, is_active, created_at, updated_at
