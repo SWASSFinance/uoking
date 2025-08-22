@@ -587,96 +587,130 @@ export function Header() {
                     </div>
                   )}
 
-                  <nav className="flex flex-col space-y-2">
-                    {/* Class Section */}
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-700 px-2">Class</h3>
-                      {classesLoading ? (
-                        <div className="px-2 text-sm text-gray-500">Loading classes...</div>
-                      ) : (
-                        <>
-                          {/* Dynamic classes from database */}
-                          {classes.map((cls) => (
-                            <Button key={cls.id} variant="ghost" className="justify-start text-sm" asChild>
-                              <Link href={`/Class/${cls.name}`}>
-                                {cls.name}
+                  <nav className="flex flex-col space-y-6">
+                    {/* Main Categories */}
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Shop by Category</h3>
+                      
+                      {/* Store Section */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Store Categories</h4>
+                        {categoriesLoading ? (
+                          <div className="px-2 text-sm text-gray-500">Loading...</div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-1">
+                            {categories.slice(0, 6).map((category) => (
+                              <Button key={category.id} variant="ghost" className="justify-start text-xs h-8" asChild>
+                                <Link href={`/UO/${categoryToUrl(category.name)}`}>
+                                  {category.name}
+                                </Link>
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Special Items */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Special Items</h4>
+                        <div className="grid grid-cols-2 gap-1">
+                          <Button variant="ghost" className="justify-start text-xs h-8" asChild>
+                            <Link href="/UO/Gold">Gold</Link>
+                          </Button>
+                          <Button variant="ghost" className="justify-start text-xs h-8" asChild>
+                            <Link href="/UO/Custom-Suits/">Suits</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Character Builds */}
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Character Builds</h3>
+                      
+                      {/* Class Section */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Class</h4>
+                        {classesLoading ? (
+                          <div className="px-2 text-sm text-gray-500">Loading classes...</div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-1">
+                            {classes.map((cls) => (
+                              <Button key={cls.id} variant="ghost" className="justify-start text-xs h-8" asChild>
+                                <Link href={`/Class/${cls.name}`}>
+                                  {cls.name}
+                                </Link>
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Slot Section */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Equipment Slots</h4>
+                        <div className="grid grid-cols-2 gap-1">
+                          {slotItems.map((item) => (
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                              <Link href={`/UO/${slotToCategoryUrl(item)}`}>
+                                {item}
                               </Link>
                             </Button>
                           ))}
-                        </>
-                      )}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Prop Section */}
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-700 px-2">Prop</h3>
-                      {propItems.map((item) => (
-                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}>
-                            {item}
-                          </Link>
-                        </Button>
-                      ))}
+                    {/* Item Properties */}
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Item Properties</h3>
+                      
+                      {/* Prop Section */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Properties</h4>
+                        <div className="grid grid-cols-1 gap-1">
+                          {propItems.map((item) => (
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                              <Link href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+                                {item}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Slot Section */}
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-700 px-2">Slot</h3>
-                      {slotItems.map((item) => (
-                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/UO/${slotToCategoryUrl(item)}`}>
-                            {item}
-                          </Link>
-                        </Button>
-                      ))}
-                    </div>
+                    {/* Scrolls & Tools */}
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Scrolls & Tools</h3>
+                      
+                      {/* Scrolls Section */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Scrolls</h4>
+                        <div className="grid grid-cols-2 gap-1">
+                          {scrollItems.map((item) => (
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                              <Link href={`/UO/${scrollToUrl(item)}`}>
+                                {item}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
 
-                    {/* Store Section */}
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-700 px-2">Store</h3>
-                      {categoriesLoading ? (
-                        <div className="px-2 text-sm text-gray-500">Loading...</div>
-                      ) : (
-                        categories.slice(0, 8).map((category) => (
-                          <Button key={category.id} variant="ghost" className="justify-start text-sm" asChild>
-                            <Link href={`/UO/${categoryToUrl(category.name)}`}>
-                              {category.name}
-                            </Link>
-                          </Button>
-                        ))
-                      )}
-                    </div>
-
-                    {/* Other Links */}
-                    <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/UO/Gold">Gold</Link>
-                    </Button>
-                    <Button variant="ghost" className="justify-start" asChild>
-                      <Link href="/UO/Custom-Suits/">Suits</Link>
-                    </Button>
-
-                    {/* Scrolls Section */}
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-700 px-2">Scrolls</h3>
-                      {scrollItems.map((item) => (
-                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={`/UO/${scrollToUrl(item)}`}>
-                            {item}
-                          </Link>
-                        </Button>
-                      ))}
-                    </div>
-
-                    {/* Tools Section */}
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-700 px-2">Tools</h3>
-                      {toolItems.map((item) => (
-                        <Button key={item} variant="ghost" className="justify-start text-sm" asChild>
-                          <Link href={item === 'Maps' ? '/maps' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
-                            {item}
-                          </Link>
-                        </Button>
-                      ))}
+                      {/* Tools Section */}
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 px-2">Tools</h4>
+                        <div className="grid grid-cols-2 gap-1">
+                          {toolItems.map((item) => (
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                              <Link href={item === 'Maps' ? '/maps' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+                                {item}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </nav>
                 </div>
