@@ -8,6 +8,7 @@ import { Sword, Shield, Crown, Star, Zap, Heart, Target } from "lucide-react"
 import Link from "next/link"
 import { getCategories } from "@/lib/db"
 import Image from "next/image"
+import { Metadata } from 'next'
 
 // Define slot types that map to categories
 const slotTypes = [
@@ -129,6 +130,63 @@ const slotTypes = [
     categorySlug: "talismans"
   }
 ]
+
+// Generate metadata for the slot page
+export async function generateMetadata(): Promise<Metadata> {
+  const seoTitle = "UO Equipment Slots - Browse Equipment By Slot Type | UO King"
+  const seoDescription = "Browse Ultima Online equipment by slot type. Find weapons, armor, jewelry, and more for every equipment slot. Fast delivery and competitive prices at UO King."
+  
+  // Try to get a featured category image for OpenGraph/Twitter card
+  let imageUrl: string | undefined
+  try {
+    const categories = await getCategories()
+    const weaponsCategory = categories.find(cat => cat.slug === 'weapons')
+    if (weaponsCategory?.image_url) {
+      // Check if the image URL is already a full URL (starts with http/https)
+      if (weaponsCategory.image_url.startsWith('http://') || weaponsCategory.image_url.startsWith('https://')) {
+        imageUrl = weaponsCategory.image_url
+      } else {
+        // Only prepend base URL if it's a relative path
+        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${weaponsCategory.image_url}`
+      }
+    }
+  } catch (error) {
+    // Silently fail - image is optional for metadata
+    console.log('Could not fetch category image for metadata:', error)
+  }
+
+  return {
+    title: seoTitle,
+    description: seoDescription,
+    keywords: "Ultima Online equipment slots, UO weapons, UO armor, UO jewelry, equipment by slot, gaming gear, buy UO items",
+    openGraph: {
+      title: seoTitle,
+      description: seoDescription,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/slot`,
+      siteName: 'UO King',
+      locale: 'en_US',
+      type: 'website',
+      ...(imageUrl && {
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: 'Ultima Online Equipment Slots',
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+      ...(imageUrl && {
+        images: [imageUrl],
+      }),
+    },
+  }
+}
 
 export default async function SlotPage() {
   // Fetch categories from database
