@@ -351,11 +351,9 @@ export default function CartPage() {
                     Browse Products
                   </Link>
                 </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Continue Shopping
-                  </Link>
+                <Button variant="outline" onClick={() => router.back()}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Continue Shopping
                 </Button>
               </div>
             </div>
@@ -703,11 +701,9 @@ export default function CartPage() {
                   </div>
 
                   {/* Continue Shopping */}
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/store">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Continue Shopping
-                    </Link>
+                  <Button variant="outline" onClick={() => router.back()} className="w-full">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Continue Shopping
                   </Button>
                 </CardContent>
               </Card>
