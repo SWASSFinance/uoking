@@ -222,12 +222,13 @@ export async function getProductBySlug(slug: string) {
         COALESCE(AVG(pr.rating), 0) as avg_rating,
         COUNT(pr.id) as review_count
       FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN product_classes pc ON p.id = pc.product_id
-      LEFT JOIN classes cl ON pc.class_id = cl.id
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN categories c ON pc.category_id = c.id
+      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
+      LEFT JOIN classes cl ON pc2.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE p.slug = $1 AND p.status = 'active'
-      GROUP BY p.id, c.name, c.slug
+      GROUP BY p.id
     `, [slug]);
     
     const product = result.rows[0];
@@ -701,8 +702,10 @@ export async function searchProducts(searchTerm: string, limit = 20) {
           plainto_tsquery('english', $1)
         ) as search_rank
       FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN classes cl ON p.class_id = cl.id
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN categories c ON pc.category_id = c.id
+      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
+      LEFT JOIN classes cl ON pc2.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE 
         p.status = 'active' AND 
@@ -712,7 +715,7 @@ export async function searchProducts(searchTerm: string, limit = 20) {
           OR p.name ILIKE $2
           OR p.description ILIKE $2
         )
-      GROUP BY p.id, c.name, c.slug, cl.name, cl.slug
+      GROUP BY p.id
       ORDER BY search_rank DESC, p.rank ASC, p.name ASC, p.featured DESC, p.created_at DESC
       LIMIT $3
     `, [searchTerm, `%${searchTerm}%`, limit]);
@@ -758,11 +761,12 @@ export async function getProductsByCategoryJunction(categoryId: string, filters?
         pc.is_primary
       FROM products p
       JOIN product_categories pc ON p.id = pc.product_id
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN classes cl ON p.class_id = cl.id
+      LEFT JOIN categories c ON pc.category_id = c.id
+      LEFT JOIN product_classes pc2 ON p.id = pc2.product_id
+      LEFT JOIN classes cl ON pc2.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE pc.category_id = $1 AND ${whereClause}
-      GROUP BY p.id, c.name, c.slug, cl.name, cl.slug, pc.is_primary
+      GROUP BY p.id, pc.is_primary
       ORDER BY pc.is_primary DESC, p.featured DESC, p.created_at DESC
       ${limitClause} ${offsetClause}
     `, params);
@@ -1063,7 +1067,7 @@ export async function deleteCategory(id: string) {
     
     // Check if category has products
     const productCheck = await query(`
-      SELECT COUNT(*) as product_count FROM products WHERE category_id = $1
+      SELECT COUNT(*) as product_count FROM product_categories WHERE category_id = $1
     `, [id])
     
     if (parseInt(productCheck.rows[0].product_count) > 0) {

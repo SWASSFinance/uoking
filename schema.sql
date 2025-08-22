@@ -107,7 +107,6 @@ CREATE TABLE products (
     cost DECIMAL(10,2) CHECK (cost >= 0),
     
     -- Product organization
-    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
     
     -- Product type and availability
@@ -369,7 +368,6 @@ CREATE INDEX idx_classes_slug ON classes(slug);
 CREATE INDEX idx_classes_is_active ON classes(is_active);
 
 CREATE INDEX idx_products_slug ON products(slug);
-CREATE INDEX idx_products_category_id ON products(category_id);
 CREATE INDEX idx_products_class_id ON products(class_id);
 CREATE INDEX idx_products_status ON products(status);
 CREATE INDEX idx_products_featured ON products(featured);

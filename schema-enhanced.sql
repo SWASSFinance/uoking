@@ -194,7 +194,6 @@ CREATE TABLE products (
     cost DECIMAL(10,2) CHECK (cost >= 0),
     
     -- Organization
-    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
     
     -- Product type and availability
