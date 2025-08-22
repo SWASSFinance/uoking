@@ -208,10 +208,6 @@ export default function ProductPage() {
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     Add to Cart
                   </Button>
-                  <Button size="lg" variant="outline" className="flex-1">
-                    <MessageCircle className="h-5 w-5 mr-2" />
-                    Live Chat
-                  </Button>
                 </div>
 
                 {/* Trust Indicators */}
@@ -309,7 +305,7 @@ export default function ProductPage() {
                     <div className="space-y-4">
                       <Button variant="outline" className="w-full justify-start">
                         <MessageCircle className="h-4 w-4 mr-2" />
-                        Live Chat Support
+                        Visit Live Chat
                       </Button>
                       <div className="text-sm text-gray-600">
                         <p>Our support team is available 24/7 to help with your order.</p>
