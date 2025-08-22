@@ -125,10 +125,24 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   
   // Try to find the category by slug
   let foundCategory
+  let categoryProducts = []
+  
   try {
-    const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories/${categorySlug}`)
+    const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/categories/${categorySlug}`)
     if (categoryResponse.ok) {
       foundCategory = await categoryResponse.json()
+      
+      // If category found, fetch products
+      if (foundCategory) {
+        try {
+          const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/products?categoryId=${foundCategory.id}&limit=100`)
+          if (productsResponse.ok) {
+            categoryProducts = await productsResponse.json()
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error)
+        }
+      }
     }
   } catch (error) {
     console.error('Error fetching category:', error)
@@ -137,32 +151,39 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   // If no category found, try to find by name (case insensitive)
   if (!foundCategory) {
     try {
-      const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories`)
+      const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/categories`)
       if (categoriesResponse.ok) {
         const allCategories = await categoriesResponse.json()
         foundCategory = allCategories.find((cat: any) => 
           cat.name.toLowerCase() === categoryName.toLowerCase()
         )
+        
+        // If category found, fetch products
+        if (foundCategory) {
+          try {
+            const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/products?categoryId=${foundCategory.id}&limit=100`)
+            if (productsResponse.ok) {
+              categoryProducts = await productsResponse.json()
+            }
+          } catch (error) {
+            console.error('Error fetching products:', error)
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching categories:', error)
     }
   }
 
-  // If still no category found, redirect to store
+  // Create a fallback category object if none found in database
   if (!foundCategory) {
-    redirect('/store')
-  }
-
-  // Fetch products for this category
-  let categoryProducts = []
-  try {
-    const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/products?categoryId=${foundCategory.id}&limit=100`)
-    if (productsResponse.ok) {
-      categoryProducts = await productsResponse.json()
+    foundCategory = {
+      id: 'fallback',
+      name: categoryName,
+      description: `Browse ${categoryName} items at UO King. Premium Ultima Online items, fast delivery, and competitive prices.`,
+      image_url: null,
+      slug: categorySlug
     }
-  } catch (error) {
-    console.error('Error fetching products:', error)
   }
 
   return <CategoryClient category={foundCategory} products={categoryProducts} categoryParam={catParam} />
