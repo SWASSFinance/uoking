@@ -168,33 +168,25 @@ export default function AccountPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
-      const success = urlParams.get('success')
       const error = urlParams.get('error')
-      const username = urlParams.get('username')
       
-      if (success === 'discord_linked' && username) {
-        toast({
-          title: "Discord Account Linked!",
-          description: `Successfully linked Discord account: @${username}`,
-          variant: "default",
-        })
-        // Clean up URL
-        window.history.replaceState({}, document.title, window.location.pathname)
-        // Refresh the page to update the session with new Discord info
-        window.location.reload()
-      } else if (error) {
+      if (error) {
         const errorMessages: Record<string, string> = {
-          'discord_auth_failed': 'Discord authentication failed. Please try again.',
-          'missing_parameters': 'Missing authentication parameters.',
-          'invalid_state': 'Invalid authentication state.',
-          'token_exchange_failed': 'Failed to authenticate with Discord.',
-          'user_info_failed': 'Failed to get Discord user information.',
-          'callback_failed': 'Discord linking process failed.'
+          'OAuthSignin': 'Discord authentication failed. Please try again.',
+          'OAuthCallback': 'Discord authentication failed. Please try again.',
+          'OAuthCreateAccount': 'Failed to create account with Discord.',
+          'EmailCreateAccount': 'Failed to create account with email.',
+          'Callback': 'Authentication callback failed.',
+          'OAuthAccountNotLinked': 'This Discord account is already linked to another user.',
+          'EmailSignin': 'Email sign-in failed.',
+          'CredentialsSignin': 'Invalid credentials.',
+          'SessionRequired': 'Please sign in to access this page.',
+          'Default': 'An authentication error occurred.'
         }
         
         toast({
-          title: "Discord Linking Failed",
-          description: errorMessages[error] || 'An error occurred while linking Discord account.',
+          title: "Authentication Error",
+          description: errorMessages[error] || 'An error occurred during authentication.',
           variant: "destructive",
         })
         // Clean up URL
@@ -529,31 +521,10 @@ export default function AccountPage() {
     }
   }
 
-  const handleDiscordLink = async () => {
-    try {
-      // Use the standalone Discord linking API
-      const response = await fetch(`/api/auth/link-discord?callbackUrl=${encodeURIComponent(window.location.href)}`)
-      
-      if (response.ok) {
-        const data = await response.json()
-        // Redirect to Discord OAuth
-        window.location.href = data.authUrl
-      } else {
-        const errorData = await response.json()
-        toast({
-          title: "Error",
-          description: errorData.error || "Failed to start Discord linking process",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error('Error starting Discord linking:', error)
-      toast({
-        title: "Error",
-        description: "Failed to start Discord linking process",
-        variant: "destructive",
-      })
-    }
+  const handleDiscordLink = () => {
+    // Use NextAuth's Discord signin directly with callback URL
+    const discordAuthUrl = `/api/auth/signin/discord?callbackUrl=${encodeURIComponent(window.location.href)}`
+    window.location.href = discordAuthUrl
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
