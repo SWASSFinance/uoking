@@ -253,7 +253,7 @@ export function Header() {
                       {classes.map((cls) => (
                         <Link
                           key={cls.id}
-                          href={`/Class/${cls.name}`}
+                          href={`/Class/${cls.name.toLowerCase()}`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                         >
                           {cls.name}
@@ -613,7 +613,7 @@ export function Header() {
                           {/* Dynamic classes from database */}
                           {classes.map((cls) => (
                             <Button key={cls.id} variant="ghost" className="justify-start text-sm" asChild>
-                              <Link href={`/Class/${cls.name}`}>
+                              <Link href={`/Class/${cls.name.toLowerCase()}`}>
                                 {cls.name}
                               </Link>
                             </Button>
