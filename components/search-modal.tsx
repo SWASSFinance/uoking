@@ -280,16 +280,19 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       >
                         <div className="flex-shrink-0">
                           {result.type === 'product' && result.image_url ? (
-                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 relative">
                               <ProductImage
                                 src={result.image_url}
                                 alt={result.name}
                                 fill
                                 className="object-cover"
+                                sizes="48px"
                               />
                             </div>
                           ) : (
-                            getResultIcon(result.type)
+                            <div className="w-12 h-12 flex items-center justify-center">
+                              {getResultIcon(result.type)}
+                            </div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
