@@ -235,7 +235,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {propertyName} Items</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {propertyName} Items</h1>
                   <div className="prose prose-amber max-w-none">
                     <div className="text-gray-600 leading-relaxed">
                       {currentProperty?.description || `Items with ${propertyName} property`}
@@ -302,7 +302,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           {/* Products Section */}
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">
                 {propertyName} Products
               </h2>
               <p className="text-gray-600">

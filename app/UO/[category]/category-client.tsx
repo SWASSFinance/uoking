@@ -90,7 +90,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
                   />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {category.name} Items</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {category.name} Items</h1>
                   {category.description && (
                     <div className="prose prose-amber max-w-none">
                       <div 
@@ -105,7 +105,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
             
             {!category.image_url && (
               <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">{category.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{category.name}</h1>
                 {category.description && (
                   <div className="prose prose-amber max-w-none">
                     <div 
@@ -122,7 +122,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
         {/* Products Section */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
               {category.name} Products
             </h2>
             <p className="text-gray-600">

@@ -518,8 +518,8 @@ export function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col space-y-4 mt-4">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto">
+                <div className="flex flex-col space-y-4 mt-4 pb-8">
                   <div className="flex items-center space-x-2 pb-4 border-b">
                     <div className="relative w-24 h-8">
                       <Image
@@ -598,26 +598,26 @@ export function Header() {
                         {categoriesLoading ? (
                           <div className="px-2 text-sm text-gray-500">Loading...</div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-1">
-                            {categories.slice(0, 6).map((category) => (
-                              <Button key={category.id} variant="ghost" className="justify-start text-xs h-8" asChild>
-                                <Link href={`/UO/${categoryToUrl(category.name)}`}>
-                                  {category.name}
-                                </Link>
-                              </Button>
-                            ))}
-                          </div>
+                                                  <div className="grid grid-cols-2 gap-2">
+                          {categories.slice(0, 6).map((category) => (
+                            <Button key={category.id} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
+                              <Link href={`/UO/${categoryToUrl(category.name)}`}>
+                                {category.name}
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
                         )}
                       </div>
 
                       {/* Special Items */}
                       <div className="space-y-1">
                         <h4 className="text-sm font-medium text-gray-700 px-2">Special Items</h4>
-                        <div className="grid grid-cols-2 gap-1">
-                          <Button variant="ghost" className="justify-start text-xs h-8" asChild>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                             <Link href="/UO/Gold">Gold</Link>
                           </Button>
-                          <Button variant="ghost" className="justify-start text-xs h-8" asChild>
+                          <Button variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                             <Link href="/UO/Custom-Suits/">Suits</Link>
                           </Button>
                         </div>
@@ -634,9 +634,9 @@ export function Header() {
                         {classesLoading ? (
                           <div className="px-2 text-sm text-gray-500">Loading classes...</div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-1">
+                          <div className="grid grid-cols-2 gap-2">
                             {classes.map((cls) => (
-                              <Button key={cls.id} variant="ghost" className="justify-start text-xs h-8" asChild>
+                              <Button key={cls.id} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                                 <Link href={`/Class/${cls.name}`}>
                                   {cls.name}
                                 </Link>
@@ -649,9 +649,9 @@ export function Header() {
                       {/* Slot Section */}
                       <div className="space-y-1">
                         <h4 className="text-sm font-medium text-gray-700 px-2">Equipment Slots</h4>
-                        <div className="grid grid-cols-2 gap-1">
+                        <div className="grid grid-cols-2 gap-2">
                           {slotItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                               <Link href={`/UO/${slotToCategoryUrl(item)}`}>
                                 {item}
                               </Link>
@@ -668,9 +668,9 @@ export function Header() {
                       {/* Prop Section */}
                       <div className="space-y-1">
                         <h4 className="text-sm font-medium text-gray-700 px-2">Properties</h4>
-                        <div className="grid grid-cols-1 gap-1">
+                        <div className="grid grid-cols-2 gap-2">
                           {propItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                               <Link href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                                 {item}
                               </Link>
@@ -687,9 +687,9 @@ export function Header() {
                       {/* Scrolls Section */}
                       <div className="space-y-1">
                         <h4 className="text-sm font-medium text-gray-700 px-2">Scrolls</h4>
-                        <div className="grid grid-cols-2 gap-1">
+                        <div className="grid grid-cols-2 gap-2">
                           {scrollItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                               <Link href={`/UO/${scrollToUrl(item)}`}>
                                 {item}
                               </Link>
@@ -701,9 +701,9 @@ export function Header() {
                       {/* Tools Section */}
                       <div className="space-y-1">
                         <h4 className="text-sm font-medium text-gray-700 px-2">Tools</h4>
-                        <div className="grid grid-cols-2 gap-1">
+                        <div className="grid grid-cols-2 gap-2">
                           {toolItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8" asChild>
+                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                               <Link href={item === 'Maps' ? '/maps' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                                 {item}
                               </Link>

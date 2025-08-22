@@ -205,7 +205,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-4 mt-6">
-                    <h1 className="text-3xl font-bold text-gray-800">UO {classData.name} Items</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">UO {classData.name} Items</h1>
                     {classData.difficulty_level <= 2 && (
                       <Badge className="bg-amber-500 text-white">Popular Class</Badge>
                     )}
@@ -223,7 +223,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
           {/* Products Section */}
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">
                 {classData.name} Products
               </h2>
               <p className="text-gray-600">
@@ -255,7 +255,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
 
           {/* Latest Items */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Items</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Latest Items</h2>
             <ProductsGrid products={products.slice(0, 12)} />
             
             {/* View All Products Button */}
