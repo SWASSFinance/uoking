@@ -1,6 +1,3 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -10,8 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { ProductImage } from "@/components/ui/product-image"
 import { Star, ShoppingCart, Crown, Shield, Zap, Target, Eye, Hand, Hammer, Users, Sword } from "lucide-react"
 import Link from "next/link"
-import { useCart } from "@/contexts/cart-context"
-import { useToast } from "@/hooks/use-toast"
+import { Metadata } from 'next'
+import { getProducts } from '@/lib/db'
 
 interface ClassPageProps {
   params: Promise<{ class: string }>
@@ -54,88 +51,109 @@ const classColors: { [key: string]: string } = {
   'default': 'from-amber-500 to-amber-600'
 }
 
-export default function ClassPage({ params }: ClassPageProps) {
-  const [classParam, setClassParam] = useState<string>('')
-  const [classData, setClassData] = useState<ClassData | null>(null)
-  const [products, setProducts] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const { addItem } = useCart()
-  const { toast } = useToast()
+// Helper function to convert URL slug to class name
+function slugToClassName(slug: string) {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const resolvedParams = await params
-        const classValue = resolvedParams.class
-        setClassParam(classValue)
+// Generate metadata for the class page
+export async function generateMetadata({ params }: ClassPageProps): Promise<Metadata> {
+  const { class: classSlug } = await params
+  
+  // Convert URL parameter to readable class name
+  const className = slugToClassName(classSlug)
+  
+  // Create SEO-friendly title and description format (always use our format, ignore database meta fields)
+  const seoTitle = `UO ${className} - Buy Ultima Online ${className} At Cheap Prices | UO King`
+  const seoDescription = `Buy ${className} for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support. Get your ${className.toLowerCase()} now!`
 
-        // Fetch class data from database
-        const classResponse = await fetch(`/api/admin/classes`)
-        if (classResponse.ok) {
-          const classes = await classResponse.json()
-          const currentClass = classes.find((cls: ClassData) => cls.slug === classValue && cls.is_active)
-          
-          if (!currentClass) {
-            notFound()
-          }
-          
-          setClassData(currentClass)
-        } else {
-          notFound()
-        }
-
-        // Fetch products for this class
-        const productsResponse = await fetch(`/api/products?class=${classValue}&limit=100`)
-        if (productsResponse.ok) {
-          const data = await productsResponse.json()
-          setProducts(data)
-        }
-      } catch (error) {
-        console.error('Error loading class data:', error)
-        notFound()
-      } finally {
-        setLoading(false)
+  // Try to get a featured product image for OpenGraph/Twitter card (optional, won't break if it fails)
+  let imageUrl: string | undefined
+  try {
+    const products = await getProducts({ 
+      classId: classSlug, 
+      limit: 1 
+    })
+    if (products.length > 0 && products[0].image_url) {
+      // Check if the image URL is already a full URL (starts with http/https)
+      if (products[0].image_url.startsWith('http://') || products[0].image_url.startsWith('https://')) {
+        imageUrl = products[0].image_url
+      } else {
+        // Only prepend base URL if it's a relative path
+        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${products[0].image_url}`
       }
     }
-
-    loadData()
-  }, [params])
-
-  const handleAddToCart = (product: any) => {
-    addItem({
-      id: String(product.id),
-      name: product.name,
-      price: parseFloat(product.sale_price || product.price),
-      image_url: product.image_url || '',
-      category: product.category_names ? product.category_names.split(', ')[0] : ''
-    })
-    
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-      variant: "default",
-    })
+  } catch (error) {
+    // Silently fail - image is optional for metadata
+    console.log('Could not fetch product image for metadata:', error)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100">
-        <Header />
-        <main className="py-16 px-4">
-          <div className="container mx-auto">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading class information...</p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    )
+  return {
+    title: seoTitle,
+    description: seoDescription,
+    keywords: `${className}, Ultima Online, UO, ${className.toLowerCase()}, buy ${className.toLowerCase()}, cheap ${className.toLowerCase()}, gaming items`,
+    openGraph: {
+      title: seoTitle,
+      description: seoDescription,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/Class/${classSlug}`,
+      siteName: 'UO King',
+      locale: 'en_US',
+      type: 'website',
+      ...(imageUrl && {
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${className} - Ultima Online`,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+      ...(imageUrl && {
+        images: [imageUrl],
+      }),
+    },
+  }
+}
+
+export default async function ClassPage({ params }: ClassPageProps) {
+  const { class: classSlug } = await params
+  
+  // Fetch class data from database
+  let classData: ClassData | null = null
+  let products: any[] = []
+  
+  try {
+    const classResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/admin/classes`)
+    if (classResponse.ok) {
+      const classes = await classResponse.json()
+      classData = classes.find((cls: ClassData) => cls.slug === classSlug && cls.is_active)
+    }
+  } catch (error) {
+    console.error('Error fetching class data:', error)
   }
 
+  // If no class found, return 404
   if (!classData) {
     notFound()
+  }
+
+  // Fetch products for this class
+  try {
+    products = await getProducts({ 
+      classId: classSlug, 
+      limit: 100 
+    })
+  } catch (error) {
+    console.error('Error fetching products:', error)
   }
 
   const IconComponent = classIcons[classData.slug] || classIcons.default
@@ -264,17 +282,17 @@ export default function ClassPage({ params }: ClassPageProps) {
                       </div>
                     </Link>
 
-                    {/* Add to Cart Button */}
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        onClick={() => handleAddToCart(product)}
-                        size="sm"
-                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                      >
+                    {/* Add to Cart Button - Note: This will need client-side functionality */}
+                    <Button 
+                      size="sm"
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                      asChild
+                    >
+                      <Link href={`/product/${product.slug}`}>
                         <ShoppingCart className="h-3 w-3 mr-1" />
-                        Add to Cart
-                      </Button>
-                    </div>
+                        View Details
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -296,8 +314,6 @@ export default function ClassPage({ params }: ClassPageProps) {
               ))}
             </div>
           )}
-
-
 
           {/* Latest Items */}
           <div className="mb-12">
@@ -355,17 +371,17 @@ export default function ClassPage({ params }: ClassPageProps) {
                       </div>
                     </Link>
 
-                    {/* Add to Cart Button */}
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        onClick={() => handleAddToCart(product)}
-                        size="sm"
-                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                      >
+                    {/* Add to Cart Button - Note: This will need client-side functionality */}
+                    <Button 
+                      size="sm"
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                      asChild
+                    >
+                      <Link href={`/product/${product.slug}`}>
                         <ShoppingCart className="h-3 w-3 mr-1" />
-                        Add to Cart
-                      </Button>
-                    </div>
+                        View Details
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -380,7 +396,6 @@ export default function ClassPage({ params }: ClassPageProps) {
               </Button>
             </div>
           </div>
-
 
         </div>
       </main>
