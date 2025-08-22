@@ -11,42 +11,36 @@ import {
   Package, 
   Settings, 
   ShoppingCart,
-  ExternalLink
+  ExternalLink,
+  TrendingUp,
+  DollarSign,
+  Calendar
 } from "lucide-react"
 import Link from "next/link"
-
-const adminModules = [
-  {
-    name: "Users",
-    description: "Manage user accounts, profiles, and permissions",
-    icon: Users,
-    color: "bg-blue-100 text-blue-600",
-    href: "/admin/users",
-    count: "Active Users"
-  },
-  {
-    name: "Products",
-    description: "Add, edit, and manage all products and items",
-    icon: Package,
-    color: "bg-green-100 text-green-600",
-    href: "/admin/products",
-    count: "Total Products"
-  },
-  {
-    name: "Orders",
-    description: "View and manage customer orders and transactions",
-    icon: ShoppingCart,
-    color: "bg-orange-100 text-orange-600",
-    href: "/admin/orders",
-    count: "Recent Orders"
-  }
-]
 
 interface DashboardStats {
   totalUsers: number
   activeProducts: number
   todayOrders: number
   activeCategories: number
+}
+
+interface SalesData {
+  date?: string
+  week_start?: string
+  month_start?: string
+  order_count: number
+  total_sales: number
+  completed_sales: number
+}
+
+interface SalesBreakdown {
+  daily: SalesData[]
+  weekly: SalesData[]
+  monthly: SalesData[]
+  today: SalesData
+  thisWeek: SalesData
+  thisMonth: SalesData
 }
 
 export default function AdminPage() {
@@ -56,10 +50,20 @@ export default function AdminPage() {
     todayOrders: 0,
     activeCategories: 0
   })
+  const [salesData, setSalesData] = useState<SalesBreakdown>({
+    daily: [],
+    weekly: [],
+    monthly: [],
+    today: { order_count: 0, total_sales: 0, completed_sales: 0 },
+    thisWeek: { order_count: 0, total_sales: 0, completed_sales: 0 },
+    thisMonth: { order_count: 0, total_sales: 0, completed_sales: 0 }
+  })
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily')
 
   useEffect(() => {
     fetchDashboardStats()
+    fetchSalesBreakdown()
   }, [])
 
   const fetchDashboardStats = async () => {
@@ -74,6 +78,47 @@ export default function AdminPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchSalesBreakdown = async () => {
+    try {
+      const response = await fetch('/api/admin/sales-breakdown')
+      if (response.ok) {
+        const data = await response.json()
+        setSalesData(data)
+      }
+    } catch (error) {
+      console.error('Error fetching sales breakdown:', error)
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount || 0)
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
+
+  const formatWeek = (dateString: string) => {
+    const date = new Date(dateString)
+    const endDate = new Date(date)
+    endDate.setDate(date.getDate() + 6)
+    return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+  }
+
+  const formatMonth = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    })
   }
 
   return (
@@ -155,65 +200,154 @@ export default function AdminPage() {
             </Card>
           </div>
 
-          {/* Admin Modules Table */}
+          {/* Sales Breakdown */}
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-black mb-8 text-center">
-              Management Modules
+              Sales Breakdown
             </h2>
+            
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="border border-gray-200 bg-white">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-black font-semibold">Today's Sales</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {formatCurrency(salesData.today.completed_sales)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {salesData.today.order_count} orders
+                      </p>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-gray-200 bg-white">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-black font-semibold">This Week</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {formatCurrency(salesData.thisWeek.completed_sales)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {salesData.thisWeek.order_count} orders
+                      </p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-gray-200 bg-white">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-black font-semibold">This Month</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        {formatCurrency(salesData.thisMonth.completed_sales)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {salesData.thisMonth.order_count} orders
+                      </p>
+                    </div>
+                    <Calendar className="h-8 w-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex justify-center mb-6">
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                <Button
+                  variant={activeTab === 'daily' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveTab('daily')}
+                  className={activeTab === 'daily' ? 'bg-white text-black shadow-sm' : 'text-gray-600'}
+                >
+                  Daily
+                </Button>
+                <Button
+                  variant={activeTab === 'weekly' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveTab('weekly')}
+                  className={activeTab === 'weekly' ? 'bg-white text-black shadow-sm' : 'text-gray-600'}
+                >
+                  Weekly
+                </Button>
+                <Button
+                  variant={activeTab === 'monthly' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveTab('monthly')}
+                  className={activeTab === 'monthly' ? 'bg-white text-black shadow-sm' : 'text-gray-600'}
+                >
+                  Monthly
+                </Button>
+              </div>
+            </div>
+
+            {/* Sales Table */}
             <Card className="border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-black">Available Admin Modules</CardTitle>
+                <CardTitle className="text-black">
+                  {activeTab === 'daily' && 'Daily Sales (Last 7 Days)'}
+                  {activeTab === 'weekly' && 'Weekly Sales (Last 8 Weeks)'}
+                  {activeTab === 'monthly' && 'Monthly Sales (Last 12 Months)'}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-black font-semibold">Module</TableHead>
-                      <TableHead className="text-black font-semibold">Description</TableHead>
-                      <TableHead className="text-black font-semibold">Status</TableHead>
-                      <TableHead className="text-black font-semibold">Actions</TableHead>
+                      <TableHead className="text-black font-semibold">
+                        {activeTab === 'daily' && 'Date'}
+                        {activeTab === 'weekly' && 'Week'}
+                        {activeTab === 'monthly' && 'Month'}
+                      </TableHead>
+                      <TableHead className="text-black font-semibold">Orders</TableHead>
+                      <TableHead className="text-black font-semibold">Total Sales</TableHead>
+                      <TableHead className="text-black font-semibold">Completed Sales</TableHead>
+                      <TableHead className="text-black font-semibold">Completion Rate</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {adminModules.map((module) => {
-                      const IconComponent = module.icon
-                      return (
-                        <TableRow key={module.name} className="hover:bg-gray-50">
-                          <TableCell>
-                            <div className="flex items-center space-x-3">
-                              <div className={`p-2 rounded-lg ${module.color}`}>
-                                <IconComponent className="h-5 w-5" />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-black">{module.name}</div>
-                                <div className="text-sm text-gray-700">{module.count}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-black">{module.description}</span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">
-                              Available
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Button 
-                              size="sm"
-                              variant="outline"
-                              className="border-gray-300 text-black hover:bg-gray-50"
-                              asChild
-                            >
-                              <Link href={module.href}>
-                                <ExternalLink className="h-4 w-4 mr-2" />
-                                Open
-                              </Link>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
+                    {(activeTab === 'daily' ? salesData.daily : 
+                      activeTab === 'weekly' ? salesData.weekly : 
+                      salesData.monthly).map((item, index) => (
+                      <TableRow key={index} className="hover:bg-gray-50">
+                        <TableCell className="font-medium text-black">
+                          {activeTab === 'daily' && item.date && formatDate(item.date)}
+                          {activeTab === 'weekly' && item.week_start && formatWeek(item.week_start)}
+                          {activeTab === 'monthly' && item.month_start && formatMonth(item.month_start)}
+                        </TableCell>
+                        <TableCell className="text-black">{item.order_count}</TableCell>
+                        <TableCell className="text-black font-medium">
+                          {formatCurrency(item.total_sales)}
+                        </TableCell>
+                        <TableCell className="text-green-600 font-medium">
+                          {formatCurrency(item.completed_sales)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant="secondary" 
+                            className={
+                              item.total_sales > 0 && (item.completed_sales / item.total_sales) >= 0.8 
+                                ? "bg-green-100 text-green-800" 
+                                : "bg-yellow-100 text-yellow-800"
+                            }
+                          >
+                            {item.total_sales > 0 
+                              ? `${Math.round((item.completed_sales / item.total_sales) * 100)}%`
+                              : '0%'
+                            }
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </CardContent>
