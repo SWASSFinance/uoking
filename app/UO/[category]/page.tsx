@@ -62,54 +62,31 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   
   // Convert URL parameter to readable category name
   const categoryName = urlToCategoryName(catParam)
-  const categorySlug = createSlug(categoryName)
   
-  // Try to find the category by slug
-  let foundCategory
+  // Create SEO-friendly title and description format (always use our format, ignore database meta fields)
+  const seoTitle = `UO ${categoryName} - Buy Ultima Online ${categoryName} At Cheap Prices | UO King`
+  const seoDescription = `Buy ${categoryName} for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support. Get your ${categoryName.toLowerCase()} now!`
+
+  // Try to get the category image for OpenGraph/Twitter card (optional, won't break if it fails)
+  let imageUrl: string | undefined
   try {
-    const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories/${categorySlug}`)
+    const categorySlug = createSlug(categoryName)
+    const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/categories/${categorySlug}`)
     if (categoryResponse.ok) {
-      foundCategory = await categoryResponse.json()
+      const foundCategory = await categoryResponse.json()
+      if (foundCategory.image_url) {
+        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
+      }
     }
   } catch (error) {
-    console.error('Error fetching category for metadata:', error)
+    // Silently fail - image is optional for metadata
+    console.log('Could not fetch category image for metadata:', error)
   }
-
-  // If no category found, try to find by name (case insensitive)
-  if (!foundCategory) {
-    try {
-      const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories`)
-      if (categoriesResponse.ok) {
-        const allCategories = await categoriesResponse.json()
-        foundCategory = allCategories.find((cat: any) => 
-          cat.name.toLowerCase() === categoryName.toLowerCase()
-        )
-      }
-    } catch (error) {
-      console.error('Error fetching categories for metadata:', error)
-    }
-  }
-
-  if (!foundCategory) {
-    return {
-      title: 'Category Not Found - UOKing',
-      description: 'The requested category could not be found.',
-    }
-  }
-
-  // Create SEO-friendly title and description format (always use our format, ignore database meta fields)
-  const seoTitle = `UO ${foundCategory.name} - Buy Ultima Online ${foundCategory.name} At Cheap Prices | UO King`
-  const seoDescription = `Buy ${foundCategory.name} for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support. Get your ${foundCategory.name.toLowerCase()} now!`
-
-  // Build the full image URL if category has an image
-  const imageUrl = foundCategory.image_url 
-    ? `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
-    : undefined
 
   return {
     title: seoTitle,
     description: seoDescription,
-    keywords: `${foundCategory.name}, Ultima Online, UO, ${foundCategory.name.toLowerCase()}, buy ${foundCategory.name.toLowerCase()}, cheap ${foundCategory.name.toLowerCase()}, gaming items`,
+    keywords: `${categoryName}, Ultima Online, UO, ${categoryName.toLowerCase()}, buy ${categoryName.toLowerCase()}, cheap ${categoryName.toLowerCase()}, gaming items`,
     openGraph: {
       title: seoTitle,
       description: seoDescription,
@@ -123,7 +100,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${foundCategory.name} - Ultima Online`,
+            alt: `${categoryName} - Ultima Online`,
           },
         ],
       }),
