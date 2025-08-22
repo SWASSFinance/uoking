@@ -106,7 +106,7 @@ const EMAIL_TEMPLATES = {
               
               <div class="order-details">
                 <h3>Order Details:</h3>
-                <p><strong>Order ID:</strong> ${data.orderId}</p>
+                <p><strong>Order ID:</strong> <span style="font-size: 18px; color: #28a745; font-weight: bold;">${data.orderId}</span></p>
                 ${data.deliveryCharacter ? `<p><strong>Delivery Character:</strong> ${data.deliveryCharacter}</p>` : ''}
                 ${data.shard ? `<p><strong>Shard:</strong> ${data.shard}</p>` : ''}
                 
@@ -178,7 +178,7 @@ const EMAIL_TEMPLATES = {
               
               <div class="highlight">
                 <h3>Delivery Information:</h3>
-                <p><strong>Order ID:</strong> ${data.orderId}</p>
+                <p><strong>Order ID:</strong> <span style="font-size: 18px; color: #17a2b8; font-weight: bold;">${data.orderId}</span></p>
                 ${data.deliveryCharacter ? `<p><strong>Delivery Character:</strong> ${data.deliveryCharacter}</p>` : ''}
                 ${data.shard ? `<p><strong>Shard:</strong> ${data.shard}</p>` : ''}
                 <p><strong>Status:</strong> Ready for delivery</p>
@@ -265,7 +265,7 @@ export async function sendEmail(
 
     // Send email via Resend
     const result = await resend.emails.send({
-      from: options.from || 'UO King <noreply@uoking.com>',
+      from: options.from || 'UO King <onboarding@resend.dev>',
       to: [to],
       subject,
       html,
@@ -293,6 +293,7 @@ export async function sendRegistrationEmail(userData: {
   email: string
   name?: string
   characterName: string
+  userId?: string
 }) {
   return sendEmail(userData.email, 'registration', userData)
 }
