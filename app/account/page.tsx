@@ -164,6 +164,43 @@ export default function AccountPage() {
     }
   }, [status, router])
 
+  // Handle URL parameters for success/error messages
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const success = urlParams.get('success')
+      const error = urlParams.get('error')
+      const username = urlParams.get('username')
+      
+      if (success === 'discord_linked' && username) {
+        toast({
+          title: "Discord Account Linked!",
+          description: `Successfully linked Discord account: @${username}`,
+          variant: "default",
+        })
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname)
+      } else if (error) {
+        const errorMessages: Record<string, string> = {
+          'discord_auth_failed': 'Discord authentication failed. Please try again.',
+          'missing_parameters': 'Missing authentication parameters.',
+          'invalid_state': 'Invalid authentication state.',
+          'token_exchange_failed': 'Failed to authenticate with Discord.',
+          'user_info_failed': 'Failed to get Discord user information.',
+          'callback_failed': 'Discord linking process failed.'
+        }
+        
+        toast({
+          title: "Discord Linking Failed",
+          description: errorMessages[error] || 'An error occurred while linking Discord account.',
+          variant: "destructive",
+        })
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }
+    }
+  }, [toast])
+
   // Load user data
   useEffect(() => {
     if (session?.user?.email) {
@@ -490,9 +527,31 @@ export default function AccountPage() {
     }
   }
 
-  const handleDiscordLink = () => {
-    // Use the Discord linking endpoint
-    window.location.href = '/api/auth/link-discord'
+  const handleDiscordLink = async () => {
+    try {
+      // Use the standalone Discord linking API
+      const response = await fetch(`/api/auth/link-discord?callbackUrl=${encodeURIComponent(window.location.href)}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        // Redirect to Discord OAuth
+        window.location.href = data.authUrl
+      } else {
+        const errorData = await response.json()
+        toast({
+          title: "Error",
+          description: errorData.error || "Failed to start Discord linking process",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error starting Discord linking:', error)
+      toast({
+        title: "Error",
+        description: "Failed to start Discord linking process",
+        variant: "destructive",
+      })
+    }
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
