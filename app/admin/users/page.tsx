@@ -21,7 +21,11 @@ import {
   Mail,
   User,
   Calendar,
-  Shield
+  Shield,
+  Ban,
+  Unlock,
+  AlertTriangle,
+  Clock
 } from "lucide-react"
 import Link from "next/link"
 
@@ -50,6 +54,11 @@ interface User {
   referral_code?: string
   referral_count?: number
   referred_by_count?: number
+  banned_at?: string
+  ban_reason?: string
+  ban_expires_at?: string
+  is_permanently_banned?: boolean
+  banned_by_email?: string
 }
 
 export default function UsersAdminPage() {
@@ -59,6 +68,14 @@ export default function UsersAdminPage() {
   const [filterStatus, setFilterStatus] = useState("all")
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showBanModal, setShowBanModal] = useState(false)
+  const [banningUser, setBanningUser] = useState<User | null>(null)
+  const [banForm, setBanForm] = useState({
+    reason: '',
+    durationDays: '',
+    banEmail: true,
+    banIP: true
+  })
 
   // Fetch data on component mount
   useEffect(() => {
@@ -98,6 +115,70 @@ export default function UsersAdminPage() {
         setShowForm(false)
       }
     } catch (error) {
+      console.error('Error saving user:', error)
+    }
+  }
+
+  const handleBanUser = async () => {
+    if (!banningUser || !banForm.reason.trim()) return
+
+    try {
+      const response = await fetch(`/api/admin/users/${banningUser.id}/ban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: banForm.reason,
+          durationDays: banForm.durationDays ? parseInt(banForm.durationDays) : null,
+          banEmail: banForm.banEmail,
+          banIP: banForm.banIP
+        }),
+      })
+
+      if (response.ok) {
+        fetchUsers()
+        setShowBanModal(false)
+        setBanningUser(null)
+        setBanForm({ reason: '', durationDays: '', banEmail: true, banIP: true })
+      } else {
+        const error = await response.json()
+        alert(`Error banning user: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error banning user:', error)
+      alert('Failed to ban user')
+    }
+  }
+
+  const handleUnbanUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to unban ${user.email}?`)) return
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}/unban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        fetchUsers()
+      } else {
+        const error = await response.json()
+        alert(`Error unbanning user: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error unbanning user:', error)
+      alert('Failed to unban user')
+    }
+  }
+
+  const openBanModal = (user: User) => {
+    setBanningUser(user)
+    setBanForm({ reason: '', durationDays: '', banEmail: true, banIP: true })
+    setShowBanModal(true)
+  }
       console.error('Error saving user:', error)
     }
   }
@@ -607,6 +688,31 @@ export default function UsersAdminPage() {
                             {user.email_verified && (
                               <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
                             )}
+                            {user.status === 'banned' && (
+                              <div className="mt-1">
+                                {user.is_permanently_banned ? (
+                                  <Badge className="bg-red-100 text-red-800 text-xs flex items-center">
+                                    <Ban className="h-3 w-3 mr-1" />
+                                    Permanent Ban
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-orange-100 text-orange-800 text-xs flex items-center">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    Temporary Ban
+                                  </Badge>
+                                )}
+                                {user.ban_reason && (
+                                  <div className="text-xs text-gray-500 mt-1 max-w-xs truncate" title={user.ban_reason}>
+                                    Reason: {user.ban_reason}
+                                  </div>
+                                )}
+                                {user.banned_by_email && (
+                                  <div className="text-xs text-gray-500">
+                                    Banned by: {user.banned_by_email}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -678,6 +784,27 @@ export default function UsersAdminPage() {
                               <Edit className="h-4 w-4 mr-1" />
                               Edit
                             </Button>
+                            {user.status === 'banned' ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleUnbanUser(user)}
+                                className="border-green-300 text-green-600 hover:bg-green-50"
+                              >
+                                <Unlock className="h-4 w-4 mr-1" />
+                                Unban
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openBanModal(user)}
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                              >
+                                <Ban className="h-4 w-4 mr-1" />
+                                Ban
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
@@ -705,6 +832,108 @@ export default function UsersAdminPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First User
               </Button>
+            </div>
+          )}
+
+          {/* Ban Modal */}
+          {showBanModal && banningUser && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-black">Ban User</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowBanModal(false)}
+                    className="border-gray-300"
+                  >
+                    ×
+                  </Button>
+                </div>
+                
+                <div className="mb-4">
+                  <p className="text-gray-700 mb-2">
+                    Are you sure you want to ban <strong>{banningUser.email}</strong>?
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="ban-reason" className="text-gray-700">Ban Reason *</Label>
+                    <Textarea
+                      id="ban-reason"
+                      value={banForm.reason}
+                      onChange={(e) => setBanForm({...banForm, reason: e.target.value})}
+                      placeholder="Enter the reason for banning this user..."
+                      className="border-gray-300 bg-white text-black"
+                      rows={3}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="ban-duration" className="text-gray-700">Ban Duration (days)</Label>
+                    <Input
+                      id="ban-duration"
+                      type="number"
+                      min="1"
+                      value={banForm.durationDays}
+                      onChange={(e) => setBanForm({...banForm, durationDays: e.target.value})}
+                      placeholder="Leave empty for permanent ban"
+                      className="border-gray-300 bg-white text-black"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave empty for permanent ban, or enter number of days for temporary ban
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="ban-email"
+                        checked={banForm.banEmail}
+                        onCheckedChange={(checked) => setBanForm({...banForm, banEmail: checked})}
+                      />
+                      <Label htmlFor="ban-email" className="text-gray-700">Ban Email Address</Label>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Prevents registration with this email address
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="ban-ip"
+                        checked={banForm.banIP}
+                        onCheckedChange={(checked) => setBanForm({...banForm, banIP: checked})}
+                      />
+                      <Label htmlFor="ban-ip" className="text-gray-700">Ban IP Address</Label>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Prevents registration from this IP address
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowBanModal(false)}
+                    className="border-gray-300 text-gray-700"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleBanUser}
+                    disabled={!banForm.reason.trim()}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Ban User
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>

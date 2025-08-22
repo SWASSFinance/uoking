@@ -337,6 +337,17 @@ export async function createProductReview({
       await query('ROLLBACK')
       throw new Error('You have already reviewed this product. You cannot submit another review.')
     }
+
+    // Check if user has too many pending reviews (rate limiting)
+    const pendingReviewsCount = await query(`
+      SELECT COUNT(*) as count FROM product_reviews 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    if (pendingReviewsCount.rows[0].count >= 5) {
+      await query('ROLLBACK')
+      throw new Error('You have reached the maximum limit of 5 pending reviews. Please wait for your existing reviews to be approved before submitting more.')
+    }
     
     // Calculate points for new review
     let pointsEarned = 10 // Base points for review
@@ -377,8 +388,20 @@ export async function createProductReview({
         lifetime_points = user_points.lifetime_points + $2
     `, [userId, pointsEarned])
     
+    // Get updated count of pending reviews
+    const updatedPendingCount = await query(`
+      SELECT COUNT(*) as count FROM product_reviews 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
     await query('COMMIT')
-    return { ...result.rows[0], pointsEarned, isNewReview: true }
+    return { 
+      ...result.rows[0], 
+      pointsEarned, 
+      isNewReview: true,
+      pendingReviewsCount: parseInt(updatedPendingCount.rows[0].count),
+      remainingReviews: Math.max(0, 5 - parseInt(updatedPendingCount.rows[0].count))
+    }
   } catch (error) {
     await query('ROLLBACK')
     console.error('Error creating product review:', error)
@@ -398,6 +421,36 @@ export async function hasUserReviewedProduct(userId: string, productId: string) 
     return result.rows.length > 0 ? result.rows[0] : null
   } catch (error) {
     console.error('Error checking user review:', error)
+    throw error
+  }
+}
+
+// Get user's pending review count
+export async function getUserPendingReviewCount(userId: string) {
+  try {
+    const result = await query(`
+      SELECT COUNT(*) as count FROM product_reviews 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    return parseInt(result.rows[0].count)
+  } catch (error) {
+    console.error('Error getting user pending review count:', error)
+    throw error
+  }
+}
+
+// Get user's pending spawn location submission count
+export async function getUserPendingSpawnSubmissionCount(userId: string) {
+  try {
+    const result = await query(`
+      SELECT COUNT(*) as count FROM spawn_location_submissions 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    return parseInt(result.rows[0].count)
+  } catch (error) {
+    console.error('Error getting user pending spawn submission count:', error)
     throw error
   }
 }

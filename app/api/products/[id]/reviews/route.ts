@@ -62,6 +62,22 @@ export async function POST(
     return NextResponse.json(review, { status: 201 })
   } catch (error) {
     console.error('Error creating review:', error)
+    
+    // Handle specific error messages for rate limiting
+    if (error instanceof Error) {
+      if (error.message.includes('maximum limit of 5 pending reviews')) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 429 }
+        )
+      } else if (error.message.includes('already reviewed this product')) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        )
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to create review' },
       { status: 500 }

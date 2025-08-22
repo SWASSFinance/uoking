@@ -40,6 +40,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if email is banned
+    const emailBannedResult = await query(`
+      SELECT is_email_banned($1) as is_banned
+    `, [email])
+
+    if (emailBannedResult.rows[0].is_banned) {
+      return NextResponse.json(
+        { error: 'This email address is banned from registration' },
+        { status: 403 }
+      )
+    }
+
+    // Check if IP is banned
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                    request.headers.get('x-real-ip') || 
+                    '127.0.0.1'
+    
+    const ipBannedResult = await query(`
+      SELECT is_ip_banned($1::inet) as is_banned
+    `, [clientIP])
+
+    if (ipBannedResult.rows[0].is_banned) {
+      return NextResponse.json(
+        { error: 'Your IP address is banned from registration' },
+        { status: 403 }
+      )
+    }
+
     // Check if user already exists
     const existingUser = await query(`
       SELECT id FROM users WHERE email = $1
@@ -59,6 +87,11 @@ export async function POST(request: NextRequest) {
     // Generate username from email
     const username = email.split('@')[0] + Math.floor(Math.random() * 1000)
 
+    // Get client IP
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                    request.headers.get('x-real-ip') || 
+                    '127.0.0.1'
+
     // Create user
     const userResult = await query(`
       INSERT INTO users (
@@ -76,6 +109,15 @@ export async function POST(request: NextRequest) {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
       RETURNING id, email, username, first_name, last_name, character_names
     `, [email, username, passwordHash, characterName, '', null, [characterName], 'active', false])
+
+    // Create user profile with IP address
+    await query(`
+      INSERT INTO user_profiles (user_id, last_ip_address)
+      VALUES ($1, $2::inet)
+      ON CONFLICT (user_id) DO UPDATE SET
+        last_ip_address = $2::inet,
+        updated_at = NOW()
+    `, [userResult.rows[0].id, clientIP])
 
     if (!userResult.rows || userResult.rows.length === 0) {
       throw new Error('Failed to create user')

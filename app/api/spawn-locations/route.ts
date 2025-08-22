@@ -58,6 +58,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Check if user has too many pending submissions (rate limiting)
+    const pendingSubmissionsCount = await query(
+      'SELECT COUNT(*) as count FROM spawn_location_submissions WHERE user_id = $1 AND status = $2',
+      [session.user.id, 'pending']
+    )
+
+    if (pendingSubmissionsCount.rows[0].count >= 5) {
+      return NextResponse.json(
+        { error: 'You have reached the maximum limit of 5 pending spawn location submissions. Please wait for your existing submissions to be reviewed before submitting more.' },
+        { status: 429 }
+      )
+    }
+
     // Insert the submission
     const result = await query(
       `INSERT INTO spawn_location_submissions 
@@ -69,13 +82,21 @@ export async function POST(request: NextRequest) {
 
     const submission = result.rows[0]
 
+    // Get updated count of pending submissions
+    const updatedPendingCount = await query(
+      'SELECT COUNT(*) as count FROM spawn_location_submissions WHERE user_id = $1 AND status = $2',
+      [session.user.id, 'pending']
+    )
+
     return NextResponse.json({
       success: true,
       message: 'Spawn location submitted successfully! It will be reviewed by our team.',
       submission: {
         id: submission.id,
         createdAt: submission.created_at
-      }
+      },
+      pendingSubmissionsCount: parseInt(updatedPendingCount.rows[0].count),
+      remainingSubmissions: Math.max(0, 5 - parseInt(updatedPendingCount.rows[0].count))
     })
 
   } catch (error) {
