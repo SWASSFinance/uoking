@@ -211,74 +211,73 @@ export default function ClassPage({ params }: ClassPageProps) {
 
           {/* Products Grid */}
           {products && products.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {products.map((product: any) => (
-                  <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
-                    <CardContent className="p-3">
-                      <Link href={`/product/${product.slug}`}>
-                        <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
-                          <ProductImage
-                            src={product.image_url}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                          />
-                          
-                          {product.featured && (
-                            <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
-                              Featured
-                            </Badge>
-                          )}
-                        </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {products.map((product: any) => (
+                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
+                  <CardContent className="p-3">
+                    <Link href={`/product/${product.slug}`}>
+                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+                        <ProductImage
+                          src={product.image_url}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                        />
                         
-                        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
-                          {product.name}
-                        </h3>
-                        
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex flex-col">
-                            {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm font-bold text-amber-600">
-                                  ${parseFloat(product.sale_price).toFixed(2)}
-                                </span>
-                                <span className="text-xs text-gray-500 line-through">
-                                  ${parseFloat(product.price).toFixed(2)}
-                                </span>
-                              </div>
-                            ) : (
+                        {product.featured && (
+                          <Badge className="absolute top-1 left-1 bg-amber-500 text-xs">
+                            Featured
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+                        {product.name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col">
+                          {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
+                            <div className="flex items-center space-x-2">
                               <span className="text-sm font-bold text-amber-600">
+                                ${parseFloat(product.sale_price).toFixed(2)}
+                              </span>
+                              <span className="text-xs text-gray-500 line-through">
                                 ${parseFloat(product.price).toFixed(2)}
                               </span>
-                            )}
-                          </div>
-                          
-                          {product.avg_rating > 0 && (
-                            <div className="flex items-center space-x-1">
-                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              <span className="text-xs font-medium">
-                                {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
-                              </span>
                             </div>
+                          ) : (
+                            <span className="text-sm font-bold text-amber-600">
+                              ${parseFloat(product.price).toFixed(2)}
+                            </span>
                           )}
                         </div>
-                      </Link>
-
-                      {/* Add to Cart Button */}
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          onClick={() => handleAddToCart(product)}
-                          size="sm"
-                          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
-                        >
-                          <ShoppingCart className="h-3 w-3 mr-1" />
-                          Add to Cart
-                        </Button>
+                        
+                        {product.avg_rating > 0 && (
+                          <div className="flex items-center space-x-1">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span className="text-xs font-medium">
+                              {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </Link>
+
+                    {/* Add to Cart Button */}
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        onClick={() => handleAddToCart(product)}
+                        size="sm"
+                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
+                      >
+                        <ShoppingCart className="h-3 w-3 mr-1" />
+                        Add to Cart
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
 
