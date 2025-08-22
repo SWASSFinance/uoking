@@ -92,10 +92,11 @@ export function NewsSection() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pt-4 pb-4">
-                  <div 
-                    className="prose prose-sm max-w-none text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: newsPost.message }}
-                  />
+                  <div className="text-gray-700">
+                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                      {newsPost.message}
+                    </pre>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             ))}
