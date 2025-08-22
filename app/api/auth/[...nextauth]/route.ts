@@ -81,7 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       try {
-        // Check if user already exists
+        // Check if user already exists by email
         const existingUser = await query(`
           SELECT id, email FROM users WHERE email = $1
         `, [user.email])
@@ -120,6 +120,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
 
           return true
+        }
+
+        // Also check if Discord ID already exists (for linking existing accounts)
+        if (account?.provider === 'discord' && profile) {
+          const discordId = (profile as any).id
+          const existingDiscordUser = await query(`
+            SELECT id, email FROM users WHERE discord_id = $1
+          `, [discordId])
+
+          if (existingDiscordUser.rows && existingDiscordUser.rows.length > 0) {
+            // Discord account already linked to another user
+            // Update the existing user with new Discord info and return false to prevent sign in
+            const userId = existingDiscordUser.rows[0].id
+            const discordUsername = (profile as any).username
+            
+            await query(`
+              UPDATE users 
+              SET 
+                discord_username = $1,
+                discord_id = $2,
+                last_login_at = NOW()
+              WHERE id = $3
+            `, [discordUsername, discordId, userId])
+            
+            // Return false to prevent creating a new account
+            return false
+          }
         }
 
         // Create new user
