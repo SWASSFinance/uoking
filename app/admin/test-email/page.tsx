@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,12 +19,32 @@ export default function TestEmailPage() {
   
   const [isLoading, setIsLoading] = useState(false)
   const [testResults, setTestResults] = useState<any[]>([])
+  const [envInfo, setEnvInfo] = useState<any>(null)
   const [formData, setFormData] = useState({
     email: '',
     template: 'registration',
     customSubject: '',
     customMessage: ''
   })
+
+  // Fetch environment information
+  useEffect(() => {
+    const fetchEnvInfo = async () => {
+      try {
+        const response = await fetch('/api/admin/email-status')
+        if (response.ok) {
+          const data = await response.json()
+          setEnvInfo(data)
+        }
+      } catch (error) {
+        console.error('Error fetching environment info:', error)
+      }
+    }
+
+    if (session?.user?.isAdmin) {
+      fetchEnvInfo()
+    }
+  }, [session])
 
   // Redirect if not admin
   if (status === 'loading') {
@@ -340,28 +360,35 @@ export default function TestEmailPage() {
           <CardHeader>
             <CardTitle>Environment Information</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <strong>Resend API Key:</strong> 
-                <span className={`ml-2 ${process.env.NEXT_PUBLIC_RESEND_API_KEY ? 'text-green-600' : 'text-red-600'}`}>
-                  {process.env.NEXT_PUBLIC_RESEND_API_KEY ? 'Configured' : 'Not configured'}
-                </span>
-              </div>
-              <div>
-                <strong>From Email:</strong> 
-                <span className="ml-2 text-gray-600">noreply@uoking.com</span>
-              </div>
-              <div>
-                <strong>Environment:</strong> 
-                <span className="ml-2 text-gray-600">{process.env.NODE_ENV}</span>
-              </div>
-              <div>
-                <strong>Base URL:</strong> 
-                <span className="ml-2 text-gray-600">{process.env.NEXT_PUBLIC_BASE_URL || 'Not set'}</span>
-              </div>
-            </div>
-          </CardContent>
+                     <CardContent>
+             {envInfo ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                 <div>
+                   <strong>Resend API Key:</strong> 
+                   <span className={`ml-2 ${envInfo.resendConfigured ? 'text-green-600' : 'text-red-600'}`}>
+                     {envInfo.resendConfigured ? `Configured (${envInfo.resendApiKeyLength} chars)` : 'Not configured'}
+                   </span>
+                 </div>
+                 <div>
+                   <strong>From Email:</strong> 
+                   <span className="ml-2 text-gray-600">{envInfo.fromEmail}</span>
+                 </div>
+                 <div>
+                   <strong>Environment:</strong> 
+                   <span className="ml-2 text-gray-600">{envInfo.environment}</span>
+                 </div>
+                 <div>
+                   <strong>Base URL:</strong> 
+                   <span className="ml-2 text-gray-600">{envInfo.baseUrl}</span>
+                 </div>
+               </div>
+             ) : (
+               <div className="text-center text-gray-500 py-4">
+                 <Loader2 className="h-4 w-4 mx-auto animate-spin" />
+                 <p className="mt-2">Loading environment info...</p>
+               </div>
+             )}
+           </CardContent>
         </Card>
       </div>
     </div>
