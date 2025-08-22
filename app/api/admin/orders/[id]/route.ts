@@ -71,7 +71,8 @@ export async function GET(
           u.email as user_email,
           u.username,
           u.first_name,
-          u.last_name
+          u.last_name,
+          u.character_names
         FROM orders o
         LEFT JOIN users u ON o.user_id = u.id
         WHERE o.id = $1

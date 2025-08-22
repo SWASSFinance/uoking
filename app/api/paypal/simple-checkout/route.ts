@@ -178,6 +178,20 @@ export async function POST(request: NextRequest) {
       orderId = existingOrderId
       console.log('Existing order updated successfully:', orderId)
     } else {
+      // Get user's character name from profile
+      const userResult = await query(`
+        SELECT id, character_names, main_shard FROM users WHERE email = $1
+      `, [session.user.email])
+
+      if (!userResult.rows || userResult.rows.length === 0) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      const user = userResult.rows[0]
+      const userCharacterName = user.character_names && user.character_names.length > 0 
+        ? user.character_names[0] 
+        : null
+
       // Create new order
       console.log('Creating new order')
       const orderResult = await query(`
@@ -185,28 +199,30 @@ export async function POST(request: NextRequest) {
           user_id, 
           order_number,
           status, 
-          total_amount, 
           subtotal,
           discount_amount,
-          cashback_used,
-          delivery_shard,
-          coupon_code,
+          total_amount,
+          currency,
           payment_method,
-          payment_status
+          payment_status,
+          delivery_shard,
+          delivery_character,
+          cashback_used
         ) VALUES (
-          (SELECT id FROM users WHERE email = $1),
+          $1,
           'ORD-' || EXTRACT(EPOCH FROM NOW())::BIGINT,
           'pending',
           $2,
           $3,
           $4,
+          'USD',
+          'paypal_form',
+          'pending',
           $5,
           $6,
-          $7,
-          'paypal_form',
-          'pending'
+          $7
         ) RETURNING id
-      `, [session.user.email, finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null])
+      `, [user.id, subtotal, discount, finalTotal, selectedShard, userCharacterName, cashbackToUse])
 
       orderId = orderResult.rows[0].id
       console.log('New order created with ID:', orderId)

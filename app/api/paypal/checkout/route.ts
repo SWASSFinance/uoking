@@ -60,32 +60,59 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Get user's character name from profile
+    const userResult = await query(`
+      SELECT id, character_names, main_shard FROM users WHERE email = $1
+    `, [session.user.email])
+
+    if (!userResult.rows || userResult.rows.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const user = userResult.rows[0]
+    const userCharacterName = user.character_names && user.character_names.length > 0 
+      ? user.character_names[0] 
+      : null
+
     // Create order in database
     const orderResult = await query(`
       INSERT INTO orders (
         user_id, 
+        order_number,
         status, 
-        total_amount, 
-        subtotal_amount,
+        subtotal,
         discount_amount,
-        cashback_used,
-        shard,
-        coupon_code,
+        total_amount,
+        currency,
         payment_method,
-        payment_status
+        payment_status,
+        delivery_shard,
+        delivery_character,
+        cashback_used
       ) VALUES (
-        (SELECT id FROM users WHERE email = $1),
-        'pending',
+        $1,
         $2,
+        'pending',
         $3,
         $4,
         $5,
+        'USD',
+        'paypal',
+        'pending',
         $6,
         $7,
-        'paypal',
-        'pending'
+        $8
       ) RETURNING id
-    `, [session.user.email, finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null])
+    `, [
+      user.id, 
+      `ORD-${Date.now()}`, 
+      subtotal, 
+      discount, 
+      finalTotal, 
+      selectedShard, 
+      userCharacterName, 
+      cashbackToUse
+    ])
 
     const orderId = orderResult.rows[0].id
 
