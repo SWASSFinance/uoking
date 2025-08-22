@@ -409,252 +409,267 @@ export default function OrdersAdminPage() {
                   {/* Order Details Dropdown */}
                   {expandedOrders.has(order.id) && orderDetails[order.id] && (
                     <div className="border-t border-gray-200 bg-gray-50 p-4">
-                      <div className="space-y-4">
-                        {/* Delivery Information - Prominent at Top */}
-                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                          <h5 className="font-semibold text-blue-900 mb-3 flex items-center">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            Delivery Information
-                          </h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                              <span className="text-blue-700 text-sm font-medium">Delivery Shard:</span>
-                              <p className="font-bold text-blue-900 text-lg">{orderDetails[order.id].delivery_shard}</p>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Left Column */}
+                        <div className="space-y-4">
+                          {/* Delivery & Customer Info Combined */}
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Delivery Information */}
+                              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                <h5 className="font-semibold text-blue-900 mb-2 flex items-center text-sm">
+                                  <MapPin className="h-4 w-4 mr-2" />
+                                  Delivery Info
+                                </h5>
+                                <div className="space-y-1 text-sm">
+                                  <div>
+                                    <span className="text-blue-700 font-medium">Shard:</span>
+                                    <p className="font-bold text-blue-900">{orderDetails[order.id].delivery_shard}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-blue-700 font-medium">Character:</span>
+                                    <p className="font-bold text-blue-900">{orderDetails[order.id].delivery_character || 'Not specified'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-blue-700 font-medium">Payment:</span>
+                                    <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Customer Information */}
+                              <div>
+                                <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
+                                  <User className="h-4 w-4 mr-2" />
+                                  Customer Info
+                                </h5>
+                                <div className="space-y-1 text-sm">
+                                  <div>
+                                    <span className="text-gray-600">Name:</span>
+                                    <p className="font-medium">{orderDetails[order.id].first_name} {orderDetails[order.id].last_name}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Email:</span>
+                                    <p className="font-medium">{orderDetails[order.id].user_email}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Username:</span>
+                                    <p className="font-medium">{orderDetails[order.id].username}</p>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-blue-700 text-sm font-medium">Delivery Character:</span>
-                              <p className="font-bold text-blue-900">{orderDetails[order.id].delivery_character || 'Not specified'}</p>
-                            </div>
-                            <div>
-                              <span className="text-blue-700 text-sm font-medium">Payment Method:</span>
-                              <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
+                          </div>
+
+                          {/* Order Items */}
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
+                              <Package className="h-4 w-4 mr-2" />
+                              Order Items
+                            </h5>
+                            <div className="space-y-2">
+                              {orderDetails[order.id].items?.map((item) => (
+                                <div key={item.id} className="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg">
+                                  <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                    {item.product_image ? (
+                                      <Image
+                                        src={item.product_image}
+                                        alt={item.product_name}
+                                        width={32}
+                                        height={32}
+                                        className="object-cover w-full h-full"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center">
+                                        <Package className="h-4 w-4 text-gray-400" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="font-medium text-gray-900 text-sm">{item.product_name}</p>
+                                    <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-semibold text-gray-900 text-sm">${parseFloat(item.total_price).toFixed(2)}</p>
+                                    <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>
 
-                        {/* Customer Information */}
-                        <div className="bg-white p-3 rounded-lg border border-gray-200">
-                          <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
-                            <User className="h-4 w-4 mr-2" />
-                            Customer Information
-                          </h5>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div>
-                              <span className="text-gray-600 text-sm">Name:</span>
-                              <p className="font-medium">{orderDetails[order.id].first_name} {orderDetails[order.id].last_name}</p>
-                            </div>
-                            <div>
-                              <span className="text-gray-600 text-sm">Email:</span>
-                              <p className="font-medium">{orderDetails[order.id].user_email}</p>
-                            </div>
-                            <div>
-                              <span className="text-gray-600 text-sm">Username:</span>
-                              <p className="font-medium">{orderDetails[order.id].username}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Order Items */}
-                        <div className="bg-white p-3 rounded-lg border border-gray-200">
-                          <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
-                            <Package className="h-4 w-4 mr-2" />
-                            Order Items
-                          </h5>
-                          <div className="space-y-2">
-                            {orderDetails[order.id].items?.map((item) => (
-                              <div key={item.id} className="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg">
-                                <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                  {item.product_image ? (
-                                    <Image
-                                      src={item.product_image}
-                                      alt={item.product_name}
-                                      width={40}
-                                      height={40}
-                                      className="object-cover w-full h-full"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <Package className="h-5 w-5 text-gray-400" />
+                        {/* Right Column */}
+                        <div className="space-y-4">
+                          {/* Order Summary & Details Combined */}
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Order Summary */}
+                              <div>
+                                <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
+                                  <DollarSign className="h-4 w-4 mr-2" />
+                                  Summary
+                                </h5>
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Subtotal</span>
+                                    <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal).toFixed(2)}</span>
+                                  </div>
+                                  {parseFloat(orderDetails[order.id].discount_amount || '0') > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Discount</span>
+                                      <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].discount_amount || '0').toFixed(2)}</span>
                                     </div>
                                   )}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="font-medium text-gray-900 text-sm">{item.product_name}</p>
-                                  <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-semibold text-gray-900 text-sm">${parseFloat(item.total_price).toFixed(2)}</p>
-                                  <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
+                                  {parseFloat(orderDetails[order.id].cashback_used || '0') > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Cashback</span>
+                                      <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].cashback_used || '0').toFixed(2)}</span>
+                                    </div>
+                                  )}
+                                  <div className="border-t pt-1 flex justify-between font-semibold">
+                                    <span>Total</span>
+                                    <span>${parseFloat(orderDetails[order.id].total_amount).toFixed(2)}</span>
+                                  </div>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
 
-                        {/* Order Summary & Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-white p-3 rounded-lg border border-gray-200">
-                            <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Order Summary
-                            </h5>
-                            <div className="space-y-1 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Subtotal</span>
-                                <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal).toFixed(2)}</span>
-                              </div>
-                              {parseFloat(orderDetails[order.id].discount_amount || '0') > 0 && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">Discount</span>
-                                  <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].discount_amount || '0').toFixed(2)}</span>
-                                </div>
-                              )}
-                              {parseFloat(orderDetails[order.id].cashback_used || '0') > 0 && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">Cashback Used</span>
-                                  <span className="font-medium text-green-600">-${parseFloat(orderDetails[order.id].cashback_used || '0').toFixed(2)}</span>
-                                </div>
-                              )}
-                              <div className="border-t pt-1 flex justify-between font-semibold">
-                                <span>Total</span>
-                                <span>${parseFloat(orderDetails[order.id].total_amount).toFixed(2)}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="bg-white p-3 rounded-lg border border-gray-200">
-                            <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              Order Details
-                            </h5>
-                            <div className="space-y-1 text-sm">
-                              {orderDetails[order.id].coupon_code && (
-                                <div>
-                                  <span className="text-gray-600">Coupon Code:</span>
-                                  <p className="font-medium">{orderDetails[order.id].coupon_code}</p>
-                                </div>
-                              )}
+                              {/* Order Details */}
                               <div>
-                                <span className="text-gray-600">Order Date:</span>
-                                <p className="font-medium">{new Date(orderDetails[order.id].created_at).toLocaleString()}</p>
+                                <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
+                                  <Calendar className="h-4 w-4 mr-2" />
+                                  Details
+                                </h5>
+                                <div className="space-y-1 text-sm">
+                                  {orderDetails[order.id].coupon_code && (
+                                    <div>
+                                      <span className="text-gray-600">Coupon:</span>
+                                      <p className="font-medium">{orderDetails[order.id].coupon_code}</p>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <span className="text-gray-600">Date:</span>
+                                    <p className="font-medium">{new Date(orderDetails[order.id].created_at).toLocaleDateString()}</p>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Admin Actions & Notes */}
-                        <div className="bg-white p-3 rounded-lg border border-gray-200">
-                          <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
-                            <Edit className="h-4 w-4 mr-2" />
-                            Admin Actions & Notes
-                          </h5>
-                          
-                          {editingOrder === order.id ? (
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-gray-700 font-medium block mb-1 text-sm">Order Status</label>
-                                  <Select value={editForm.status} onValueChange={(value) => setEditForm({...editForm, status: value})}>
-                                    <SelectTrigger className="border-gray-300 bg-white text-black h-9">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white">
-                                      <SelectItem value="pending" className="text-black">Pending</SelectItem>
-                                      <SelectItem value="processing" className="text-black">Processing</SelectItem>
-                                      <SelectItem value="completed" className="text-black">Completed</SelectItem>
-                                      <SelectItem value="cancelled" className="text-black">Cancelled</SelectItem>
-                                      <SelectItem value="refunded" className="text-black">Refunded</SelectItem>
-                                      <SelectItem value="failed" className="text-black">Failed</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <label className="text-gray-700 font-medium block mb-1 text-sm">Payment Status</label>
-                                  <Select value={editForm.payment_status} onValueChange={(value) => setEditForm({...editForm, payment_status: value})}>
-                                    <SelectTrigger className="border-gray-300 bg-white text-black h-9">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white">
-                                      <SelectItem value="pending" className="text-black">Pending</SelectItem>
-                                      <SelectItem value="completed" className="text-black">Completed</SelectItem>
-                                      <SelectItem value="failed" className="text-black">Failed</SelectItem>
-                                      <SelectItem value="refunded" className="text-black">Refunded</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              <div>
-                                <label className="text-gray-700 font-medium block mb-1 text-sm">Admin Notes</label>
-                                <Textarea
-                                  value={editForm.admin_notes}
-                                  onChange={(e) => setEditForm({...editForm, admin_notes: e.target.value})}
-                                  placeholder="Add admin notes..."
-                                  className="border-gray-300 bg-white text-black"
-                                  rows={2}
-                                />
-                              </div>
-                              <div className="flex space-x-2">
-                                <Button 
-                                  onClick={() => handleSaveOrder(order.id)}
-                                  className="bg-blue-600 hover:bg-blue-700 h-8"
-                                  size="sm"
-                                >
-                                  <Save className="h-4 w-4 mr-1" />
-                                  Save Changes
-                                </Button>
-                                <Button 
-                                  onClick={() => setEditingOrder(null)}
-                                  variant="outline"
-                                  className="border-gray-300 text-black h-8"
-                                  size="sm"
-                                >
-                                  <X className="h-4 w-4 mr-1" />
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div>
-                                  <span className="text-gray-600 text-sm">Order Status:</span>
-                                  <div className="flex items-center space-x-2 mt-1">
-                                    {getStatusIcon(orderDetails[order.id].status)}
-                                    {getStatusBadge(orderDetails[order.id].status)}
+                          {/* Admin Actions & Notes */}
+                          <div className="bg-white p-3 rounded-lg border border-gray-200">
+                            <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Admin Actions & Notes
+                            </h5>
+                            
+                            {editingOrder === order.id ? (
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-gray-700 font-medium block mb-1 text-sm">Order Status</label>
+                                    <Select value={editForm.status} onValueChange={(value) => setEditForm({...editForm, status: value})}>
+                                      <SelectTrigger className="border-gray-300 bg-white text-black h-9">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white">
+                                        <SelectItem value="pending" className="text-black">Pending</SelectItem>
+                                        <SelectItem value="processing" className="text-black">Processing</SelectItem>
+                                        <SelectItem value="completed" className="text-black">Completed</SelectItem>
+                                        <SelectItem value="cancelled" className="text-black">Cancelled</SelectItem>
+                                        <SelectItem value="refunded" className="text-black">Refunded</SelectItem>
+                                        <SelectItem value="failed" className="text-black">Failed</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div>
+                                    <label className="text-gray-700 font-medium block mb-1 text-sm">Payment Status</label>
+                                    <Select value={editForm.payment_status} onValueChange={(value) => setEditForm({...editForm, payment_status: value})}>
+                                      <SelectTrigger className="border-gray-300 bg-white text-black h-9">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white">
+                                        <SelectItem value="pending" className="text-black">Pending</SelectItem>
+                                        <SelectItem value="completed" className="text-black">Completed</SelectItem>
+                                        <SelectItem value="failed" className="text-black">Failed</SelectItem>
+                                        <SelectItem value="refunded" className="text-black">Refunded</SelectItem>
+                                      </SelectContent>
+                                    </Select>
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-gray-600 text-sm">Payment Status:</span>
-                                  <div className="mt-1">
-                                    {getPaymentStatusBadge(orderDetails[order.id].payment_status)}
+                                  <label className="text-gray-700 font-medium block mb-1 text-sm">Admin Notes</label>
+                                  <Textarea
+                                    value={editForm.admin_notes}
+                                    onChange={(e) => setEditForm({...editForm, admin_notes: e.target.value})}
+                                    placeholder="Add admin notes..."
+                                    className="border-gray-300 bg-white text-black"
+                                    rows={2}
+                                  />
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Button 
+                                    onClick={() => handleSaveOrder(order.id)}
+                                    className="bg-blue-600 hover:bg-blue-700 h-8"
+                                    size="sm"
+                                  >
+                                    <Save className="h-4 w-4 mr-1" />
+                                    Save Changes
+                                  </Button>
+                                  <Button 
+                                    onClick={() => setEditingOrder(null)}
+                                    variant="outline"
+                                    className="border-gray-300 text-black h-8"
+                                    size="sm"
+                                  >
+                                    <X className="h-4 w-4 mr-1" />
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                  <div>
+                                    <span className="text-gray-600 text-sm">Order Status:</span>
+                                    <div className="flex items-center space-x-2 mt-1">
+                                      {getStatusIcon(orderDetails[order.id].status)}
+                                      {getStatusBadge(orderDetails[order.id].status)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600 text-sm">Payment Status:</span>
+                                    <div className="mt-1">
+                                      {getPaymentStatusBadge(orderDetails[order.id].payment_status)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600 text-sm">Admin Notes:</span>
+                                    <p className="font-medium mt-1 text-sm">{orderDetails[order.id].admin_notes || 'No notes'}</p>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-gray-600 text-sm">Admin Notes:</span>
-                                  <p className="font-medium mt-1 text-sm">{orderDetails[order.id].admin_notes || 'No notes'}</p>
+                                <div className="flex space-x-2">
+                                  <Button 
+                                    onClick={() => handleEditOrder(orderDetails[order.id])}
+                                    className="bg-blue-600 hover:bg-blue-700 h-8"
+                                    size="sm"
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit Order
+                                  </Button>
+                                  <Button 
+                                    onClick={() => handleDeleteOrder(order.id)}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="h-8"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Delete Order
+                                  </Button>
                                 </div>
                               </div>
-                              <div className="flex space-x-2">
-                                <Button 
-                                  onClick={() => handleEditOrder(orderDetails[order.id])}
-                                  className="bg-blue-600 hover:bg-blue-700 h-8"
-                                  size="sm"
-                                >
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Edit Order
-                                </Button>
-                                <Button 
-                                  onClick={() => handleDeleteOrder(order.id)}
-                                  variant="destructive"
-                                  size="sm"
-                                  className="h-8"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Delete Order
-                                </Button>
-                              </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
