@@ -372,11 +372,17 @@ export default function CartPage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
-                <p className="text-gray-600">
-                  {cart.itemCount} item{cart.itemCount !== 1 ? 's' : ''} in your cart
-                </p>
+              <div className="flex items-center space-x-4">
+                <Button variant="outline" onClick={() => router.back()}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Continue Shopping
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
+                  <p className="text-gray-600">
+                    {cart.itemCount} item{cart.itemCount !== 1 ? 's' : ''} in your cart
+                  </p>
+                </div>
               </div>
               <Button variant="outline" onClick={handleClearCart} className="text-red-600 border-red-200">
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -654,20 +660,7 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Cashback Notice */}
-                  {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="h-5 w-5 text-green-600" />
-                        <div>
-                          <p className="font-medium text-green-800">Cashback Payment Available</p>
-                          <p className="text-sm text-green-700">
-                            Your order can be completed entirely with cashback. No PayPal payment required!
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+
 
                   {/* Checkout Button */}
                   <Button
@@ -687,7 +680,7 @@ export default function CartPage() {
                           <CreditCard className="h-5 w-5 mr-2" />
                         )}
                         {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) 
-                          ? "Complete Order with Cashback"
+                          ? "Complete Order"
                           : "Proceed to Checkout"
                         }
                       </>
@@ -700,11 +693,7 @@ export default function CartPage() {
                     Secure checkout powered by UOKing
                   </div>
 
-                  {/* Continue Shopping */}
-                  <Button variant="outline" onClick={() => router.back()} className="w-full">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Continue Shopping
-                  </Button>
+
                 </CardContent>
               </Card>
 
