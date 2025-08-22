@@ -19,7 +19,8 @@ import {
   GraduationCap,
   MapPin,
   ChevronDown,
-  Newspaper
+  Newspaper,
+  Store
 } from "lucide-react"
 
 const adminNavItems = [
@@ -28,6 +29,19 @@ const adminNavItems = [
     href: "/admin",
     icon: Settings
   },
+  {
+    name: "Orders",
+    href: "/admin/orders",
+    icon: ShoppingCart
+  },
+  {
+    name: "Coupons",
+    href: "/admin/coupons",
+    icon: Tag
+  }
+]
+
+const storeSubItems = [
   {
     name: "Products",
     href: "/admin/products",
@@ -39,21 +53,6 @@ const adminNavItems = [
     icon: FolderOpen
   },
   {
-    name: "Orders",
-    href: "/admin/orders",
-    icon: ShoppingCart
-  },
-  {
-    name: "Reviews",
-    href: "/admin/reviews",
-    icon: MessageCircle
-  },
-  {
-    name: "Coupons",
-    href: "/admin/coupons",
-    icon: Tag
-  },
-  {
     name: "Users",
     href: "/admin/users",
     icon: Users
@@ -62,16 +61,6 @@ const adminNavItems = [
     name: "News",
     href: "/admin/news",
     icon: Newspaper
-  },
-  {
-    name: "Maps",
-    href: "/admin/maps",
-    icon: Map
-  },
-  {
-    name: "Spawn Locations",
-    href: "/admin/spawn-locations",
-    icon: MapPin
   }
 ]
 
@@ -90,16 +79,40 @@ const settingsSubItems = [
     name: "Classes",
     href: "/admin/classes",
     icon: GraduationCap
+  },
+  {
+    name: "Reviews",
+    href: "/admin/reviews",
+    icon: MessageCircle
+  },
+  {
+    name: "Maps",
+    href: "/admin/maps",
+    icon: Map
+  },
+  {
+    name: "Spawn Locations",
+    href: "/admin/spawn-locations",
+    icon: MapPin
   }
 ]
 
 export function AdminHeader() {
   const pathname = usePathname()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isStoreOpen, setIsStoreOpen] = useState(false)
 
   const isSettingsActive = pathname === "/admin/settings" || 
                           pathname === "/admin/shard" || 
-                          pathname === "/admin/classes"
+                          pathname === "/admin/classes" ||
+                          pathname === "/admin/reviews" ||
+                          pathname === "/admin/maps" ||
+                          pathname === "/admin/spawn-locations"
+
+  const isStoreActive = pathname === "/admin/products" || 
+                       pathname === "/admin/categories" || 
+                       pathname === "/admin/users" ||
+                       pathname === "/admin/news"
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
@@ -138,6 +151,52 @@ export function AdminHeader() {
                 </Link>
               )
             })}
+
+            {/* Store Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsStoreOpen(true)}
+              onMouseLeave={() => setIsStoreOpen(false)}
+            >
+              <Button
+                variant={isStoreActive ? "default" : "ghost"}
+                size="sm"
+                className={`flex items-center space-x-2 ${
+                  isStoreActive 
+                    ? "bg-blue-600 text-white hover:bg-blue-700" 
+                    : "text-black hover:bg-gray-100"
+                }`}
+              >
+                <Store className="h-4 w-4" />
+                <span>Store</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+
+              {/* Dropdown Menu */}
+              {isStoreOpen && (
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                  {storeSubItems.map((item) => {
+                    const IconComponent = item.icon
+                    const isActive = pathname === item.href
+                    
+                    return (
+                      <Link key={item.name} href={item.href}>
+                        <div className={`
+                          flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
+                          ${isActive 
+                            ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
+                            : "text-gray-700 hover:bg-gray-50"
+                          }
+                        `}>
+                          <IconComponent className="h-4 w-4" />
+                          <span>{item.name}</span>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Settings Dropdown */}
             <div 
@@ -199,6 +258,29 @@ export function AdminHeader() {
         <div className="lg:hidden py-4 border-t border-gray-200">
           <div className="grid grid-cols-3 gap-2">
             {adminNavItems.map((item) => {
+              const IconComponent = item.icon
+              const isActive = pathname === item.href
+              
+              return (
+                <Link key={item.name} href={item.href}>
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    className={`flex flex-col items-center space-y-1 p-2 h-auto ${
+                      isActive 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "text-black hover:bg-gray-100"
+                    }`}
+                  >
+                    <IconComponent className="h-4 w-4" />
+                    <span className="text-xs">{item.name}</span>
+                  </Button>
+                </Link>
+              )
+            })}
+            
+            {/* Mobile Store - show all sub-items */}
+            {storeSubItems.map((item) => {
               const IconComponent = item.icon
               const isActive = pathname === item.href
               
