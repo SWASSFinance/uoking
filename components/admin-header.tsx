@@ -89,6 +89,11 @@ const settingsSubItems = [
     name: "Spawn Locations",
     href: "/admin/spawn-locations",
     icon: MapPin
+  },
+  {
+    name: "Test Email",
+    href: "/admin/test-email",
+    icon: MessageCircle
   }
 ]
 
@@ -102,7 +107,8 @@ export function AdminHeader() {
                           pathname === "/admin/classes" ||
                           pathname === "/admin/reviews" ||
                           pathname === "/admin/maps" ||
-                          pathname === "/admin/spawn-locations"
+                          pathname === "/admin/spawn-locations" ||
+                          pathname === "/admin/test-email"
 
   const isStoreActive = pathname === "/admin/products" || 
                        pathname === "/admin/categories" || 
