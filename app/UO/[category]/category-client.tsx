@@ -73,15 +73,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
           <span className="text-amber-600 font-medium">{category.name}</span>
         </nav>
 
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button variant="outline" asChild>
-            <Link href="/store">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Store
-            </Link>
-          </Button>
-        </div>
+
 
         {/* Category Header */}
         <div className="mb-8">
