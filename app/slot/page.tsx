@@ -28,7 +28,7 @@ const slotTypes = [
     color: "bg-blue-500",
     category: "Armor",
     features: ["Helmets", "Hats", "Crowns", "Hoods"],
-    categorySlug: "head-armor"
+    categorySlug: "head"
   },
   {
     name: "Chest Armor",
@@ -71,7 +71,7 @@ const slotTypes = [
     description: "Necklaces and neck protection",
     icon: Heart,
     color: "bg-pink-500",
-    category: "Jewelry",
+    category: "Armor",
     features: ["Necklaces", "Amulets", "Gorget", "Collars"],
     categorySlug: "neck-armor"
   },
