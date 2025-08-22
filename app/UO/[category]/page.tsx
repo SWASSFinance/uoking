@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import CategoryClient from './category-client'
 import { Metadata } from 'next'
+import { getCategoryBySlug, getProducts } from '@/lib/db'
 
 
 interface CategoryPageProps {
@@ -71,12 +72,9 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   let imageUrl: string | undefined
   try {
     const categorySlug = createSlug(categoryName)
-    const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/categories/${categorySlug}`)
-    if (categoryResponse.ok) {
-      const foundCategory = await categoryResponse.json()
-      if (foundCategory.image_url) {
-        imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
-      }
+    const foundCategory = await getCategoryBySlug(categorySlug)
+    if (foundCategory?.image_url) {
+      imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
     }
   } catch (error) {
     // Silently fail - image is optional for metadata
@@ -123,25 +121,22 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const categoryName = urlToCategoryName(catParam)
   const categorySlug = createSlug(categoryName)
   
-  // Try to find the category by slug
+  // Try to find the category by slug using direct database query
   let foundCategory
   let categoryProducts = []
   
   try {
-    const categoryResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/categories/${categorySlug}`)
-    if (categoryResponse.ok) {
-      foundCategory = await categoryResponse.json()
-      
-      // If category found, fetch products
-      if (foundCategory) {
-        try {
-          const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/products?categoryId=${foundCategory.id}&limit=100`)
-          if (productsResponse.ok) {
-            categoryProducts = await productsResponse.json()
-          }
-        } catch (error) {
-          console.error('Error fetching products:', error)
-        }
+    foundCategory = await getCategoryBySlug(categorySlug)
+    
+    // If category found, fetch products using direct database query
+    if (foundCategory) {
+      try {
+        categoryProducts = await getProducts({ 
+          categoryId: foundCategory.id, 
+          limit: 100 
+        })
+      } catch (error) {
+        console.error('Error fetching products:', error)
       }
     }
   } catch (error) {
@@ -151,23 +146,21 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   // If no category found, try to find by name (case insensitive)
   if (!foundCategory) {
     try {
-      const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/categories`)
-      if (categoriesResponse.ok) {
-        const allCategories = await categoriesResponse.json()
-        foundCategory = allCategories.find((cat: any) => 
-          cat.name.toLowerCase() === categoryName.toLowerCase()
-        )
-        
-        // If category found, fetch products
-        if (foundCategory) {
-          try {
-            const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/api/products?categoryId=${foundCategory.id}&limit=100`)
-            if (productsResponse.ok) {
-              categoryProducts = await productsResponse.json()
-            }
-          } catch (error) {
-            console.error('Error fetching products:', error)
-          }
+      const { getCategories } = await import('@/lib/db')
+      const allCategories = await getCategories()
+      foundCategory = allCategories.find((cat: any) => 
+        cat.name.toLowerCase() === categoryName.toLowerCase()
+      )
+      
+      // If category found, fetch products
+      if (foundCategory) {
+        try {
+          categoryProducts = await getProducts({ 
+            categoryId: foundCategory.id, 
+            limit: 100 
+          })
+        } catch (error) {
+          console.error('Error fetching products:', error)
         }
       }
     } catch (error) {
