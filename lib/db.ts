@@ -40,6 +40,14 @@ export async function query(text: string, params?: any[]) {
   try {
     const result = await client.query(text, params);
     return result;
+  } catch (error) {
+    // Log the error with context
+    console.error('Database query error:', {
+      query: text,
+      params: params,
+      error: error instanceof Error ? error.message : error
+    });
+    throw error;
   } finally {
     client.release();
   }
