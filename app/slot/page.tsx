@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Sword, Shield, Crown, Star, Zap, Heart, Target } from "lucide-react"
 import Link from "next/link"
+import { getCategories } from "@/lib/db"
+import Image from "next/image"
 
+// Define slot types that map to categories
 const slotTypes = [
   {
     name: "Weapons",
@@ -14,7 +17,8 @@ const slotTypes = [
     icon: Sword,
     color: "bg-red-500",
     category: "Combat",
-    features: ["Swords", "Axes", "Maces", "Bows"]
+    features: ["Swords", "Axes", "Maces", "Bows"],
+    categorySlug: "weapons"
   },
   {
     name: "Head",
@@ -22,7 +26,8 @@ const slotTypes = [
     icon: Crown,
     color: "bg-blue-500",
     category: "Armor",
-    features: ["Helmets", "Hats", "Crowns", "Hoods"]
+    features: ["Helmets", "Hats", "Crowns", "Hoods"],
+    categorySlug: "head-armor"
   },
   {
     name: "Chest Armor",
@@ -30,7 +35,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-green-500",
     category: "Armor",
-    features: ["Plate", "Chain", "Leather", "Robes"]
+    features: ["Plate", "Chain", "Leather", "Robes"],
+    categorySlug: "chest-armor"
   },
   {
     name: "Glove Armor",
@@ -38,7 +44,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-yellow-500",
     category: "Armor",
-    features: ["Gauntlets", "Gloves", "Bracers", "Hands"]
+    features: ["Gauntlets", "Gloves", "Bracers", "Hands"],
+    categorySlug: "glove-armor"
   },
   {
     name: "Leg Armor",
@@ -46,7 +53,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-purple-500",
     category: "Armor",
-    features: ["Greaves", "Pants", "Leggings", "Skirts"]
+    features: ["Greaves", "Pants", "Leggings", "Skirts"],
+    categorySlug: "leg-armor"
   },
   {
     name: "Footwear",
@@ -54,7 +62,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-orange-500",
     category: "Armor",
-    features: ["Boots", "Shoes", "Sandals", "Greaves"]
+    features: ["Boots", "Shoes", "Sandals", "Greaves"],
+    categorySlug: "footwear"
   },
   {
     name: "Neck Armor",
@@ -62,7 +71,8 @@ const slotTypes = [
     icon: Heart,
     color: "bg-pink-500",
     category: "Jewelry",
-    features: ["Necklaces", "Amulets", "Gorget", "Collars"]
+    features: ["Necklaces", "Amulets", "Gorget", "Collars"],
+    categorySlug: "neck-armor"
   },
   {
     name: "Jewelry",
@@ -70,7 +80,8 @@ const slotTypes = [
     icon: Star,
     color: "bg-indigo-500",
     category: "Jewelry",
-    features: ["Rings", "Bracelets", "Earrings", "Charms"]
+    features: ["Rings", "Bracelets", "Earrings", "Charms"],
+    categorySlug: "jewelry"
   },
   {
     name: "Belts Aprons",
@@ -78,7 +89,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-teal-500",
     category: "Armor",
-    features: ["Belts", "Aprons", "Sashes", "Waist"]
+    features: ["Belts", "Aprons", "Sashes", "Waist"],
+    categorySlug: "belts-aprons"
   },
   {
     name: "Cloaks Quivers",
@@ -86,7 +98,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-cyan-500",
     category: "Armor",
-    features: ["Cloaks", "Quivers", "Backpacks", "Capes"]
+    features: ["Cloaks", "Quivers", "Backpacks", "Capes"],
+    categorySlug: "cloaks-quivers"
   },
   {
     name: "Sashes",
@@ -94,7 +107,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-violet-500",
     category: "Armor",
-    features: ["Sashes", "Belts", "Waist", "Ties"]
+    features: ["Sashes", "Belts", "Waist", "Ties"],
+    categorySlug: "sashes"
   },
   {
     name: "Sleeve Armor",
@@ -102,7 +116,8 @@ const slotTypes = [
     icon: Shield,
     color: "bg-rose-500",
     category: "Armor",
-    features: ["Sleeves", "Arms", "Bracers", "Vambraces"]
+    features: ["Sleeves", "Arms", "Bracers", "Vambraces"],
+    categorySlug: "sleeve-armor"
   },
   {
     name: "Talismans",
@@ -110,11 +125,21 @@ const slotTypes = [
     icon: Zap,
     color: "bg-emerald-500",
     category: "Magic",
-    features: ["Talismans", "Charms", "Amulets", "Relics"]
+    features: ["Talismans", "Charms", "Amulets", "Relics"],
+    categorySlug: "talismans"
   }
 ]
 
-export default function SlotPage() {
+export default async function SlotPage() {
+  // Fetch categories from database
+  const categories = await getCategories()
+  
+  // Create a map of category slugs to category data
+  const categoryMap = new Map()
+  categories.forEach(category => {
+    categoryMap.set(category.slug, category)
+  })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <Header />
@@ -147,13 +172,26 @@ export default function SlotPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
             {slotTypes.map((slot) => {
               const IconComponent = slot.icon
+              const categoryData = categoryMap.get(slot.categorySlug)
+              
               return (
                 <Card key={slot.name} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-full ${slot.color} text-white`}>
-                        <IconComponent className="h-6 w-6" />
-                      </div>
+                      {categoryData?.image_url ? (
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-100">
+                          <Image
+                            src={categoryData.image_url}
+                            alt={slot.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className={`p-3 rounded-full ${slot.color} text-white`}>
+                          <IconComponent className="h-6 w-6" />
+                        </div>
+                      )}
                       <Badge variant="secondary" className="text-sm">
                         {slot.category}
                       </Badge>
