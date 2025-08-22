@@ -369,20 +369,22 @@ export default function CartPage() {
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
+          {/* Continue Shopping Button */}
+          <div className="mb-6">
+            <Button variant="outline" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Continue Shopping
+            </Button>
+          </div>
+
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button variant="outline" onClick={() => router.back()}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Continue Shopping
-                </Button>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
-                  <p className="text-gray-600">
-                    {cart.itemCount} item{cart.itemCount !== 1 ? 's' : ''} in your cart
-                  </p>
-                </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
+                <p className="text-gray-600">
+                  {cart.itemCount} item{cart.itemCount !== 1 ? 's' : ''} in your cart
+                </p>
               </div>
               <Button variant="outline" onClick={handleClearCart} className="text-red-600 border-red-200">
                 <Trash2 className="h-4 w-4 mr-2" />
