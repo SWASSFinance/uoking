@@ -174,38 +174,99 @@ const EMAIL_TEMPLATES = {
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
             .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-            .highlight { background: #e7f3ff; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #17a2b8; }
-            .button { display: inline-block; background: #17a2b8; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .order-details { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; }
+            .button { display: inline-block; background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
             .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+            .highlight { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
               <h1>🎉 Order Completed!</h1>
-              <p>Ready for in-game delivery</p>
+              <p>Your UO King order is ready for delivery</p>
             </div>
             <div class="content">
-              <h2>Great news, ${data.customerName}!</h2>
-              <p>Your order has been completed and is ready for delivery in-game.</p>
+              <h2>Hello ${data.customerName}!</h2>
+              <p>Great news! Your order has been completed and is ready for delivery.</p>
               
               <div class="highlight">
-                <h3>Delivery Information:</h3>
-                <p><strong>Order ID:</strong> <span style="font-size: 18px; color: #17a2b8; font-weight: bold;">${data.orderId}</span></p>
+                <h3>Order Details:</h3>
+                <p><strong>Order Number:</strong> <span style="color: #28a745; font-weight: bold;">#${data.orderId}</span></p>
                 ${data.deliveryCharacter ? `<p><strong>Delivery Character:</strong> ${data.deliveryCharacter}</p>` : ''}
                 ${data.shard ? `<p><strong>Shard:</strong> ${data.shard}</p>` : ''}
-                <p><strong>Status:</strong> Ready for delivery</p>
               </div>
               
-              <p>Our delivery team will contact you in-game shortly to arrange the delivery of your items.</p>
+              <p>Our team will contact you shortly to arrange delivery of your items.</p>
               
-              <p><strong>Please ensure your delivery character is online and ready to receive the items.</strong></p>
+              <p>If you have any questions about your order, please don't hesitate to contact our support team.</p>
               
-              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://uoking.vercel.app'}/account/orders" class="button">View Order Details</a>
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.uoking.com'}" class="button">Visit UO King</a>
               
               <p>Thank you for choosing UO King!</p>
+              <p><strong>The UO King Team</strong></p>
+            </div>
+            <div class="footer">
+              <p>This email was sent to ${data.email}</p>
+              <p>© 2024 UO King. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  },
+  passwordReset: {
+    subject: (data: { name: string; email: string; resetUrl: string }) => 
+      'Reset Your Password - UO King',
+    html: (data: { name: string; email: string; resetUrl: string }) => `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Reset Your Password</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+            .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            .reset-link { word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Reset Your Password</h1>
+              <p>UO King Account Security</p>
+            </div>
+            <div class="content">
+              <h2>Hello ${data.name}!</h2>
+              <p>We received a request to reset your password for your UO King account.</p>
+              
+              <p>Click the button below to reset your password:</p>
+              
+              <a href="${data.resetUrl}" class="button">Reset Password</a>
+              
+              <div class="warning">
+                <h3>⚠️ Important Security Information:</h3>
+                <ul>
+                  <li>This link will expire in <strong>1 hour</strong></li>
+                  <li>If you didn't request this password reset, please ignore this email</li>
+                  <li>For security reasons, this link can only be used once</li>
+                </ul>
+              </div>
+              
+              <p>If the button above doesn't work, you can copy and paste this link into your browser:</p>
+              <div class="reset-link">${data.resetUrl}</div>
+              
+              <p>If you have any questions or need assistance, please contact our support team.</p>
+              
+              <p>Stay safe and happy gaming!</p>
               <p><strong>The UO King Team</strong></p>
             </div>
             <div class="footer">
