@@ -89,7 +89,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
                   />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-4">{category.name}</h1>
+                  <h1 className="text-3xl font-bold text-gray-800 mb-4 mt-6">{category.name}</h1>
                   {category.description && (
                     <div className="prose prose-amber max-w-none">
                       <div 
