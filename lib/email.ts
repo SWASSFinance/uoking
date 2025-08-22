@@ -6,7 +6,8 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // Email templates
 const EMAIL_TEMPLATES = {
   registration: {
-    subject: 'Welcome to UO King - Registration Successful!',
+    subject: (data: { name: string; email: string; characterName: string; userId?: string }) => 
+      data.userId ? `Welcome to UO King - Registration Successful! (User ID: ${data.userId})` : 'Welcome to UO King - Registration Successful!',
     html: (data: { name: string; email: string; characterName: string; userId?: string }) => `
       <!DOCTYPE html>
       <html>
@@ -66,7 +67,15 @@ const EMAIL_TEMPLATES = {
     `
   },
   orderConfirmation: {
-    subject: 'Order Confirmation - UO King',
+    subject: (data: { 
+      orderId: string; 
+      customerName: string; 
+      email: string; 
+      total: number; 
+      items: Array<{ name: string; quantity: number; price: number }>;
+      deliveryCharacter?: string;
+      shard?: string;
+    }) => `Order Confirmation - UO King (Order #${data.orderId})`,
     html: (data: { 
       orderId: string; 
       customerName: string; 
@@ -142,7 +151,13 @@ const EMAIL_TEMPLATES = {
     `
   },
   orderCompleted: {
-    subject: 'Order Completed - Ready for Delivery - UO King',
+    subject: (data: { 
+      orderId: string; 
+      customerName: string; 
+      email: string; 
+      deliveryCharacter?: string;
+      shard?: string;
+    }) => `Order Completed - Ready for Delivery - UO King (Order #${data.orderId})`,
     html: (data: { 
       orderId: string; 
       customerName: string; 
@@ -261,12 +276,12 @@ export async function sendEmail(
     }
 
     // Generate email content
-    const subject = options.subject || emailTemplate.subject
+    const subject = options.subject || (typeof emailTemplate.subject === 'function' ? emailTemplate.subject(data) : emailTemplate.subject)
     const html = emailTemplate.html(data)
 
     // Send email via Resend
     const result = await resend.emails.send({
-      from: options.from || 'UO King <onboarding@resend.dev>',
+      from: options.from || 'UO King <noreply@uoking.com>',
       to: [to],
       subject,
       html,

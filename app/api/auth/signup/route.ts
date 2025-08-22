@@ -145,7 +145,8 @@ export async function POST(request: NextRequest) {
       const emailResult = await sendRegistrationEmail({
         email: newUser.email,
         name: newUser.first_name,
-        characterName: newUser.first_name
+        characterName: newUser.first_name,
+        userId: newUser.id
       })
       console.log('Welcome email sent successfully:', emailResult)
     } catch (emailError) {

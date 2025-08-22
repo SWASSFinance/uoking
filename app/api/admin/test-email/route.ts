@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     // Send the test email
     const result = await sendEmail(email, template as any, testData, {
-      from: 'UO King <onboarding@resend.dev>',
+      from: 'UO King <noreply@uoking.com>',
       replyTo: 'support@uoking.com',
       subject: subject
     })
