@@ -64,7 +64,7 @@ export function Footer() {
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600">Categories</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/Class" className="text-gray-300 hover:text-white transition-colors">By Class</Link></li>
+              <li><Link href="/class" className="text-gray-300 hover:text-white transition-colors">By Class</Link></li>
               <li><Link href="/slot" className="text-gray-300 hover:text-white transition-colors">By Slot</Link></li>
               <li><Link href="/prop" className="text-gray-300 hover:text-white transition-colors">By Property</Link></li>
               <li><Link href="/store" className="text-gray-300 hover:text-white transition-colors">Store Items</Link></li>
