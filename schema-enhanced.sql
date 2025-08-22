@@ -517,16 +517,16 @@ $$ language 'plpgsql';
 CREATE OR REPLACE FUNCTION update_category_analytics()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Update product count
+    -- Update product count using product_categories junction table
     IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
         UPDATE categories 
-        SET product_count = (SELECT COUNT(*) FROM products WHERE category_id = NEW.category_id AND status = 'active')
+        SET product_count = (SELECT COUNT(*) FROM product_categories WHERE category_id = NEW.category_id)
         WHERE id = NEW.category_id;
     END IF;
     
     IF TG_OP = 'DELETE' THEN
         UPDATE categories 
-        SET product_count = (SELECT COUNT(*) FROM products WHERE category_id = OLD.category_id AND status = 'active')
+        SET product_count = (SELECT COUNT(*) FROM product_categories WHERE category_id = OLD.category_id)
         WHERE id = OLD.category_id;
     END IF;
     
@@ -575,5 +575,5 @@ CREATE TRIGGER update_coupons_updated_at BEFORE UPDATE ON coupons
 CREATE TRIGGER product_review_analytics AFTER INSERT OR UPDATE ON product_reviews
     FOR EACH ROW EXECUTE FUNCTION update_product_analytics();
 
-CREATE TRIGGER product_category_analytics AFTER INSERT OR UPDATE OR DELETE ON products
+CREATE TRIGGER product_category_analytics AFTER INSERT OR UPDATE OR DELETE ON product_categories
     FOR EACH ROW EXECUTE FUNCTION update_category_analytics(); 
