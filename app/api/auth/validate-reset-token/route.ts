@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { query } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
@@ -13,13 +13,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get all active reset tokens for this token
-    const [resetTokens] = await db.execute(
+    // Get all active reset tokens
+    const resetTokensResult = await query(
       'SELECT prt.id, prt.user_id, prt.token_hash, prt.expires_at, prt.used_at, u.email FROM password_reset_tokens prt JOIN users u ON prt.user_id = u.id WHERE prt.used_at IS NULL',
       []
     )
 
-    if (!Array.isArray(resetTokens) || resetTokens.length === 0) {
+    if (!resetTokensResult.rows || resetTokensResult.rows.length === 0) {
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
         { status: 400 }
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Find the matching token by comparing hashes
     let validToken = null
-    for (const resetToken of resetTokens) {
+    for (const resetToken of resetTokensResult.rows) {
       const isValid = await bcrypt.compare(token, resetToken.token_hash)
       if (isValid) {
         validToken = resetToken

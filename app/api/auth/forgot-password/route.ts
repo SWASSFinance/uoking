@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { query } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
@@ -16,12 +16,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user exists
-    const [users] = await db.execute(
-      'SELECT id, email, first_name FROM users WHERE email = ?',
+    const usersResult = await query(
+      'SELECT id, email, first_name FROM users WHERE email = $1',
       [email]
     )
 
-    if (!Array.isArray(users) || users.length === 0) {
+    if (!usersResult.rows || usersResult.rows.length === 0) {
       // Don't reveal if email exists or not for security
       return NextResponse.json(
         { message: 'If an account with that email exists, you will receive a password reset link.' },
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = users[0] as any
+    const user = usersResult.rows[0]
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex')
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
 
     // Store reset token in password_reset_tokens table
-    await db.execute(
-      'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+    await query(
+      'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
       [user.id, resetTokenHash, resetTokenExpiry]
     )
 
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       console.error('Failed to send password reset email:', emailError)
       
       // Remove the reset token if email failed
-      await db.execute(
-        'DELETE FROM password_reset_tokens WHERE user_id = ? AND token_hash = ?',
+      await query(
+        'DELETE FROM password_reset_tokens WHERE user_id = $1 AND token_hash = $2',
         [user.id, resetTokenHash]
       )
 
