@@ -491,9 +491,8 @@ export default function AccountPage() {
   }
 
   const handleDiscordLink = () => {
-    // Redirect to Discord OAuth
-    const discordAuthUrl = `/api/auth/signin?provider=discord&callbackUrl=${encodeURIComponent(window.location.href)}`
-    window.location.href = discordAuthUrl
+    // Use the dedicated Discord linking endpoint
+    window.location.href = '/api/auth/link-discord'
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
