@@ -179,6 +179,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           } catch (error) {
             console.error('Failed to create referral code for OAuth user:', error)
           }
+
+          // Send welcome email using existing email library
+          try {
+            const { sendRegistrationEmail } = await import('@/lib/email')
+            await sendRegistrationEmail({
+              email: user.email!,
+              name: firstName,
+              characterName: firstName || 'there'
+            })
+            console.log('Welcome email sent successfully to:', user.email)
+          } catch (error) {
+            console.error('Failed to send welcome email:', error)
+          }
         }
 
         return true
