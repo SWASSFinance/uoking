@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Mail, Clock, Crown, Star, Shield, Zap } from "lucide-react"
+import { Mail, Clock, Crown, Star, Shield, Zap } from "lucide-react"
 
 export function HelpSection() {
   return (
@@ -19,23 +19,8 @@ export function HelpSection() {
           </p>
         </div> 
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <MessageCircle className="h-12 w-12 text-amber-600" />
-              </div>
-              <CardTitle className="text-xl">Live Chat Support</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <p className="text-gray-600 mb-4">
-                Get instant help from our friendly support team available 24/7
-              </p>
-              <Button className="w-full bg-amber-600 hover:bg-amber-700">
-                Start Chat
-              </Button>
-            </CardContent>
-          </Card>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          
 
           <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
             <CardHeader className="text-center">

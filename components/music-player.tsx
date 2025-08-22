@@ -233,7 +233,7 @@ export function MusicPlayer() {
   }, [isMuted, isHomepage])
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 left-4 z-50">
       <div className="relative">
         {/* Main toggle button */}
         <Button
@@ -257,7 +257,7 @@ export function MusicPlayer() {
         {/* Controls panel */}
         {showControls && (
           <div 
-            className="absolute bottom-16 right-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-48"
+            className="absolute bottom-16 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-48"
             onMouseLeave={() => setShowControls(false)}
           >
             <div className="space-y-3">

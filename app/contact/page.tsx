@@ -1,3 +1,5 @@
+"use client"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -102,37 +104,28 @@ export default function ContactPage() {
                 <CardHeader>
                   <CardTitle className="text-xl font-bold text-gray-900">Quick Support</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
+                <CardContent>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => window.open('https://discord.gg/jAWgunBH', '_blank')}
+                  >
                     <MessageCircle className="h-4 w-4 mr-2" />
-                    Start Live Chat
-                  </Button>
-                  
-                  <Button variant="outline" className="w-full justify-start">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Email Support
-                  </Button>
-                  
-                  <Button variant="outline" className="w-full justify-start">
-                    <Crown className="h-4 w-4 mr-2" />
-                    Discord Server
+                    Join Discord
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold">Need Immediate Help?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-green-100 mb-4">
-                    For urgent orders or technical support, our live chat is available 24/7.
-                  </p>
-                  <Button className="bg-white text-green-600 hover:bg-green-50 w-full">
-                    Start Live Chat Now
-                  </Button>
-                </CardContent>
-              </Card>
+                             <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                 <CardHeader>
+                   <CardTitle className="text-xl font-bold">Need Immediate Help?</CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <p className="text-green-100">
+                     For urgent orders or technical support, our live chat is available 24/7. Look for the chat bubble in the bottom right corner of your screen.
+                   </p>
+                 </CardContent>
+               </Card>
             </div>
           </div>
 
