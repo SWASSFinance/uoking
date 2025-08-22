@@ -88,7 +88,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
             {category.image_url && (
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="relative w-24 h-24 flex-shrink-0">
+                <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 flex-shrink-0">
                   <ProductImage
                     src={category.image_url}
                     alt={category.name}
