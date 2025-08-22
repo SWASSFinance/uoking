@@ -42,9 +42,7 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 **Environment Variables:**
 ```bash
-MAILCHIMP_API_KEY=2fc4dea41503ed2c4e66213cf01247ea-us18
-MAILCHIMP_SERVER_PREFIX=us18
-MAILCHIMP_LIST_ID=6951
+
 ```
 
 ### 3. Environment Variables
