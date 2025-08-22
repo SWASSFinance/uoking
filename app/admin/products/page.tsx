@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { 
   Package, 
   Plus, 
@@ -77,6 +78,7 @@ export default function ProductsAdminPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   // Fetch data on component mount
   useEffect(() => {
@@ -141,6 +143,7 @@ export default function ProductsAdminPage() {
         fetchProducts()
         setEditingProduct(null)
         setShowForm(false)
+        setShowEditModal(false)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -205,12 +208,7 @@ export default function ProductsAdminPage() {
     }
 
     return (
-                  <Card className="mb-6 border border-gray-200 bg-white">
-              <CardHeader>
-                <CardTitle className="text-black">{product ? 'Edit Product' : 'Add New Product'}</CardTitle>
-              </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="name" className="text-black font-semibold">Product Name</Label>
@@ -419,9 +417,7 @@ export default function ProductsAdminPage() {
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-    )
+        )
   }
 
   return (
@@ -533,6 +529,25 @@ export default function ProductsAdminPage() {
             />
           )}
 
+          {/* Edit Product Modal */}
+          <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-black">Edit Product</DialogTitle>
+              </DialogHeader>
+              {editingProduct && (
+                <ProductForm
+                  product={editingProduct}
+                  onSave={handleSave}
+                  onCancel={() => {
+                    setShowEditModal(false)
+                    setEditingProduct(null)
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+
           {/* Products Table */}
           {loading ? (
             <div className="text-center py-12">
@@ -632,7 +647,7 @@ export default function ProductsAdminPage() {
                               variant="outline"
                               onClick={() => {
                                 setEditingProduct(product)
-                                setShowForm(true)
+                                setShowEditModal(true)
                               }}
                               className="border-gray-300 text-gray-700"
                             >
