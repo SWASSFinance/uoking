@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useSession, signOut, signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useCart } from "@/contexts/cart-context"
@@ -522,9 +522,8 @@ export default function AccountPage() {
   }
 
   const handleDiscordLink = () => {
-    // Use NextAuth's Discord signin directly with callback URL
-    const discordAuthUrl = `/api/auth/signin/discord?callbackUrl=${encodeURIComponent(window.location.href)}`
-    window.location.href = discordAuthUrl
+    // Use NextAuth's signIn function directly like in the login page
+    signIn('discord', { callbackUrl: window.location.href })
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
