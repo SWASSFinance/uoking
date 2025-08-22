@@ -228,7 +228,7 @@ export async function getProductBySlug(slug: string) {
       LEFT JOIN classes cl ON pc2.class_id = cl.id
       LEFT JOIN product_reviews pr ON p.id = pr.product_id AND pr.status = 'approved'
       WHERE p.slug = $1 AND p.status = 'active'
-      GROUP BY p.id
+      GROUP BY p.id, c.name, c.slug
     `, [slug]);
     
     const product = result.rows[0];
