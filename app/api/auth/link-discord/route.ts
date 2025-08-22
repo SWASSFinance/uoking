@@ -19,16 +19,22 @@ export async function GET(request: NextRequest) {
     
     // Create Discord OAuth URL with state parameter to identify the user
     const discordClientId = process.env.DISCORD_CLIENT_ID
-    const redirectUri = `${process.env.NEXTAUTH_URL || 'https://uoking.vercel.app'}/api/auth/link-discord/callback`
     
-    // Create state parameter with user info and callback URL
-    const state = Buffer.from(JSON.stringify({
-      userId: session.user.id,
-      userEmail: session.user.email,
-      callbackUrl: callbackUrl
-    })).toString('base64')
+    if (!discordClientId) {
+      console.error('DISCORD_CLIENT_ID environment variable is not set')
+      return NextResponse.json(
+        { error: 'Discord OAuth is not configured' },
+        { status: 500 }
+      )
+    }
     
-    const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${discordClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify&state=${state}`
+    // Use NextAuth's signin URL with Discord provider and custom callback
+    const discordAuthUrl = `/api/auth/signin/discord?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    
+    console.log('Discord OAuth URL created:', {
+      clientId: discordClientId,
+      authUrl: discordAuthUrl
+    })
     
     return NextResponse.json({ 
       success: true,

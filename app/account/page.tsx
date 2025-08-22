@@ -180,6 +180,8 @@ export default function AccountPage() {
         })
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname)
+        // Refresh the page to update the session with new Discord info
+        window.location.reload()
       } else if (error) {
         const errorMessages: Record<string, string> = {
           'discord_auth_failed': 'Discord authentication failed. Please try again.',
