@@ -6,6 +6,26 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Sword, Shield, Zap, Users, Target, Star, BookOpen } from "lucide-react"
 import Link from "next/link"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Character Classes - UO King | Ultima Online Class Guide & Items",
+  description: "Explore Ultima Online character classes at UO King. Find items, equipment, and guides for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes. Buy class-specific items.",
+  keywords: "character classes, Ultima Online, UO King, mage, tamer, melee, ranged, thief, crafter, class guide, class items",
+  openGraph: {
+    title: "Character Classes - UO King | Ultima Online Class Guide & Items",
+    description: "Explore Ultima Online character classes at UO King. Find items, equipment, and guides for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes. Buy class-specific items.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/class`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Character Classes - UO King | Ultima Online Class Guide & Items",
+    description: "Explore Ultima Online character classes at UO King. Find items, equipment, and guides for Mage, Tamer, Melee, Ranged, Thief, and Crafter classes. Buy class-specific items.",
+  },
+}
 
 const classTypes = [
   {

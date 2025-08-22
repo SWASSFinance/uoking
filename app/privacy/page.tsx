@@ -6,6 +6,26 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, FileText, AlertTriangle, CheckCircle, Lock } from "lucide-react"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Privacy Policy - UO King | Data Protection & Privacy Statement",
+  description: "Read UO King's privacy policy to understand how we protect your personal information. We never sell or share your data. Secure and confidential handling of all user information.",
+  keywords: "privacy policy, data protection, personal information, UO King, Ultima Online, privacy statement, GDPR",
+  openGraph: {
+    title: "Privacy Policy - UO King | Data Protection & Privacy Statement",
+    description: "Read UO King's privacy policy to understand how we protect your personal information. We never sell or share your data. Secure and confidential handling of all user information.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/privacy`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Privacy Policy - UO King | Data Protection & Privacy Statement",
+    description: "Read UO King's privacy policy to understand how we protect your personal information. We never sell or share your data. Secure and confidential handling of all user information.",
+  },
+}
 
 export default function PrivacyPage() {
   return (

@@ -4,6 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Truck, RotateCcw, Clock, Shield, CheckCircle, Package } from "lucide-react"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Delivery & Returns - UO King | Fast Ultima Online Item Delivery",
+  description: "Learn about UO King's fast delivery process and return policy for Ultima Online items. Secure in-game delivery within 5-30 minutes. 100% satisfaction guarantee.",
+  keywords: "delivery, returns, Ultima Online, UO King, fast delivery, secure delivery, return policy, satisfaction guarantee",
+  openGraph: {
+    title: "Delivery & Returns - UO King | Fast Ultima Online Item Delivery",
+    description: "Learn about UO King's fast delivery process and return policy for Ultima Online items. Secure in-game delivery within 5-30 minutes. 100% satisfaction guarantee.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/delivery-returns`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Delivery & Returns - UO King | Fast Ultima Online Item Delivery",
+    description: "Learn about UO King's fast delivery process and return policy for Ultima Online items. Secure in-game delivery within 5-30 minutes. 100% satisfaction guarantee.",
+  },
+}
 
 export default function DeliveryReturnsPage() {
   return (

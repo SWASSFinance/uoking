@@ -28,6 +28,26 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { getCategories, getProducts } from "@/lib/db"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "UO King Store - Buy Ultima Online Items, Gold & Services | Premium UO Shop",
+  description: "Shop the ultimate Ultima Online store at UO King. Buy gold, weapons, armor, jewelry, accounts, houses, and services. Fast delivery, competitive prices, 24/7 support.",
+  keywords: "Ultima Online store, UO King, buy UO items, UO gold, UO weapons, UO armor, UO accounts, UO services, UO shop",
+  openGraph: {
+    title: "UO King Store - Buy Ultima Online Items, Gold & Services | Premium UO Shop",
+    description: "Shop the ultimate Ultima Online store at UO King. Buy gold, weapons, armor, jewelry, accounts, houses, and services. Fast delivery, competitive prices, 24/7 support.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/store`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "UO King Store - Buy Ultima Online Items, Gold & Services | Premium UO Shop",
+    description: "Shop the ultimate Ultima Online store at UO King. Buy gold, weapons, armor, jewelry, accounts, houses, and services. Fast delivery, competitive prices, 24/7 support.",
+  },
+}
 
 // Force dynamic rendering to prevent caching
 export const dynamic = 'force-dynamic'

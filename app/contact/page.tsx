@@ -7,6 +7,26 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Crown, MessageCircle, Mail, Clock, MapPin, Phone } from "lucide-react"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Contact Us - UO King Support | Ultima Online Customer Service",
+  description: "Contact UO King for Ultima Online support. Get help with orders, technical issues, or general questions. 24/7 customer service via Discord and email.",
+  keywords: "contact, support, customer service, Ultima Online, UO King, help, discord, email",
+  openGraph: {
+    title: "Contact Us - UO King Support | Ultima Online Customer Service",
+    description: "Contact UO King for Ultima Online support. Get help with orders, technical issues, or general questions. 24/7 customer service via Discord and email.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/contact`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Contact Us - UO King Support | Ultima Online Customer Service",
+    description: "Contact UO King for Ultima Online support. Get help with orders, technical issues, or general questions. 24/7 customer service via Discord and email.",
+  },
+}
 
 export default function ContactPage() {
   return (

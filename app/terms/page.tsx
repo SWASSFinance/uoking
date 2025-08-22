@@ -6,6 +6,26 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, FileText, AlertTriangle, CheckCircle } from "lucide-react"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions - UO King | Service Terms and User Agreement",
+  description: "Read UO King's terms and conditions for using our Ultima Online services. Understand your rights and responsibilities when purchasing items, gold, and services.",
+  keywords: "terms and conditions, user agreement, service terms, UO King, Ultima Online, legal terms, user rights",
+  openGraph: {
+    title: "Terms & Conditions - UO King | Service Terms and User Agreement",
+    description: "Read UO King's terms and conditions for using our Ultima Online services. Understand your rights and responsibilities when purchasing items, gold, and services.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/terms`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Terms & Conditions - UO King | Service Terms and User Agreement",
+    description: "Read UO King's terms and conditions for using our Ultima Online services. Understand your rights and responsibilities when purchasing items, gold, and services.",
+  },
+}
 
 export default function TermsPage() {
   return (

@@ -6,6 +6,26 @@ import { Badge } from "@/components/ui/badge"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Sword, Shield, Zap, Star, Target, Clock, Heart } from "lucide-react"
 import Link from "next/link"
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Item Properties - UO King | Ultima Online Equipment Properties Guide",
+  description: "Explore Ultima Online item properties at UO King. Find items with damage increase, defense chance, faster casting, mana regeneration, and other powerful properties. Buy property-specific items.",
+  keywords: "item properties, Ultima Online, UO King, damage increase, defense chance, faster casting, mana regeneration, equipment properties",
+  openGraph: {
+    title: "Item Properties - UO King | Ultima Online Equipment Properties Guide",
+    description: "Explore Ultima Online item properties at UO King. Find items with damage increase, defense chance, faster casting, mana regeneration, and other powerful properties. Buy property-specific items.",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/prop`,
+    siteName: 'UO King',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: "Item Properties - UO King | Ultima Online Equipment Properties Guide",
+    description: "Explore Ultima Online item properties at UO King. Find items with damage increase, defense chance, faster casting, mana regeneration, and other powerful properties. Buy property-specific items.",
+  },
+}
 
 const propertyTypes = [
   {
