@@ -170,27 +170,31 @@ export function AdminHeader() {
 
               {/* Dropdown Menu */}
               {isStoreOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                  {storeSubItems.map((item) => {
-                    const IconComponent = item.icon
-                    const isActive = pathname === item.href
-                    
-                    return (
-                      <Link key={item.name} href={item.href}>
-                        <div className={`
-                          flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
-                          ${isActive 
-                            ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
-                            : "text-gray-700 hover:bg-gray-50"
-                          }
-                        `}>
-                          <IconComponent className="h-4 w-4" />
-                          <span>{item.name}</span>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
+                <>
+                  {/* Invisible bridge to prevent gap */}
+                  <div className="absolute top-full left-0 w-full h-1 bg-transparent"></div>
+                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    {storeSubItems.map((item) => {
+                      const IconComponent = item.icon
+                      const isActive = pathname === item.href
+                      
+                      return (
+                        <Link key={item.name} href={item.href}>
+                          <div className={`
+                            flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
+                            ${isActive 
+                              ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
+                              : "text-gray-700 hover:bg-gray-50"
+                            }
+                          `}>
+                            <IconComponent className="h-4 w-4" />
+                            <span>{item.name}</span>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </>
               )}
             </div>
 
@@ -216,27 +220,31 @@ export function AdminHeader() {
 
               {/* Dropdown Menu */}
               {isSettingsOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                  {settingsSubItems.map((item) => {
-                    const IconComponent = item.icon
-                    const isActive = pathname === item.href
-                    
-                    return (
-                      <Link key={item.name} href={item.href}>
-                        <div className={`
-                          flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
-                          ${isActive 
-                            ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
-                            : "text-gray-700 hover:bg-gray-50"
-                          }
-                        `}>
-                          <IconComponent className="h-4 w-4" />
-                          <span>{item.name}</span>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
+                <>
+                  {/* Invisible bridge to prevent gap */}
+                  <div className="absolute top-full left-0 w-full h-1 bg-transparent"></div>
+                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    {settingsSubItems.map((item) => {
+                      const IconComponent = item.icon
+                      const isActive = pathname === item.href
+                      
+                      return (
+                        <Link key={item.name} href={item.href}>
+                          <div className={`
+                            flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
+                            ${isActive 
+                              ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
+                              : "text-gray-700 hover:bg-gray-50"
+                            }
+                          `}>
+                            <IconComponent className="h-4 w-4" />
+                            <span>{item.name}</span>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </nav>
