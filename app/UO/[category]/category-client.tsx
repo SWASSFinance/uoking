@@ -87,8 +87,8 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
         <div className="mb-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
             {category.image_url && (
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 flex-shrink-0">
+              <div className="flex flex-col md:flex-row gap-6 items-start pt-4">
+                <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0">
                   <ProductImage
                     src={category.image_url}
                     alt={category.name}
@@ -96,7 +96,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
                     className="object-contain rounded-lg"
                   />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 pt-4">
                   <h1 className="text-3xl font-bold text-gray-800 mb-4">{category.name}</h1>
                   {category.description && (
                     <div className="prose prose-amber max-w-none">
