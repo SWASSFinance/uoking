@@ -48,7 +48,7 @@ const EMAIL_TEMPLATES = {
                 <li>Join our community of UO players</li>
               </ul>
               
-              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://uoking.vercel.app'}" class="button">Start Shopping</a>
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.uoking.com'}" class="button">Start Shopping</a>
               
               <p>If you have any questions, feel free to contact our support team.</p>
               
