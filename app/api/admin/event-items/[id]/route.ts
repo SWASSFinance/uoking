@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-});
+import { query } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const result = await pool.query(`
+    const result = await query(`
       SELECT 
         id, name, slug, description, season_number, season_name,
         event_year, event_type, shard, original_image_url, cloudinary_url,
@@ -75,7 +71,7 @@ export async function PUT(
         .trim('-');
     }
 
-    const result = await pool.query(`
+    const result = await query(`
       UPDATE event_items
       SET 
         name = COALESCE($1, name),
@@ -131,7 +127,7 @@ export async function DELETE(
 ) {
   try {
     // First, get the item to check if it has a Cloudinary image
-    const getResult = await pool.query(`
+    const getResult = await query(`
       SELECT cloudinary_public_id FROM event_items WHERE id = $1
     `, [params.id]);
 
@@ -145,7 +141,7 @@ export async function DELETE(
     const item = getResult.rows[0];
 
     // Delete from database
-    const result = await pool.query(`
+    const result = await query(`
       DELETE FROM event_items WHERE id = $1 RETURNING id
     `, [params.id]);
 

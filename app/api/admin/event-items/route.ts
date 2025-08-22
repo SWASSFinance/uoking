@@ -76,19 +76,19 @@ export async function GET(request: NextRequest) {
     const itemsResult = await query(itemsQuery, [...queryParams, limit, offset]);
 
     // Get unique values for filters
-    const seasonsResult = await pool.query(`
+    const seasonsResult = await query(`
       SELECT DISTINCT season_number, season_name 
       FROM event_items 
       ORDER BY season_number DESC
     `);
 
-    const shardsResult = await pool.query(`
+    const shardsResult = await query(`
       SELECT DISTINCT shard 
       FROM event_items 
       ORDER BY shard
     `);
 
-    const itemTypesResult = await pool.query(`
+    const itemTypesResult = await query(`
       SELECT DISTINCT item_type 
       FROM event_items 
       WHERE item_type IS NOT NULL
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
       .replace(/-+/g, '-')
       .trim('-');
 
-    const result = await pool.query(`
+    const result = await query(`
       INSERT INTO event_items (
         name, slug, description, season_number, season_name,
         event_year, event_type, shard, original_image_url,
