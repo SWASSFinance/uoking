@@ -319,7 +319,7 @@ export function ClassSection() {
               title={classData.name}
               description={classData.description}
               icon={<ClassIconSVG className="h-8 w-8" type={classData.slug} />}
-              href={`/class/${classData.slug}`}
+              href={`/Class/${classData.slug}`}
               color={classData.color}
               isPopular={classData.isPopular}
             />

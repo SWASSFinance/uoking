@@ -12,7 +12,7 @@ const classes = [
     color: "from-purple-500 to-purple-600",
     items: 150,
     popular: true,
-    href: "/class/mage",
+    href: "/Class/Mage",
   },
   {
     name: "Tamer",
@@ -21,7 +21,7 @@ const classes = [
     color: "from-green-500 to-green-600",
     items: 120,
     popular: false,
-    href: "/class/tamer",
+    href: "/Class/Tamer",
   },
   {
     name: "Melee",
@@ -30,7 +30,7 @@ const classes = [
     color: "from-red-500 to-red-600",
     items: 200,
     popular: true,
-    href: "/class/melee",
+    href: "/Class/Melee",
   },
   {
     name: "Ranged",
@@ -39,7 +39,7 @@ const classes = [
     color: "from-blue-500 to-blue-600",
     items: 180,
     popular: false,
-    href: "/class/ranged",
+    href: "/Class/Ranged",
   },
   {
     name: "Thief",
@@ -48,7 +48,7 @@ const classes = [
     color: "from-gray-500 to-gray-600",
     items: 90,
     popular: false,
-    href: "/class/thief",
+    href: "/Class/Thief",
   },
   {
     name: "Crafter",
@@ -57,7 +57,7 @@ const classes = [
     color: "from-amber-500 to-amber-600",
     items: 250,
     popular: true,
-    href: "/class/crafter",
+    href: "/Class/Crafter",
   },
 ]
 

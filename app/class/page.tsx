@@ -131,7 +131,7 @@ export default function ClassPage() {
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       asChild
                     >
-                      <Link href={`/class/${classType.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <Link href={`/Class/${classType.name}`}>
                         Learn More
                       </Link>
                     </Button>

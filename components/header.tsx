@@ -243,7 +243,7 @@ export function Header() {
                     <>
                       {/* Getting Started - static item */}
                       <Link
-                        href="/class/getting-started"
+                        href="/Class/getting-started"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                       >
                         Getting Started
@@ -253,7 +253,7 @@ export function Header() {
                       {classes.map((cls) => (
                         <Link
                           key={cls.id}
-                          href={`/class/${cls.slug}`}
+                          href={`/Class/${cls.slug}`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                         >
                           {cls.name}
@@ -605,7 +605,7 @@ export function Header() {
                         <>
                           {/* Getting Started - static item */}
                           <Button variant="ghost" className="justify-start text-sm" asChild>
-                            <Link href="/class/getting-started">
+                            <Link href="/Class/getting-started">
                               Getting Started
                             </Link>
                           </Button>
@@ -613,7 +613,7 @@ export function Header() {
                           {/* Dynamic classes from database */}
                           {classes.map((cls) => (
                             <Button key={cls.id} variant="ghost" className="justify-start text-sm" asChild>
-                              <Link href={`/class/${cls.slug}`}>
+                              <Link href={`/Class/${cls.slug}`}>
                                 {cls.name}
                               </Link>
                             </Button>
