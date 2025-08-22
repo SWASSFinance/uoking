@@ -174,15 +174,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     }
   }
 
-  // Create a fallback category object if none found in database
+  // If no category found, redirect to homepage
   if (!foundCategory) {
-    foundCategory = {
-      id: 'fallback',
-      name: categoryName,
-      description: `Browse ${categoryName} items at UO King. Premium Ultima Online items, fast delivery, and competitive prices.`,
-      image_url: null,
-      slug: categorySlug
-    }
+    redirect('/')
   }
 
   return <CategoryClient category={foundCategory} products={categoryProducts} categoryParam={catParam} />
