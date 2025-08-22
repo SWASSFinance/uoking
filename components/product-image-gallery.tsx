@@ -37,24 +37,7 @@ export function ProductImageGallery({ imageUrl, productName, description }: Prod
             onError={handleImageError}
           />
           
-          {/* Stats Overlay */}
-          <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
-            <div className="text-white text-center max-w-full">
-              <h3 className="font-bold text-lg mb-3">{productName}</h3>
-              
 
-              
-              {/* Description */}
-              {description && (
-                <div>
-                  <h4 className="font-semibold mb-2">Description:</h4>
-                  <pre className="text-xs whitespace-pre-wrap font-sans text-left max-h-32 overflow-y-auto">
-                    {description}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </div>
           
           {/* Zoom Button */}
           <div className="absolute top-2 right-2">
