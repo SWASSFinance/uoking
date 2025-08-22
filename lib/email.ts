@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_TEMPLATES = {
   registration: {
     subject: 'Welcome to UO King - Registration Successful!',
-    html: (data: { name: string; email: string; characterName: string }) => `
+    html: (data: { name: string; email: string; characterName: string; userId?: string }) => `
       <!DOCTYPE html>
       <html>
         <head>
@@ -38,6 +38,7 @@ const EMAIL_TEMPLATES = {
                 <li><strong>Email:</strong> ${data.email}</li>
                 <li><strong>Character Name:</strong> ${data.characterName}</li>
                 <li><strong>Account Status:</strong> Active</li>
+                ${data.userId ? `<li><strong>User ID:</strong> ${data.userId}</li>` : ''}
               </ul>
               
               <p>You can now:</p>
