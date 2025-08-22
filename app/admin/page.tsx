@@ -127,16 +127,16 @@ export default function AdminPage() {
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-4">
-              <div className="p-4 bg-blue-100 rounded-full">
-                <Settings className="h-16 w-16 text-blue-600" />
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-2">
+              <div className="p-2 bg-blue-100 rounded-full">
+                <Settings className="h-8 w-8 text-blue-600" />
               </div>
             </div>
-            <h1 className="text-5xl font-bold text-black mb-6">
+            <h1 className="text-3xl font-bold text-black mb-2">
               Admin Dashboard
             </h1>
-            <p className="text-xl text-gray-800 max-w-3xl mx-auto">
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Complete control over your Ultima Online marketplace. Manage products, users, orders, and everything else from one central location.
             </p>
           </div>
