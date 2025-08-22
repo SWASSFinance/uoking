@@ -41,17 +41,20 @@ export async function POST(request: NextRequest) {
 
     switch (template) {
       case 'registration':
+        const userId = Math.random().toString(36).substring(2, 8).toUpperCase()
         testData = {
           name: 'Test User',
           email: email,
-          characterName: 'TestCharacter'
+          characterName: 'TestCharacter',
+          userId: userId
         }
-        if (!subject) subject = 'Test Welcome Email - UO King'
+        if (!subject) subject = `Test Welcome Email - UO King (User ID: ${userId})`
         break
 
       case 'orderConfirmation':
+        const orderId = `TEST-${Date.now().toString().slice(-6)}`
         testData = {
-          orderId: 'TEST-12345',
+          orderId: orderId,
           customerName: 'Test Customer',
           email: email,
           total: 49.99,
@@ -62,18 +65,19 @@ export async function POST(request: NextRequest) {
           deliveryCharacter: 'TestCharacter',
           shard: 'Atlantic'
         }
-        if (!subject) subject = 'Test Order Confirmation - UO King'
+        if (!subject) subject = `Test Order Confirmation - UO King (Order #${orderId})`
         break
 
       case 'orderCompleted':
+        const completedOrderId = `TEST-${Date.now().toString().slice(-6)}`
         testData = {
-          orderId: 'TEST-12345',
+          orderId: completedOrderId,
           customerName: 'Test Customer',
           email: email,
           deliveryCharacter: 'TestCharacter',
           shard: 'Atlantic'
         }
-        if (!subject) subject = 'Test Order Completed - UO King'
+        if (!subject) subject = `Test Order Completed - UO King (Order #${completedOrderId})`
         break
 
       default:
