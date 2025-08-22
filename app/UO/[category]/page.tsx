@@ -101,6 +101,11 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const seoTitle = `UO ${foundCategory.name} - Buy Ultima Online ${foundCategory.name} At Cheap Prices | UO King`
   const seoDescription = `Buy ${foundCategory.name} for Ultima Online at UO King. Fast delivery, competitive prices, and 24/7 support. Get your ${foundCategory.name.toLowerCase()} now!`
 
+  // Build the full image URL if category has an image
+  const imageUrl = foundCategory.image_url 
+    ? `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}${foundCategory.image_url}`
+    : undefined
+
   return {
     title: seoTitle,
     description: seoDescription,
@@ -112,11 +117,24 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       siteName: 'UO King',
       locale: 'en_US',
       type: 'website',
+      ...(imageUrl && {
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${foundCategory.name} - Ultima Online`,
+          },
+        ],
+      }),
     },
     twitter: {
       card: 'summary_large_image',
       title: seoTitle,
       description: seoDescription,
+      ...(imageUrl && {
+        images: [imageUrl],
+      }),
     },
   }
 }
