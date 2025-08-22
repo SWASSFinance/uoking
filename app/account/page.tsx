@@ -491,8 +491,8 @@ export default function AccountPage() {
   }
 
   const handleDiscordLink = () => {
-    // Use the new Discord linking endpoint
-    window.location.href = '/api/auth/discord-link'
+    // Use the Discord linking endpoint
+    window.location.href = '/api/auth/link-discord'
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
