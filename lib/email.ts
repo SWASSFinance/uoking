@@ -234,6 +234,7 @@ export async function sendEmail(
   options: {
     from?: string
     replyTo?: string
+    subject?: string
     rateLimit?: number
     rateLimitWindow?: number
   } = {}
@@ -260,7 +261,7 @@ export async function sendEmail(
     }
 
     // Generate email content
-    const subject = emailTemplate.subject
+    const subject = options.subject || emailTemplate.subject
     const html = emailTemplate.html(data)
 
     // Send email via Resend
