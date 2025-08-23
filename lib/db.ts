@@ -1959,7 +1959,7 @@ export async function getUserOwnedPlots(userId: string) {
 }
 
 // Category Review Functions
-export async function getCategoryReviews(categoryId: string) {
+export async function getCategoryReviews(categorySlug: string) {
   try {
     const result = await query(`
       SELECT 
@@ -1967,10 +1967,11 @@ export async function getCategoryReviews(categoryId: string) {
         u.username as user_username,
         u.email as user_email
       FROM category_reviews cr
+      JOIN categories c ON cr.category_id = c.id
       JOIN users u ON cr.user_id = u.id
-      WHERE cr.category_id = $1 AND cr.status = 'approved'
+      WHERE c.slug = $1 AND cr.status = 'approved'
       ORDER BY cr.created_at DESC
-    `, [categoryId])
+    `, [categorySlug])
     
     return result.rows
   } catch (error) {
@@ -1980,14 +1981,14 @@ export async function getCategoryReviews(categoryId: string) {
 }
 
 export async function createCategoryReview({
-  categoryId,
+  categorySlug,
   userId,
   rating,
   title,
   content,
   status = 'pending'
 }: {
-  categoryId: string
+  categorySlug: string
   userId: string
   rating: number
   title?: string | null
@@ -1996,6 +1997,18 @@ export async function createCategoryReview({
 }) {
   try {
     await query('BEGIN')
+    
+    // Get category ID from slug
+    const categoryResult = await query(`
+      SELECT id FROM categories WHERE slug = $1
+    `, [categorySlug])
+    
+    if (categoryResult.rows.length === 0) {
+      await query('ROLLBACK')
+      throw new Error('Category not found')
+    }
+    
+    const categoryId = categoryResult.rows[0].id
     
     // Check if user already reviewed this category
     const existingReview = await query(`
