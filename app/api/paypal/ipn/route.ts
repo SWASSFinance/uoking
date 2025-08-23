@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
 
     switch (paymentStatus) {
       case 'Completed':
-        newStatus = 'completed'
+        newStatus = 'processing'
         paymentStatusDB = 'completed'
         break
       case 'Pending':
@@ -309,8 +309,8 @@ export async function POST(request: NextRequest) {
 
         console.log('Order items found:', orderItemsResult.rows.length)
 
-        const { sendOrderConfirmationEmail } = await import('@/lib/email')
-        await sendOrderConfirmationEmail({
+        const { sendEmail } = await import('@/lib/email')
+        await sendEmail(order.user_email, 'orderConfirmation', {
           orderId: custom,
           customerName: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Customer',
           email: order.user_email,
@@ -322,6 +322,10 @@ export async function POST(request: NextRequest) {
           })),
           deliveryCharacter: order.delivery_character,
           shard: order.delivery_shard
+        }, {
+          from: 'UO King <noreply@uoking.com>',
+          replyTo: 'support@uoking.com',
+          subject: `Order Confirmation - UO King (Order #${custom})`
         })
         console.log('Order confirmation email sent successfully')
       } catch (emailError) {
