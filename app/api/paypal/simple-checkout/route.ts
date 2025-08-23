@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
       currency_code: 'USD',
       return: `${process.env.NEXTAUTH_URL}/paypal/success?order_id=${orderId}`,
       cancel_return: `${process.env.NEXTAUTH_URL}/paypal/cancel?order_id=${orderId}`,
-      notify_url: `${process.env.NEXTAUTH_URL}/api/paypal/simple-ipn`,
+      notify_url: `${process.env.NEXTAUTH_URL}/api/paypal/ipn`,
       custom: orderId,
       no_shipping: '1',
       no_note: '1',
