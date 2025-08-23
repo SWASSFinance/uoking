@@ -1981,14 +1981,14 @@ export async function getCategoryReviews(categorySlug: string) {
 }
 
 export async function createCategoryReview({
-  categorySlug,
+  categoryId,
   userId,
   rating,
   title,
   content,
   status = 'pending'
 }: {
-  categorySlug: string
+  categoryId: string
   userId: string
   rating: number
   title?: string | null
@@ -1997,18 +1997,6 @@ export async function createCategoryReview({
 }) {
   try {
     await query('BEGIN')
-    
-    // Get category ID from slug
-    const categoryResult = await query(`
-      SELECT id FROM categories WHERE slug = $1
-    `, [categorySlug])
-    
-    if (categoryResult.rows.length === 0) {
-      await query('ROLLBACK')
-      throw new Error('Category not found')
-    }
-    
-    const categoryId = categoryResult.rows[0].id
     
     // Check if user already reviewed this category
     const existingReview = await query(`

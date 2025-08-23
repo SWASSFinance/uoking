@@ -179,7 +179,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
         <div className="mt-12">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
             <CategoryReviews 
-              categoryId={category.id} 
+              categoryId={category.slug} 
               initialReviews={[]}
               avgRating={0}
               reviewCount={0}

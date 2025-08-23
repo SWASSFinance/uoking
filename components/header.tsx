@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
@@ -22,6 +22,11 @@ import {
   Crown
 } from "lucide-react"
 
+// Global cache for categories and classes to prevent duplicate API calls
+let categoriesCache: Array<{ id: string; name: string }> | null = null
+let classesCache: Array<{ id: string; name: string; slug: string }> | null = null
+let cashbackCache: { [email: string]: number } = {}
+
 export function Header() {
   const { data: session, status } = useSession()
   const { cart } = useCart()
@@ -34,14 +39,30 @@ export function Header() {
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [classes, setClasses] = useState<Array<{ id: string; name: string; slug: string }>>([])
   const [classesLoading, setClassesLoading] = useState(true)
+  
+  // Use refs to track if data has been fetched
+  const categoriesFetched = useRef(false)
+  const classesFetched = useRef(false)
+  const cashbackFetched = useRef(false)
 
   // Fetch cashback balance when user is authenticated
   useEffect(() => {
-    if (session?.user?.email) {
+    if (session?.user?.email && !cashbackFetched.current) {
+      const userEmail = session.user.email
+      
+      // Check cache first
+      if (cashbackCache[userEmail] !== undefined) {
+        setCashbackBalance(cashbackCache[userEmail])
+        return
+      }
+      
+      cashbackFetched.current = true
       fetch('/api/user/cashback-balance')
         .then(res => res.json())
         .then(data => {
-          setCashbackBalance(data.referral_cash || 0)
+          const balance = data.referral_cash || 0
+          setCashbackBalance(balance)
+          cashbackCache[userEmail] = balance
         })
         .catch(error => {
           console.error('Error fetching cashback balance:', error)
@@ -51,32 +72,56 @@ export function Header() {
 
   // Fetch categories
   useEffect(() => {
-    fetch('/api/categories')
-      .then(res => res.json())
-      .then(data => {
-        setCategories(data || [])
-      })
-      .catch(error => {
-        console.error('Error fetching categories:', error)
-      })
-      .finally(() => {
+    if (!categoriesFetched.current) {
+      // Check cache first
+      if (categoriesCache) {
+        setCategories(categoriesCache)
         setCategoriesLoading(false)
-      })
+        return
+      }
+      
+      categoriesFetched.current = true
+      fetch('/api/categories')
+        .then(res => res.json())
+        .then(data => {
+          const categoriesData = data || []
+          setCategories(categoriesData)
+          categoriesCache = categoriesData
+        })
+        .catch(error => {
+          console.error('Error fetching categories:', error)
+        })
+        .finally(() => {
+          setCategoriesLoading(false)
+        })
+    }
   }, [])
 
   // Fetch classes
   useEffect(() => {
-    fetch('/api/classes')
-      .then(res => res.json())
-      .then(data => {
-        setClasses(data || [])
-      })
-      .catch(error => {
-        console.error('Error fetching classes:', error)
-      })
-      .finally(() => {
+    if (!classesFetched.current) {
+      // Check cache first
+      if (classesCache) {
+        setClasses(classesCache)
         setClassesLoading(false)
-      })
+        return
+      }
+      
+      classesFetched.current = true
+      fetch('/api/classes')
+        .then(res => res.json())
+        .then(data => {
+          const classesData = data || []
+          setClasses(classesData)
+          classesCache = classesData
+        })
+        .catch(error => {
+          console.error('Error fetching classes:', error)
+        })
+        .finally(() => {
+          setClassesLoading(false)
+        })
+    }
   }, [])
 
   // Helper function to convert category name to URL

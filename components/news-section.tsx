@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, User, ChevronDown } from "lucide-react"
+import { useApiCache } from "@/hooks/use-api-cache"
 
 interface NewsPost {
   id: string
@@ -16,27 +17,15 @@ interface NewsPost {
 }
 
 export function NewsSection() {
-  const [news, setNews] = useState<NewsPost[]>([])
-  const [loading, setLoading] = useState(true)
   const [expandedItem, setExpandedItem] = useState<string>('item-0')
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const response = await fetch('/api/news?limit=100')
-        if (!response.ok) throw new Error('Failed to fetch news')
-        
-        const data = await response.json()
-        setNews(data.news)
-      } catch (error) {
-        console.error('Error fetching news:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchNews()
-  }, [])
+  const { data: newsData, loading } = useApiCache<{ news: NewsPost[] }>({
+    cacheKey: 'news-section',
+    url: '/api/news?limit=100',
+    cacheDuration: 10 * 60 * 1000 // 10 minutes cache for news
+  })
+  
+  const news = newsData?.news || []
 
   if (loading) {
     return (

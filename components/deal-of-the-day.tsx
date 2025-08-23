@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ProductImage } from '@/components/ui/product-image'
 import { Clock, Tag, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
+import { useApiCache } from '@/hooks/use-api-cache'
 
 interface DealOfTheDayProps {
   className?: string
@@ -25,29 +26,20 @@ interface DealProduct {
 }
 
 export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
-  const [deal, setDeal] = useState<DealProduct | null>(null)
-  const [loading, setLoading] = useState(true)
   const [timeRemaining, setTimeRemaining] = useState('')
+  
+  const { data: dealData, loading } = useApiCache<{ deal: DealProduct }>({
+    cacheKey: 'deal-of-the-day',
+    url: '/api/deal-of-the-day',
+    cacheDuration: 60 * 1000 // 1 minute cache for deals
+  })
+  
+  const deal = dealData?.deal || null
 
   useEffect(() => {
-    fetchDealOfTheDay()
     const interval = setInterval(updateTimeRemaining, 1000)
     return () => clearInterval(interval)
-  }, [])
-
-  const fetchDealOfTheDay = async () => {
-    try {
-      const response = await fetch('/api/deal-of-the-day')
-      if (response.ok) {
-        const data = await response.json()
-        setDeal(data.deal)
-      }
-    } catch (error) {
-      console.error('Error fetching deal of the day:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [deal])
 
   const updateTimeRemaining = () => {
     if (!deal) return

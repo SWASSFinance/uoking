@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCategoryReviews, createCategoryReview } from '@/lib/db'
+import { getCategoryReviews, createCategoryReview, query } from '@/lib/db'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const reviews = await getCategoryReviews(params.slug)
+    const { slug } = await params
+    const reviews = await getCategoryReviews(slug)
     return NextResponse.json(reviews)
   } catch (error) {
     console.error('Error fetching category reviews:', error)
@@ -20,7 +21,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await auth()
@@ -50,8 +51,24 @@ export async function POST(
       )
     }
 
+    const { slug } = await params
+    
+    // Get category ID from slug
+    const categoryResult = await query(`
+      SELECT id FROM categories WHERE slug = $1
+    `, [slug])
+    
+    if (categoryResult.rows.length === 0) {
+      return NextResponse.json(
+        { error: 'Category not found' },
+        { status: 404 }
+      )
+    }
+    
+    const categoryId = categoryResult.rows[0].id
+    
     const review = await createCategoryReview({
-      categorySlug: params.slug,
+      categoryId: categoryId,
       userId: session.user.id,
       rating,
       title: title?.trim() || null,

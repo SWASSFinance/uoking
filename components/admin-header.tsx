@@ -121,14 +121,27 @@ export function AdminHeader() {
   const [isStoreOpen, setIsStoreOpen] = useState(false)
   const [maintenanceMode, setMaintenanceMode] = useState(false)
 
+  // Global cache for maintenance mode
+  let maintenanceModeCache: boolean | null = null
+  let maintenanceModeFetched = false
+
   // Check maintenance mode status
   useEffect(() => {
     const checkMaintenanceMode = async () => {
       try {
+        // Check cache first
+        if (maintenanceModeCache !== null && maintenanceModeFetched) {
+          setMaintenanceMode(maintenanceModeCache)
+          return
+        }
+        
+        maintenanceModeFetched = true
         const response = await fetch('/api/admin/settings')
         if (response.ok) {
           const data = await response.json()
-          setMaintenanceMode(data.maintenance_mode || false)
+          const mode = data.maintenance_mode || false
+          setMaintenanceMode(mode)
+          maintenanceModeCache = mode
         }
       } catch (error) {
         console.error('Error checking maintenance mode:', error)
@@ -136,7 +149,7 @@ export function AdminHeader() {
     }
 
     checkMaintenanceMode()
-    const interval = setInterval(checkMaintenanceMode, 10000) // Check every 10 seconds
+    const interval = setInterval(checkMaintenanceMode, 30000) // Check every 30 seconds instead of 10
 
     return () => clearInterval(interval)
   }, [])

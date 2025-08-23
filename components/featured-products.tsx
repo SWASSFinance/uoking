@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Crown } from "lucide-react"
 import Link from "next/link"
 import { ProductsGrid } from "@/components/products-grid"
+import { useApiCache } from "@/hooks/use-api-cache"
 
 interface Product {
   id: string | number
@@ -22,27 +23,10 @@ interface Product {
 }
 
 export function FeaturedProducts() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-
-  // Fetch featured products from database
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('/api/products?featured=true&limit=6')
-        if (response.ok) {
-          const data = await response.json()
-          setProducts(data)
-        }
-      } catch (error) {
-        console.error('Error fetching featured products:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProducts()
-  }, [])
+  const { data: products = [], loading } = useApiCache<Product[]>({
+    cacheKey: 'featured-products',
+    url: '/api/products?featured=true&limit=6'
+  })
 
   if (loading) {
     return (
