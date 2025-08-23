@@ -15,6 +15,7 @@ import { ProductImageGallery } from '@/components/product-image-gallery'
 import { ProductReviewForm } from '@/components/product-review-form'
 import { ProductReviews } from '@/components/product-reviews'
 import { SpawnLocationForm } from '@/components/spawn-location-form'
+import { ProductImageSubmissions } from '@/components/product-image-submissions'
 import { useCart } from '@/contexts/cart-context'
 import { useToast } from '@/hooks/use-toast'
 
@@ -293,6 +294,14 @@ export default function ProductPage() {
                   avgRating={avgRating}
                   reviewCount={reviewCount}
                 />
+
+                {/* User Image Submissions Section */}
+                <div className="mt-8">
+                  <ProductImageSubmissions 
+                    productId={product.id} 
+                    initialSubmissions={[]}
+                  />
+                </div>
               </div>
 
               {/* Sidebar */}

@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/cart-context'
 import { ProductsGrid } from '@/components/products-grid'
+import { CategoryReviews } from '@/components/category-reviews'
 
 interface CategoryClientProps {
   category: any
@@ -173,6 +174,18 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
             </div>
           </div>
         )}
+
+        {/* Category Reviews Section */}
+        <div className="mt-12">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+            <CategoryReviews 
+              categoryId={category.id} 
+              initialReviews={[]}
+              avgRating={0}
+              reviewCount={0}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

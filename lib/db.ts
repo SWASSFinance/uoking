@@ -1958,4 +1958,211 @@ export async function getUserOwnedPlots(userId: string) {
   }
 }
 
+// Category Review Functions
+export async function getCategoryReviews(categoryId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        cr.*,
+        u.username as user_username,
+        u.email as user_email
+      FROM category_reviews cr
+      JOIN users u ON cr.user_id = u.id
+      WHERE cr.category_id = $1 AND cr.status = 'approved'
+      ORDER BY cr.created_at DESC
+    `, [categoryId])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching category reviews:', error)
+    throw error
+  }
+}
+
+export async function createCategoryReview({
+  categoryId,
+  userId,
+  rating,
+  title,
+  content,
+  status = 'pending'
+}: {
+  categoryId: string
+  userId: string
+  rating: number
+  title?: string | null
+  content: string
+  status?: string
+}) {
+  try {
+    await query('BEGIN')
+    
+    // Check if user already reviewed this category
+    const existingReview = await query(`
+      SELECT id, status FROM category_reviews 
+      WHERE category_id = $1 AND user_id = $2
+    `, [categoryId, userId])
+    
+    if (existingReview.rows.length > 0) {
+      await query('ROLLBACK')
+      throw new Error('You have already reviewed this category. You cannot submit another review.')
+    }
+
+    // Check if user has too many pending reviews (rate limiting)
+    const pendingReviewsCount = await query(`
+      SELECT COUNT(*) as count FROM category_reviews 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    if (pendingReviewsCount.rows[0].count >= 5) {
+      await query('ROLLBACK')
+      throw new Error('You have reached the maximum limit of 5 pending category reviews. Please wait for your existing reviews to be approved before submitting more.')
+    }
+    
+    // Calculate points for new review
+    let pointsEarned = 10 // Base points for review
+    
+    if (rating) {
+      pointsEarned += 5 // Bonus points for rating
+    }
+    
+    if (content && content.length > 50) {
+      pointsEarned += 5 // Bonus points for detailed review
+    }
+    
+    // Insert new review
+    const result = await query(`
+      INSERT INTO category_reviews (category_id, user_id, rating, title, content, status)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `, [categoryId, userId, rating, title, content, status])
+    
+    // Update user points
+    try {
+      await query(`
+        UPDATE users 
+        SET total_points_earned = COALESCE(total_points_earned, 0) + $1
+        WHERE id = $2
+      `, [pointsEarned, userId])
+    } catch (error) {
+      console.warn('Could not update user total_points_earned (column may not exist):', error)
+    }
+    
+    // Update user_points table
+    await query(`
+      INSERT INTO user_points (user_id, current_points, lifetime_points)
+      VALUES ($1, $2, $2)
+      ON CONFLICT (user_id) 
+      DO UPDATE SET 
+        current_points = user_points.current_points + $2,
+        lifetime_points = user_points.lifetime_points + $2
+    `, [userId, pointsEarned])
+    
+    // Get updated count of pending reviews
+    const updatedPendingCount = await query(`
+      SELECT COUNT(*) as count FROM category_reviews 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    await query('COMMIT')
+    return { 
+      ...result.rows[0], 
+      pointsEarned, 
+      isNewReview: true,
+      pendingReviewsCount: parseInt(updatedPendingCount.rows[0].count),
+      remainingReviews: Math.max(0, 5 - parseInt(updatedPendingCount.rows[0].count))
+    }
+  } catch (error) {
+    await query('ROLLBACK')
+    console.error('Error creating category review:', error)
+    throw error
+  }
+}
+
+// Product Image Submission Functions
+export async function getProductImageSubmissions(productId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        pis.*,
+        u.username as user_username,
+        u.email as user_email
+      FROM product_image_submissions pis
+      JOIN users u ON pis.user_id = u.id
+      WHERE pis.product_id = $1 AND pis.status = 'approved'
+      ORDER BY pis.created_at DESC
+    `, [productId])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching product image submissions:', error)
+    throw error
+  }
+}
+
+export async function createProductImageSubmission({
+  productId,
+  userId,
+  imageUrl,
+  cloudinaryPublicId,
+  status = 'pending'
+}: {
+  productId: string
+  userId: string
+  imageUrl: string
+  cloudinaryPublicId?: string
+  status?: string
+}) {
+  try {
+    await query('BEGIN')
+    
+    // Check if user already submitted an image for this product
+    const existingSubmission = await query(`
+      SELECT id, status FROM product_image_submissions 
+      WHERE product_id = $1 AND user_id = $2
+    `, [productId, userId])
+    
+    if (existingSubmission.rows.length > 0) {
+      await query('ROLLBACK')
+      throw new Error('You have already submitted an image for this product. You cannot submit another image.')
+    }
+
+    // Check if user has too many pending image submissions (rate limiting)
+    const pendingSubmissionsCount = await query(`
+      SELECT COUNT(*) as count FROM product_image_submissions 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    if (pendingSubmissionsCount.rows[0].count >= 5) {
+      await query('ROLLBACK')
+      throw new Error('You have reached the maximum limit of 5 pending image submissions. Please wait for your existing submissions to be approved before submitting more.')
+    }
+    
+    // Insert new image submission
+    const result = await query(`
+      INSERT INTO product_image_submissions (product_id, user_id, image_url, cloudinary_public_id, status)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [productId, userId, imageUrl, cloudinaryPublicId, status])
+    
+    // Get updated count of pending submissions
+    const updatedPendingCount = await query(`
+      SELECT COUNT(*) as count FROM product_image_submissions 
+      WHERE user_id = $1 AND status = $2
+    `, [userId, 'pending'])
+    
+    await query('COMMIT')
+    return { 
+      ...result.rows[0], 
+      isNewSubmission: true,
+      pendingSubmissionsCount: parseInt(updatedPendingCount.rows[0].count),
+      remainingSubmissions: Math.max(0, 5 - parseInt(updatedPendingCount.rows[0].count))
+    }
+  } catch (error) {
+    await query('ROLLBACK')
+    console.error('Error creating product image submission:', error)
+    throw error
+  }
+}
+
 export default pool; 

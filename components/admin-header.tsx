@@ -89,6 +89,16 @@ const settingsSubItems = [
     icon: MessageCircle
   },
   {
+    name: "Category Reviews",
+    href: "/admin/category-reviews",
+    icon: MessageCircle
+  },
+  {
+    name: "Image Submissions",
+    href: "/admin/image-submissions",
+    icon: Video
+  },
+  {
     name: "Maps",
     href: "/admin/maps",
     icon: Map
@@ -136,6 +146,8 @@ export function AdminHeader() {
                           pathname === "/admin/shard" || 
                           pathname === "/admin/classes" ||
                           pathname === "/admin/reviews" ||
+                          pathname === "/admin/category-reviews" ||
+                          pathname === "/admin/image-submissions" ||
                           pathname === "/admin/maps" ||
                           pathname === "/admin/spawn-locations" ||
                           pathname === "/admin/test-email"
