@@ -77,6 +77,7 @@ interface SiteSettings {
   enable_reviews: boolean
   enable_newsletter: boolean
   maintenance_mode: boolean
+  maintenance_message: string
   
   // Deal of the Day
   enable_deal_of_the_day: boolean
@@ -109,6 +110,7 @@ export default function SettingsAdminPage() {
     enable_reviews: true,
     enable_newsletter: true,
     maintenance_mode: false,
+    maintenance_message: '',
     enable_deal_of_the_day: true,
     deal_of_the_day_discount: 15,
     enable_referral_system: true,
@@ -770,6 +772,11 @@ export default function SettingsAdminPage() {
                   <div>
                     <Label htmlFor="maintenance_mode" className="text-black font-semibold">Maintenance Mode</Label>
                     <p className="text-sm text-gray-600">Put the site in maintenance mode</p>
+                    {settings.maintenance_mode && (
+                      <Badge variant="destructive" className="mt-1">
+                        ⚠️ Site is currently in maintenance mode
+                      </Badge>
+                    )}
                   </div>
                   <Switch
                     id="maintenance_mode"
@@ -777,6 +784,34 @@ export default function SettingsAdminPage() {
                     onCheckedChange={(checked) => handleInputChange('maintenance_mode', checked)}
                   />
                 </div>
+                
+                {settings.maintenance_mode && (
+                  <div>
+                    <Label htmlFor="maintenance_message" className="text-black font-semibold">Maintenance Message</Label>
+                    <Textarea
+                      id="maintenance_message"
+                      value={settings.maintenance_message}
+                      onChange={(e) => handleInputChange('maintenance_message', e.target.value)}
+                      placeholder="Enter a custom maintenance message (optional)"
+                      className="border-gray-300 bg-white text-black mt-2"
+                      rows={3}
+                    />
+                    <p className="text-sm text-gray-600 mt-1">Custom message to display during maintenance (leave empty for default message)</p>
+                    
+                    <div className="mt-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open('/', '_blank')}
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                      >
+                        🔍 Test Maintenance Page
+                      </Button>
+                      <p className="text-xs text-gray-500 mt-1">Opens the homepage in a new tab to test the maintenance overlay</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { GoogleMapsLoader } from '@/components/google-maps-loader'
 import { LazyMusicPlayer } from '@/components/lazy-music-player'
 import { TawkChat } from '@/components/tawk-chat'
+import { MaintenanceProvider } from '@/components/maintenance-provider'
 import './globals.css'
 
 // Configure fonts with display swap for better performance
@@ -68,10 +69,12 @@ export default function RootLayout({
         <GoogleMapsLoader>
           <Providers>
             <ErrorBoundary>
-              {children}
-              <Toaster />
-              <LazyMusicPlayer />
-              <TawkChat />
+              <MaintenanceProvider>
+                {children}
+                <Toaster />
+                <LazyMusicPlayer />
+                <TawkChat />
+              </MaintenanceProvider>
             </ErrorBoundary>
           </Providers>
         </GoogleMapsLoader>

@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { 
   Settings, 
   Package, 
@@ -20,7 +21,8 @@ import {
   MapPin,
   ChevronDown,
   Newspaper,
-  Store
+  Store,
+  AlertTriangle
 } from "lucide-react"
 
 const adminNavItems = [
@@ -101,6 +103,27 @@ export function AdminHeader() {
   const pathname = usePathname()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isStoreOpen, setIsStoreOpen] = useState(false)
+  const [maintenanceMode, setMaintenanceMode] = useState(false)
+
+  // Check maintenance mode status
+  useEffect(() => {
+    const checkMaintenanceMode = async () => {
+      try {
+        const response = await fetch('/api/admin/settings')
+        if (response.ok) {
+          const data = await response.json()
+          setMaintenanceMode(data.maintenance_mode || false)
+        }
+      } catch (error) {
+        console.error('Error checking maintenance mode:', error)
+      }
+    }
+
+    checkMaintenanceMode()
+    const interval = setInterval(checkMaintenanceMode, 10000) // Check every 10 seconds
+
+    return () => clearInterval(interval)
+  }, [])
 
   const isSettingsActive = pathname === "/admin/settings" || 
                           pathname === "/admin/shard" || 
@@ -128,6 +151,16 @@ export function AdminHeader() {
               </div>
               <span className="text-xl font-bold text-black">Admin Panel</span>
             </Link>
+            
+            {/* Maintenance Mode Indicator */}
+            {maintenanceMode && (
+              <div className="flex items-center space-x-2">
+                <Badge variant="destructive" className="flex items-center space-x-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  <span>Maintenance Mode Active</span>
+                </Badge>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
