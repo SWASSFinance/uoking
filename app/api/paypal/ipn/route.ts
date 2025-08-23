@@ -128,6 +128,14 @@ export async function POST(request: NextRequest) {
     const configuredPayPalEmail = settingsResult.rows[0].setting_value
     const receivedEmail = receiverEmail || businessEmail // Use either field
     
+    console.log('Email verification:', {
+      receiverEmail,
+      businessEmail,
+      receivedEmail,
+      configuredPayPalEmail,
+      matches: receivedEmail === configuredPayPalEmail
+    })
+    
     if (!receivedEmail) {
       console.error('No receiver email found in IPN')
       return NextResponse.json({ error: 'No receiver email found' }, { status: 400 })
@@ -146,12 +154,20 @@ export async function POST(request: NextRequest) {
 
     // Get order details
     console.log('Looking up order:', custom)
+    console.log('Order ID type:', typeof custom, 'Length:', custom?.length)
+    
     const orderResult = await query(`
       SELECT o.*, u.email as user_email, u.first_name, u.last_name
       FROM orders o 
       JOIN users u ON o.user_id = u.id 
       WHERE o.id = $1
     `, [custom])
+
+    console.log('Order lookup result:', {
+      orderId: custom,
+      found: orderResult.rows && orderResult.rows.length > 0,
+      rowCount: orderResult.rows?.length || 0
+    })
 
     if (!orderResult.rows || orderResult.rows.length === 0) {
       console.error('Order not found:', custom)
@@ -181,7 +197,7 @@ export async function POST(request: NextRequest) {
 
     switch (paymentStatus) {
       case 'Completed':
-        newStatus = 'paid'
+        newStatus = 'completed'
         paymentStatusDB = 'completed'
         break
       case 'Pending':
@@ -322,7 +338,7 @@ export async function POST(request: NextRequest) {
     console.log('IPN processing completed successfully')
     return NextResponse.json({ success: true })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('IPN processing error:', error)
     console.error('Error details:', {
       message: error?.message || 'Unknown error',
@@ -346,14 +362,14 @@ export async function POST(request: NextRequest) {
       await sendIPNDebugEmail({
         ipnLogId,
         status: 'processing_error',
-        rawBody: body,
+        rawBody: 'Error occurred before body parsing',
         parsedData: {
-          paymentStatus: formData.get('payment_status'),
-          txnId: formData.get('txn_id'),
-          receiverEmail: formData.get('receiver_email'),
-          custom: formData.get('custom'),
-          mcGross: formData.get('mc_gross'),
-          mcCurrency: formData.get('mc_currency')
+          paymentStatus: 'unknown',
+          txnId: 'unknown',
+          receiverEmail: 'unknown',
+          custom: 'unknown',
+          mcGross: 'unknown',
+          mcCurrency: 'unknown'
         },
         error: error?.message || 'Unknown error'
       })
@@ -428,7 +444,13 @@ async function verifyIPN(body: string, userAgent: string): Promise<boolean> {
     const verificationBody = `cmd=_notify-validate&${body}`
     
     console.log('Sending verification request to PayPal...')
-    const response = await fetch(`${process.env.PAYPAL_API_URL}/cgi-bin/webscr`, {
+    
+    // Use the correct PayPal IPN verification URL
+    const paypalIPNUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://ipnpb.paypal.com/cgi-bin/webscr'
+      : 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr'
+    
+    const response = await fetch(paypalIPNUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -444,7 +466,7 @@ async function verifyIPN(body: string, userAgent: string): Promise<boolean> {
     console.log('IPN verification result:', isValid ? 'VERIFIED' : 'INVALID')
     
     return isValid
-  } catch (error) {
+  } catch (error: any) {
     console.error('IPN verification error:', error)
     console.error('Verification error details:', {
       message: error?.message || 'Unknown error',
