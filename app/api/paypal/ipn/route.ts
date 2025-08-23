@@ -316,9 +316,8 @@ export async function POST(request: NextRequest) {
         
         // Get order items for email
         const orderItemsResult = await query(`
-          SELECT oi.quantity, oi.price, p.name
+          SELECT oi.quantity, oi.unit_price as price, oi.product_name as name
           FROM order_items oi
-          JOIN products p ON oi.product_id = p.id
           WHERE oi.order_id = $1
         `, [custom])
 
