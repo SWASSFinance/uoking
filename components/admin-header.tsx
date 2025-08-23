@@ -22,7 +22,8 @@ import {
   ChevronDown,
   Newspaper,
   Store,
-  AlertTriangle
+  AlertTriangle,
+  Gift
 } from "lucide-react"
 
 const adminNavItems = [
@@ -66,6 +67,11 @@ const settingsSubItems = [
     name: "General Settings",
     href: "/admin/settings",
     icon: Settings
+  },
+  {
+    name: "Gifts",
+    href: "/admin/gifts",
+    icon: Gift
   },
   {
     name: "Shards",
@@ -126,6 +132,7 @@ export function AdminHeader() {
   }, [])
 
   const isSettingsActive = pathname === "/admin/settings" || 
+                          pathname === "/admin/gifts" ||
                           pathname === "/admin/shard" || 
                           pathname === "/admin/classes" ||
                           pathname === "/admin/reviews" ||

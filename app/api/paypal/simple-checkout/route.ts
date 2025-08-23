@@ -10,13 +10,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { cartItems, cashbackToUse, selectedShard, couponCode, existingOrderId } = body
+    const { cartItems, cashbackToUse, selectedShard, couponCode, giftId, existingOrderId } = body
 
     console.log('Received checkout request:', {
       cartItemsCount: cartItems?.length,
       cashbackToUse,
       selectedShard,
       couponCode,
+      giftId,
       existingOrderId
     })
 
@@ -207,7 +208,8 @@ export async function POST(request: NextRequest) {
           payment_status,
           delivery_shard,
           delivery_character,
-          cashback_used
+          cashback_used,
+          gift_id
         ) VALUES (
           $1,
           'ORD-' || EXTRACT(EPOCH FROM NOW())::BIGINT,
@@ -220,9 +222,10 @@ export async function POST(request: NextRequest) {
           'pending',
           $5,
           $6,
-          $7
+          $7,
+          $8
         ) RETURNING id
-      `, [user.id, subtotal, discount, finalTotal, selectedShard, userCharacterName, cashbackToUse])
+      `, [user.id, subtotal, discount, finalTotal, selectedShard, userCharacterName, cashbackToUse, giftId || null])
 
       orderId = orderResult.rows[0].id
       console.log('New order created with ID:', orderId)

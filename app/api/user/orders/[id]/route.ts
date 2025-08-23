@@ -35,9 +35,11 @@ export async function GET(
       SELECT 
         o.*,
         u.email as user_email,
-        u.id as user_id
+        u.id as user_id,
+        g.name as gift_name
       FROM orders o
       JOIN users u ON o.user_id = u.id
+      LEFT JOIN gifts g ON o.gift_id = g.id
       WHERE o.id = $1 AND u.id = $2
     `, [orderId, userId])
 

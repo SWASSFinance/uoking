@@ -71,6 +71,8 @@ interface Order {
   cashback_used: string
   delivery_shard: string
   coupon_code?: string
+  gift_id?: string
+  gift_name?: string
   payment_status: string
   created_at: string
   item_count: number
@@ -1322,6 +1324,15 @@ export default function AccountPage() {
                                       <div>
                                         <span className="text-gray-600">Coupon Code:</span>
                                         <p className="font-medium">{orderDetails[order.id].coupon_code}</p>
+                                      </div>
+                                    )}
+                                    {orderDetails[order.id].gift_name && (
+                                      <div>
+                                        <span className="text-gray-600">Gift:</span>
+                                        <div className="flex items-center space-x-2">
+                                          <Gift className="h-4 w-4 text-amber-600" />
+                                          <p className="font-medium">{orderDetails[order.id].gift_name}</p>
+                                        </div>
                                       </div>
                                     )}
                                     <div>

@@ -25,7 +25,8 @@ import {
   DollarSign,
   AlertCircle,
   Tag,
-  X
+  X,
+  Gift
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -46,6 +47,9 @@ export default function CartPage() {
   const [selectedShard, setSelectedShard] = useState('')
   const [shards, setShards] = useState<any[]>([])
   const [isLoadingShards, setIsLoadingShards] = useState(false)
+  const [availableGifts, setAvailableGifts] = useState<any[]>([])
+  const [selectedGift, setSelectedGift] = useState<string>('')
+  const [isLoadingGifts, setIsLoadingGifts] = useState(false)
 
   // Fetch cashback balance when user is authenticated
   useEffect(() => {
@@ -80,6 +84,27 @@ export default function CartPage() {
         setIsLoadingShards(false)
       })
   }, [])
+
+  // Fetch available gifts based on cart total
+  useEffect(() => {
+    if (cart.total > 0) {
+      setIsLoadingGifts(true)
+      fetch(`/api/gifts?cartTotal=${cart.total}`)
+        .then(res => res.json())
+        .then(data => {
+          setAvailableGifts(data || [])
+        })
+        .catch(error => {
+          console.error('Error fetching gifts:', error)
+        })
+        .finally(() => {
+          setIsLoadingGifts(false)
+        })
+    } else {
+      setAvailableGifts([])
+      setSelectedGift('')
+    }
+  }, [cart.total])
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     setIsUpdating(itemId)
@@ -249,7 +274,8 @@ export default function CartPage() {
           cartItems: cart.items,
           cashbackToUse,
           selectedShard,
-          couponCode: appliedCoupon?.code || null
+          couponCode: appliedCoupon?.code || null,
+          giftId: selectedGift || null
         }),
       })
 
@@ -622,7 +648,45 @@ export default function CartPage() {
                           ))}
                         </select>
                       </div>
-                      
+
+                      {/* Gift Selection Section */}
+                      {availableGifts.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Choose Your Gift
+                          </label>
+                          <div className="space-y-2">
+                            {isLoadingGifts ? (
+                              <div className="text-sm text-gray-500">Loading gifts...</div>
+                            ) : (
+                              availableGifts.map((gift) => (
+                                <label key={gift.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name="gift"
+                                    value={gift.id}
+                                    checked={selectedGift === gift.id}
+                                    onChange={(e) => setSelectedGift(e.target.value)}
+                                    className="text-amber-600 focus:ring-amber-500"
+                                  />
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-2">
+                                      <Gift className="h-4 w-4 text-amber-600" />
+                                      <span className="font-medium text-gray-900">{gift.name}</span>
+                                    </div>
+                                    {gift.description && (
+                                      <p className="text-sm text-gray-600 mt-1">{gift.description}</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Available for orders ${gift.price_threshold.toFixed(2)}+
+                                    </p>
+                                  </div>
+                                </label>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                     </div>
                   </div>

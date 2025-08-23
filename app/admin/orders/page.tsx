@@ -31,7 +31,8 @@ import {
   CreditCard,
   MapPin,
   MessageSquare,
-  Star
+  Star,
+  Gift
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -69,6 +70,8 @@ interface Order {
   customer_notes: string
   admin_notes: string
   coupon_code?: string
+  gift_id?: string
+  gift_name?: string
   created_at: string
   updated_at: string
   item_count: string
@@ -434,6 +437,15 @@ export default function OrdersAdminPage() {
                                     <span className="text-blue-700 font-medium">Payment:</span>
                                     <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
                                   </div>
+                                  {orderDetails[order.id].gift_name && (
+                                    <div>
+                                      <span className="text-blue-700 font-medium">Gift:</span>
+                                      <div className="flex items-center space-x-2">
+                                        <Gift className="h-4 w-4 text-amber-600" />
+                                        <p className="font-medium text-blue-900">{orderDetails[order.id].gift_name}</p>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 

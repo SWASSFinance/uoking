@@ -35,11 +35,13 @@ export async function GET(request: NextRequest) {
         o.status,
         o.total_amount,
         o.created_at,
+        g.name as gift_name,
         COUNT(oi.id) as item_count
       FROM orders o
+      LEFT JOIN gifts g ON o.gift_id = g.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
       WHERE o.user_id = $1
-      GROUP BY o.id, o.order_number, o.status, o.total_amount, o.created_at
+      GROUP BY o.id, o.order_number, o.status, o.total_amount, o.created_at, g.name
       ORDER BY o.created_at DESC
     `, [userId])
 
