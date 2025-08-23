@@ -3,16 +3,26 @@ import { query } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('PayPal IPN received - starting processing')
+    
     const body = await request.text()
+    console.log('IPN body received:', body.substring(0, 200) + '...')
+    
     const formData = new URLSearchParams(body)
     
+    // Log all form data for debugging
+    console.log('IPN form data keys:', Array.from(formData.keys()))
+    
     // Verify IPN signature with PayPal
+    console.log('Verifying IPN signature...')
     const isValid = await verifyIPN(body, request.headers.get('user-agent') || '')
     
     if (!isValid) {
       console.error('Invalid IPN signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
+    
+    console.log('IPN signature verified successfully')
 
     // Parse IPN data
     const paymentStatus = formData.get('payment_status')
@@ -53,8 +63,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get order details
+    console.log('Looking up order:', custom)
     const orderResult = await query(`
-      SELECT o.*, u.email as user_email 
+      SELECT o.*, u.email as user_email, u.first_name, u.last_name
       FROM orders o 
       JOIN users u ON o.user_id = u.id 
       WHERE o.id = $1
@@ -66,6 +77,12 @@ export async function POST(request: NextRequest) {
     }
 
     const order = orderResult.rows[0]
+    console.log('Order found:', { 
+      id: order.id, 
+      status: order.status, 
+      total_amount: order.total_amount,
+      user_email: order.user_email 
+    })
 
     // Verify amount matches
     const expectedAmount = parseFloat(order.total_amount).toFixed(2)
@@ -160,6 +177,7 @@ export async function POST(request: NextRequest) {
 
       // Send order confirmation email
       try {
+        console.log('Sending order confirmation email...')
         // Get order items for email
         const orderItemsResult = await query(`
           SELECT oi.quantity, oi.price, p.name
@@ -168,10 +186,12 @@ export async function POST(request: NextRequest) {
           WHERE oi.order_id = $1
         `, [custom])
 
+        console.log('Order items found:', orderItemsResult.rows.length)
+
         const { sendOrderConfirmationEmail } = await import('@/lib/email')
         await sendOrderConfirmationEmail({
           orderId: custom,
-          customerName: order.customer_name || 'Customer',
+          customerName: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Customer',
           email: order.user_email,
           total: parseFloat(order.total_amount),
           items: orderItemsResult.rows.map(item => ({
@@ -180,8 +200,9 @@ export async function POST(request: NextRequest) {
             price: parseFloat(item.price)
           })),
           deliveryCharacter: order.delivery_character,
-          shard: order.shard
+          shard: order.delivery_shard
         })
+        console.log('Order confirmation email sent successfully')
       } catch (emailError) {
         console.error('Failed to send order confirmation email:', emailError)
         // Don't fail IPN processing if email fails
@@ -189,16 +210,18 @@ export async function POST(request: NextRequest) {
 
       // Add customer to Mailchimp with order data
       try {
+        console.log('Adding customer to Mailchimp...')
         const { addOrderCustomerToMailchimp } = await import('@/lib/mailchimp')
         await addOrderCustomerToMailchimp({
           email: order.user_email,
-          firstName: order.customer_name?.split(' ')[0] || '',
-          lastName: order.customer_name?.split(' ').slice(1).join(' ') || '',
+          firstName: order.first_name || '',
+          lastName: order.last_name || '',
           characterName: order.delivery_character || '',
-          mainShard: order.shard || '',
+          mainShard: order.delivery_shard || '',
           orderId: custom,
           orderTotal: parseFloat(order.total_amount)
         })
+        console.log('Customer added to Mailchimp successfully')
       } catch (mailchimpError) {
         console.error('Failed to add order customer to Mailchimp:', mailchimpError)
         // Don't fail IPN processing if Mailchimp fails
@@ -206,12 +229,18 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Order ${custom} updated to status: ${newStatus}`)
+    console.log('IPN processing completed successfully')
     return NextResponse.json({ success: true })
 
   } catch (error) {
     console.error('IPN processing error:', error)
+    console.error('Error details:', {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack,
+      name: error?.name
+    })
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error?.message || 'Unknown error' },
       { status: 500 }
     )
   }
@@ -219,12 +248,18 @@ export async function POST(request: NextRequest) {
 
 async function verifyIPN(body: string, userAgent: string): Promise<boolean> {
   try {
-    // For production, you should verify the IPN with PayPal
-    // This is a simplified version - in production, you'd make a POST request to PayPal
-    // to verify the IPN signature
+    console.log('Starting IPN verification...')
     
+    // For development/testing, skip verification
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Development mode - skipping IPN verification')
+      return true
+    }
+    
+    // For production, verify the IPN with PayPal
     const verificationBody = `cmd=_notify-validate&${body}`
     
+    console.log('Sending verification request to PayPal...')
     const response = await fetch(`${process.env.PAYPAL_API_URL}/cgi-bin/webscr`, {
       method: 'POST',
       headers: {
@@ -235,11 +270,26 @@ async function verifyIPN(body: string, userAgent: string): Promise<boolean> {
     })
 
     const verificationResult = await response.text()
-    return verificationResult === 'VERIFIED'
+    console.log('PayPal verification result:', verificationResult)
+    
+    const isValid = verificationResult === 'VERIFIED'
+    console.log('IPN verification result:', isValid ? 'VERIFIED' : 'INVALID')
+    
+    return isValid
   } catch (error) {
     console.error('IPN verification error:', error)
-    // For development/testing, you might want to return true
-    // In production, always verify with PayPal
-    return process.env.NODE_ENV === 'development'
+    console.error('Verification error details:', {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack
+    })
+    
+    // For development/testing, return true to allow processing
+    // In production, this should be false to prevent processing unverified IPNs
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Development mode - allowing unverified IPN due to verification error')
+      return true
+    }
+    
+    return false
   }
 } 
