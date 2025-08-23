@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { processReferral } from '@/lib/referral'
+
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -29,8 +29,22 @@ export default function OAuthCallbackPage() {
         if (ref) {
           setIsProcessing(true)
           try {
-            // Process referral for OAuth user
-            await processReferral(ref, session.user.id)
+            // Process referral for OAuth user via API
+            const response = await fetch('/api/auth/process-oauth-referral', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                referralCode: ref,
+                userId: session.user.id
+              })
+            })
+            
+            if (!response.ok) {
+              throw new Error('Failed to process referral')
+            }
+            
             console.log(`Referral processed successfully for OAuth user ${session.user.id} with code ${ref}`)
           } catch (error) {
             console.error('Failed to process referral for OAuth user:', error)
