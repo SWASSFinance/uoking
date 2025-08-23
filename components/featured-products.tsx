@@ -23,10 +23,12 @@ interface Product {
 }
 
 export function FeaturedProducts() {
-  const { data: products = [], loading } = useApiCache<Product[]>({
+  const { data, loading } = useApiCache<Product[]>({
     cacheKey: 'featured-products',
     url: '/api/products?featured=true&limit=6'
   })
+  
+  const products = data || []
 
   if (loading) {
     return (
