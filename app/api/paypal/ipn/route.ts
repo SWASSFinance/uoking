@@ -103,14 +103,6 @@ export async function POST(request: NextRequest) {
     
     console.log('IPN signature verified successfully')
 
-    // Parse IPN data
-    const paymentStatus = formData.get('payment_status')
-    const txnId = formData.get('txn_id')
-    const receiverEmail = formData.get('receiver_email')
-    const custom = formData.get('custom') // This should contain our order ID
-    const mcGross = formData.get('mc_gross')
-    const mcCurrency = formData.get('mc_currency')
-
     console.log('PayPal IPN received:', {
       paymentStatus,
       txnId,
