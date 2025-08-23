@@ -430,7 +430,11 @@ export default function SignUpPage() {
                 <Button 
                   variant="outline" 
                   className="border-gray-300 hover:bg-gray-50"
-                  onClick={() => signIn('google', { callbackUrl: '/' })}
+                  onClick={() => {
+                    const ref = searchParams.get('ref')
+                    const callbackUrl = ref ? `/login/callback?ref=${ref}` : '/login/callback'
+                    signIn('google', { callbackUrl })
+                  }}
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   Google
@@ -438,7 +442,11 @@ export default function SignUpPage() {
                 <Button 
                   variant="outline" 
                   className="border-gray-300 hover:bg-gray-50"
-                  onClick={() => signIn('discord', { callbackUrl: '/' })}
+                  onClick={() => {
+                    const ref = searchParams.get('ref')
+                    const callbackUrl = ref ? `/login/callback?ref=${ref}` : '/login/callback'
+                    signIn('discord', { callbackUrl })
+                  }}
                 >
                   <Crown className="h-4 w-4 mr-2" />
                   Discord

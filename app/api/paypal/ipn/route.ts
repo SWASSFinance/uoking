@@ -243,34 +243,57 @@ export async function POST(request: NextRequest) {
       `, [order.cashback_used, order.user_id])
     }
 
-    // If payment completed, add cashback for this purchase
+    // If payment completed, process cashback rewards
     if (paymentStatus === 'Completed') {
+      // Get cashback settings
       const settingsResult = await query(`
         SELECT setting_value FROM site_settings WHERE setting_key = 'customer_cashback_percentage'
       `)
       
       if (settingsResult.rows && settingsResult.rows.length > 0) {
-        const cashbackPercentage = parseFloat(settingsResult.rows[0].setting_value) || 5
-        const cashbackAmount = (parseFloat(order.total_amount) * cashbackPercentage) / 100
+        const buyerCashbackPercentage = parseFloat(settingsResult.rows[0].setting_value) || 5
+        const buyerCashbackAmount = (parseFloat(order.total_amount) * buyerCashbackPercentage) / 100
         
+        // Give cashback to the buyer
         await query(`
           UPDATE user_points 
           SET referral_cash = referral_cash + $1,
               updated_at = NOW()
           WHERE user_id = $2
-        `, [cashbackAmount, order.user_id])
+        `, [buyerCashbackAmount, order.user_id])
 
-        // Log cashback transaction
-        await query(`
-          INSERT INTO user_referrals (
-            referrer_id,
-            referred_id,
-            order_id,
-            amount,
-            type,
-            status
-          ) VALUES ($1, $2, $3, $4, 'purchase_cashback', 'completed')
-        `, [order.user_id, order.user_id, custom, cashbackAmount])
+        console.log(`Added $${buyerCashbackAmount} cashback to buyer ${order.user_id} for order ${custom}`)
+
+        // Check if buyer was referred by someone and give referrer bonus
+        const referralResult = await query(`
+          SELECT referrer_id FROM user_referrals 
+          WHERE referred_id = $1
+        `, [order.user_id])
+        
+        if (referralResult.rows && referralResult.rows.length > 0) {
+          const referrerId = referralResult.rows[0].referrer_id
+          
+          // Get referrer cashback percentage (default 2.5%)
+          const referrerSettingsResult = await query(`
+            SELECT setting_value FROM site_settings WHERE setting_key = 'referrer_cashback_percentage'
+          `)
+          
+          const referrerCashbackPercentage = referrerSettingsResult.rows && referrerSettingsResult.rows.length > 0 
+            ? parseFloat(referrerSettingsResult.rows[0].setting_value) 
+            : 2.5
+          
+          const referrerCashbackAmount = (parseFloat(order.total_amount) * referrerCashbackPercentage) / 100
+          
+          // Give cashback to the referrer
+          await query(`
+            UPDATE user_points 
+            SET referral_cash = referral_cash + $1,
+                updated_at = NOW()
+            WHERE user_id = $2
+          `, [referrerCashbackAmount, referrerId])
+
+          console.log(`Added $${referrerCashbackAmount} cashback to referrer ${referrerId} for order ${custom}`)
+        }
       }
 
       // Send order confirmation email
