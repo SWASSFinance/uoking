@@ -54,8 +54,12 @@ export default function OAuthCallbackPage() {
           }
         }
         
-        // Redirect to home page
-        router.push('/')
+        // Redirect based on admin status
+        if (session.user.isAdmin) {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
       }
     }
 
