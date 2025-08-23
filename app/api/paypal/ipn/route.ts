@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     const paymentStatus = formData.get('payment_status')
     const txnId = formData.get('txn_id')
     const receiverEmail = formData.get('receiver_email')
+    const businessEmail = formData.get('business') // PayPal sometimes uses 'business' instead of 'receiver_email'
     const custom = formData.get('custom') // This should contain our order ID
     const mcGross = formData.get('mc_gross')
     const mcCurrency = formData.get('mc_currency')
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       ipAddress,
       paymentStatus,
       txnId,
-      receiverEmail,
+      receiverEmail || businessEmail, // Use either field for logging
       custom,
       mcGross,
       mcCurrency,
@@ -87,7 +88,8 @@ export async function POST(request: NextRequest) {
           parsedData: {
             paymentStatus,
             txnId,
-            receiverEmail,
+            receiverEmail: receiverEmail || businessEmail,
+            businessEmail,
             custom,
             mcGross,
             mcCurrency
@@ -107,12 +109,13 @@ export async function POST(request: NextRequest) {
       paymentStatus,
       txnId,
       receiverEmail,
+      businessEmail,
       custom,
       mcGross,
       mcCurrency
     })
 
-    // Verify receiver email matches our PayPal email
+    // Verify receiver email matches our PayPal email (check both receiver_email and business fields)
     const settingsResult = await query(`
       SELECT setting_value FROM site_settings WHERE setting_key = 'paypal_email'
     `)
@@ -123,8 +126,16 @@ export async function POST(request: NextRequest) {
     }
 
     const configuredPayPalEmail = settingsResult.rows[0].setting_value
-    if (receiverEmail !== configuredPayPalEmail) {
-      console.error('Receiver email mismatch:', receiverEmail, 'vs', configuredPayPalEmail)
+    const receivedEmail = receiverEmail || businessEmail // Use either field
+    
+    if (!receivedEmail) {
+      console.error('No receiver email found in IPN')
+      return NextResponse.json({ error: 'No receiver email found' }, { status: 400 })
+    }
+    
+    if (receivedEmail !== configuredPayPalEmail) {
+      console.error('Receiver email mismatch:', receivedEmail, 'vs', configuredPayPalEmail)
+      console.error('receiver_email:', receiverEmail, 'business:', businessEmail)
       return NextResponse.json({ error: 'Receiver email mismatch' }, { status: 400 })
     }
 

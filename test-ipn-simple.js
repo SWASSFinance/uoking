@@ -6,6 +6,7 @@ const testIPNData = {
   payment_status: 'Completed',
   txn_id: `TEST_TXN_${Date.now()}`,
   receiver_email: 'misstaylorflynn@gmail.com', // Updated to match site settings
+  business: 'misstaylorflynn@gmail.com', // PayPal sometimes uses this field instead
   custom: '550e8400-e29b-41d4-a716-446655440000', // Valid UUID format for testing
   mc_gross: '25.00',
   mc_currency: 'USD',
