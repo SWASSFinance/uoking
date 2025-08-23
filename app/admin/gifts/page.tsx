@@ -205,7 +205,7 @@ export default function GiftsAdminPage() {
                           <div className="font-semibold text-black">{gift.name}</div>
                           <div className="text-sm text-gray-600">{gift.description}</div>
                           <div className="text-xs text-gray-500">
-                            Threshold: ${gift.price_threshold.toFixed(2)} | Order: {gift.sort_order}
+                            Threshold: ${(typeof gift.price_threshold === 'string' ? parseFloat(gift.price_threshold) : gift.price_threshold || 0).toFixed(2)} | Order: {gift.sort_order}
                           </div>
                         </div>
                       </div>
