@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
+  let ipnLogId: string | null = null
+  
   try {
     console.log('PayPal IPN received - starting processing')
     
@@ -13,12 +15,89 @@ export async function POST(request: NextRequest) {
     // Log all form data for debugging
     console.log('IPN form data keys:', Array.from(formData.keys()))
     
+    // Capture IPN data for debugging
+    const ipAddress = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown'
+    const userAgent = request.headers.get('user-agent') || ''
+    
+    // Parse key IPN fields
+    const paymentStatus = formData.get('payment_status')
+    const txnId = formData.get('txn_id')
+    const receiverEmail = formData.get('receiver_email')
+    const custom = formData.get('custom') // This should contain our order ID
+    const mcGross = formData.get('mc_gross')
+    const mcCurrency = formData.get('mc_currency')
+    
+    // Log IPN to database for debugging
+    const logResult = await query(`
+      INSERT INTO paypal_ipn_logs (
+        raw_body,
+        headers,
+        user_agent,
+        ip_address,
+        payment_status,
+        txn_id,
+        receiver_email,
+        custom,
+        mc_gross,
+        mc_currency,
+        verification_status,
+        processing_status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING id
+    `, [
+      body,
+      JSON.stringify(Object.fromEntries(request.headers.entries())),
+      userAgent,
+      ipAddress,
+      paymentStatus,
+      txnId,
+      receiverEmail,
+      custom,
+      mcGross,
+      mcCurrency,
+      'pending',
+      'pending'
+    ])
+    
+    ipnLogId = logResult.rows[0].id
+    console.log('IPN logged to database with ID:', ipnLogId)
+    
     // Verify IPN signature with PayPal
     console.log('Verifying IPN signature...')
     const isValid = await verifyIPN(body, request.headers.get('user-agent') || '')
     
+    // Update verification status in log
+    await query(`
+      UPDATE paypal_ipn_logs 
+      SET verification_status = $1 
+      WHERE id = $2
+    `, [isValid ? 'verified' : 'failed', ipnLogId])
+    
     if (!isValid) {
       console.error('Invalid IPN signature')
+      
+      // Send debug email for failed verification
+      try {
+        await sendIPNDebugEmail({
+          ipnLogId,
+          status: 'verification_failed',
+          rawBody: body,
+          parsedData: {
+            paymentStatus,
+            txnId,
+            receiverEmail,
+            custom,
+            mcGross,
+            mcCurrency
+          },
+          error: 'Invalid IPN signature'
+        })
+      } catch (emailError) {
+        console.error('Failed to send debug email:', emailError)
+      }
+      
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
     
@@ -229,6 +308,14 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Order ${custom} updated to status: ${newStatus}`)
+    
+    // Update processing status to success
+    await query(`
+      UPDATE paypal_ipn_logs 
+      SET processing_status = 'success', processed_at = NOW()
+      WHERE id = $1
+    `, [ipnLogId])
+    
     console.log('IPN processing completed successfully')
     return NextResponse.json({ success: true })
 
@@ -239,10 +326,88 @@ export async function POST(request: NextRequest) {
       stack: error?.stack,
       name: error?.name
     })
+    
+    // Update processing status to error
+    if (ipnLogId) {
+      await query(`
+        UPDATE paypal_ipn_logs 
+        SET processing_status = 'error', 
+            error_message = $1,
+            processed_at = NOW()
+        WHERE id = $2
+      `, [error?.message || 'Unknown error', ipnLogId])
+    }
+    
+    // Send debug email for processing error
+    try {
+      await sendIPNDebugEmail({
+        ipnLogId,
+        status: 'processing_error',
+        rawBody: body,
+        parsedData: {
+          paymentStatus: formData.get('payment_status'),
+          txnId: formData.get('txn_id'),
+          receiverEmail: formData.get('receiver_email'),
+          custom: formData.get('custom'),
+          mcGross: formData.get('mc_gross'),
+          mcCurrency: formData.get('mc_currency')
+        },
+        error: error?.message || 'Unknown error'
+      })
+    } catch (emailError) {
+      console.error('Failed to send debug email:', emailError)
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error', details: error?.message || 'Unknown error' },
       { status: 500 }
     )
+  }
+}
+
+// Function to send debug email for IPN issues
+async function sendIPNDebugEmail(data: {
+  ipnLogId: string | null
+  status: string
+  rawBody: string
+  parsedData: any
+  error?: string
+}) {
+  try {
+    const { sendEmail } = await import('@/lib/email')
+    
+    const subject = `PayPal IPN Debug Alert - ${data.status}`
+    const html = `
+      <h2>PayPal IPN Debug Alert</h2>
+      <p><strong>Status:</strong> ${data.status}</p>
+      <p><strong>IPN Log ID:</strong> ${data.ipnLogId || 'N/A'}</p>
+      <p><strong>Error:</strong> ${data.error || 'N/A'}</p>
+      
+      <h3>Parsed IPN Data:</h3>
+      <pre>${JSON.stringify(data.parsedData, null, 2)}</pre>
+      
+      <h3>Raw IPN Body:</h3>
+      <pre>${data.rawBody}</pre>
+      
+      <p><em>This email was sent automatically for debugging purposes.</em></p>
+    `
+    
+    // Send to admin email (you can configure this in environment variables)
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@uoking.com'
+    
+    await sendEmail(adminEmail, 'debug', {
+      subject,
+      html,
+      status: data.status,
+      ipnLogId: data.ipnLogId,
+      error: data.error,
+      parsedData: data.parsedData,
+      rawBody: data.rawBody
+    })
+    
+    console.log('Debug email sent successfully')
+  } catch (error) {
+    console.error('Failed to send debug email:', error)
   }
 }
 

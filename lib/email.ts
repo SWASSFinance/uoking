@@ -5,6 +5,10 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Email templates
 const EMAIL_TEMPLATES = {
+  debug: {
+    subject: (data: { subject: string }) => data.subject,
+    html: (data: { html: string }) => data.html
+  },
   registration: {
     subject: (data: { name: string; email: string; characterName: string; userId?: string }) => 
       data.userId ? `Welcome to UO King - Registration Successful! (User ID: ${data.userId})` : 'Welcome to UO King - Registration Successful!',
