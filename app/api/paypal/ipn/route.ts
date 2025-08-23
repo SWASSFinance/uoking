@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
+// Ensure environment variables are loaded
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
+
 export async function POST(request: NextRequest) {
   let ipnLogId: string | null = null
   
@@ -299,6 +304,16 @@ export async function POST(request: NextRequest) {
       // Send order confirmation email
       try {
         console.log('Sending order confirmation email...')
+        console.log('Environment check in IPN:')
+        console.log('- RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET (' + process.env.RESEND_API_KEY.substring(0, 10) + '...)' : 'NOT SET')
+        console.log('- NODE_ENV:', process.env.NODE_ENV)
+        console.log('Email data:', {
+          userEmail: order.user_email,
+          customerName: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Customer',
+          orderId: custom,
+          total: order.total_amount
+        })
+        
         // Get order items for email
         const orderItemsResult = await query(`
           SELECT oi.quantity, oi.price, p.name
@@ -308,9 +323,14 @@ export async function POST(request: NextRequest) {
         `, [custom])
 
         console.log('Order items found:', orderItemsResult.rows.length)
+        console.log('Order items:', orderItemsResult.rows)
 
+        console.log('Importing email module...')
         const { sendEmail } = await import('@/lib/email')
-        await sendEmail(order.user_email, 'orderConfirmation', {
+        console.log('Email module imported successfully')
+        
+        console.log('Calling sendEmail...')
+        const emailResult = await sendEmail(order.user_email, 'orderConfirmation', {
           orderId: custom,
           customerName: `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Customer',
           email: order.user_email,
@@ -327,9 +347,31 @@ export async function POST(request: NextRequest) {
           replyTo: 'support@uoking.com',
           subject: `Order Confirmation - UO King (Order #${custom})`
         })
-        console.log('Order confirmation email sent successfully')
+        
+        console.log('Order confirmation email sent successfully:', emailResult)
+        
+        // Log email success in IPN logs
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET email_sent = true, email_message_id = $1
+          WHERE id = $2
+        `, [emailResult.messageId || 'unknown', ipnLogId])
+        
       } catch (emailError) {
         console.error('Failed to send order confirmation email:', emailError)
+        console.error('Email error details:', {
+          message: (emailError as any)?.message,
+          stack: (emailError as any)?.stack,
+          name: (emailError as any)?.name
+        })
+        
+        // Log email failure in IPN logs
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET email_sent = false, email_error = $1
+          WHERE id = $2
+        `, [(emailError as any)?.message || 'Unknown email error', ipnLogId])
+        
         // Don't fail IPN processing if email fails
       }
 
