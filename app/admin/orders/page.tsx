@@ -41,7 +41,9 @@ interface OrderItem {
   id: string
   product_id?: string
   product_name: string
+  product_slug?: string
   product_image?: string
+  product_admin_notes?: string
   quantity: number
   unit_price: string
   total_price: string
@@ -91,6 +93,10 @@ export default function OrdersAdminPage() {
   const [editForm, setEditForm] = useState({
     status: "",
     payment_status: "",
+    admin_notes: ""
+  })
+  const [editingProductNotes, setEditingProductNotes] = useState<string | null>(null)
+  const [productNotesForm, setProductNotesForm] = useState({
     admin_notes: ""
   })
 
@@ -218,6 +224,33 @@ export default function OrdersAdminPage() {
       }
     } catch (error) {
       console.error('Error deleting order:', error)
+    }
+  }
+
+  const handleEditProductNotes = (productId: string, currentNotes: string = "") => {
+    setEditingProductNotes(productId)
+    setProductNotesForm({
+      admin_notes: currentNotes
+    })
+  }
+
+  const handleSaveProductNotes = async (productId: string) => {
+    try {
+      const response = await fetch(`/api/admin/products/${productId}/admin-notes`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productNotesForm),
+      })
+
+      if (response.ok) {
+        setEditingProductNotes(null)
+        setProductNotesForm({ admin_notes: "" })
+        // Optionally refresh the page or show a success message
+      }
+    } catch (error) {
+      console.error('Error updating product notes:', error)
     }
   }
 
@@ -481,30 +514,94 @@ export default function OrdersAdminPage() {
                             </h5>
                             <div className="space-y-2">
                               {orderDetails[order.id].items?.map((item) => (
-                                <div key={item.id} className="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg">
-                                  <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                    {item.product_image ? (
-                                      <Image
-                                        src={item.product_image}
-                                        alt={item.product_name}
-                                        width={32}
-                                        height={32}
-                                        className="object-cover w-full h-full"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center">
-                                        <Package className="h-4 w-4 text-gray-400" />
+                                <div key={item.id} className="bg-gray-50 p-3 rounded-lg">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                      {item.product_image ? (
+                                        <Image
+                                          src={item.product_image}
+                                          alt={item.product_name}
+                                          width={32}
+                                          height={32}
+                                          className="object-cover w-full h-full"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                          <Package className="h-4 w-4 text-gray-400" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-2">
+                                        <Link 
+                                          href={`/product/${item.product_slug || item.product_name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}`}
+                                          target="_blank"
+                                          className="font-medium text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
+                                        >
+                                          {item.product_name}
+                                        </Link>
+                                        <Eye className="h-3 w-3 text-gray-400" />
                                       </div>
-                                    )}
+                                      <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="font-semibold text-gray-900 text-sm">${parseFloat(item.total_price).toFixed(2)}</p>
+                                      <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
+                                    </div>
                                   </div>
-                                  <div className="flex-1">
-                                    <p className="font-medium text-gray-900 text-sm">{item.product_name}</p>
-                                    <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="font-semibold text-gray-900 text-sm">${parseFloat(item.total_price).toFixed(2)}</p>
-                                    <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
-                                  </div>
+                                  
+                                  {/* Product Notes Section */}
+                                  {item.product_id && (
+                                    <div className="border-t border-gray-200 pt-2">
+                                      {editingProductNotes === item.product_id ? (
+                                        <div className="space-y-2">
+                                          <Textarea
+                                            value={productNotesForm.admin_notes}
+                                            onChange={(e) => setProductNotesForm({...productNotesForm, admin_notes: e.target.value})}
+                                            placeholder="Add admin notes for this product..."
+                                            className="border-gray-300 bg-white text-black text-xs"
+                                            rows={2}
+                                          />
+                                          <div className="flex space-x-2">
+                                            <Button 
+                                              onClick={() => handleSaveProductNotes(item.product_id!)}
+                                              className="bg-blue-600 hover:bg-blue-700 h-6 text-xs"
+                                              size="sm"
+                                            >
+                                              <Save className="h-3 w-3 mr-1" />
+                                              Save Notes
+                                            </Button>
+                                            <Button 
+                                              onClick={() => setEditingProductNotes(null)}
+                                              variant="outline"
+                                              className="border-gray-300 text-black h-6 text-xs"
+                                              size="sm"
+                                            >
+                                              <X className="h-3 w-3 mr-1" />
+                                              Cancel
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center justify-between">
+                                                                                     <div className="flex-1">
+                                             <p className="text-xs text-gray-600">Admin Notes:</p>
+                                             <p className="text-xs text-gray-800 font-medium">
+                                               {item.product_admin_notes || 'No notes added'}
+                                             </p>
+                                           </div>
+                                                                                     <Button 
+                                             onClick={() => handleEditProductNotes(item.product_id!, item.product_admin_notes || '')}
+                                             className="bg-gray-600 hover:bg-gray-700 h-6 text-xs"
+                                             size="sm"
+                                           >
+                                             <Edit className="h-3 w-3 mr-1" />
+                                             {item.product_admin_notes ? 'Edit Product Notes' : 'Add Product Notes'}
+                                           </Button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>

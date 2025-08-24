@@ -99,14 +99,16 @@ export async function GET(
         SELECT 
           oi.*,
           p.name as product_name,
+          p.slug as product_slug,
           p.image_url as product_image,
+          p.admin_notes as product_admin_notes,
           STRING_AGG(DISTINCT c.name, ', ') as category
         FROM order_items oi
         LEFT JOIN products p ON oi.product_id = p.id
         LEFT JOIN product_categories pc ON p.id = pc.product_id
         LEFT JOIN categories c ON pc.category_id = c.id
         WHERE oi.order_id = $1
-        GROUP BY oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.created_at, p.name, p.image_url
+        GROUP BY oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.created_at, p.name, p.slug, p.image_url, p.admin_notes
         ORDER BY oi.created_at
       `, [orderId])
       console.log('✅ Order items query successful:', itemsResult.rows?.length || 0, 'rows')

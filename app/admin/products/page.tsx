@@ -45,6 +45,7 @@ interface Product {
   rank: number
   requires_character_name: boolean
   requires_shard: boolean
+  admin_notes?: string
 
   created_at: string
   updated_at: string
@@ -199,7 +200,8 @@ export default function ProductsAdminPage() {
      type: product?.type || 'item',
      rank: product?.rank || 0,
      requires_character_name: product?.requires_character_name || false,
-     requires_shard: product?.requires_shard || false
+     requires_shard: product?.requires_shard || false,
+     admin_notes: product?.admin_notes || ''
    })
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -369,6 +371,19 @@ export default function ProductsAdminPage() {
                 rows={4}
                 className="border-gray-300 bg-white text-black"
               />
+            </div>
+            
+            <div>
+              <Label htmlFor="admin_notes" className="text-black font-semibold">Admin Notes</Label>
+              <Textarea
+                id="admin_notes"
+                value={formData.admin_notes}
+                onChange={(e) => setFormData({...formData, admin_notes: e.target.value})}
+                placeholder="Internal notes for product management and search instructions..."
+                rows={3}
+                className="border-gray-300 bg-white text-black"
+              />
+              <p className="text-xs text-gray-600 mt-1">Internal notes for admins only. Not visible to customers.</p>
             </div>
             
             <div>

@@ -875,8 +875,8 @@ export async function createProduct(productData: any) {
       INSERT INTO products (
         name, slug, description, short_description, price, sale_price, 
         image_url, status, featured, class_id, type, rank,
-        requires_character_name, requires_shard
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        requires_character_name, requires_shard, admin_notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *
     `, [
       productData.name,
@@ -892,7 +892,8 @@ export async function createProduct(productData: any) {
       productData.type || '',
       productData.rank || 0,
       productData.requires_character_name || false,
-      productData.requires_shard || false
+      productData.requires_shard || false,
+      productData.admin_notes || ''
     ])
     return result.rows[0]
   } catch (error) {
@@ -922,8 +923,9 @@ export async function updateProduct(id: string, productData: any) {
         rank = $12,
         requires_character_name = $13,
         requires_shard = $14,
+        admin_notes = $15,
         updated_at = NOW()
-      WHERE id = $15
+      WHERE id = $16
       RETURNING *
     `, [
       productData.name,
@@ -940,14 +942,33 @@ export async function updateProduct(id: string, productData: any) {
       productData.rank || 0,
       productData.requires_character_name || false,
       productData.requires_shard || false,
+      productData.admin_notes || '',
       id
     ])
     
     console.log('Database update - Success, updated rows:', result.rowCount)
+    
     return result.rows[0]
   } catch (error) {
     console.error('Database update - Error:', error)
     console.error('Database update - Error details:', (error as Error).message)
+    throw error
+  }
+}
+
+export async function updateProductAdminNotes(id: string, adminNotes: string) {
+  try {
+    const result = await query(`
+      UPDATE products SET 
+        admin_notes = $1,
+        updated_at = NOW()
+      WHERE id = $2
+      RETURNING *
+    `, [adminNotes, id])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating product admin notes:', error)
     throw error
   }
 }
