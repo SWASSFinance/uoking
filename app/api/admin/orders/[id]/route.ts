@@ -72,9 +72,11 @@ export async function GET(
           u.username,
           u.first_name,
           u.last_name,
-          u.character_names
+          u.character_names,
+          g.name as gift_name
         FROM orders o
         LEFT JOIN users u ON o.user_id = u.id
+        LEFT JOIN gifts g ON o.gift_id = g.id
         WHERE o.id = $1
       `, [orderId])
       console.log('✅ Order query successful:', orderResult.rows?.length || 0, 'rows')

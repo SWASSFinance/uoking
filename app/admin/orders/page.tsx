@@ -86,6 +86,7 @@ export default function OrdersAdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("processing")
   const [filterPaymentStatus, setFilterPaymentStatus] = useState("completed")
+  const [filterGift, setFilterGift] = useState("all")
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
   const [loadingOrders, setLoadingOrders] = useState<Set<string>>(new Set())
   const [orderDetails, setOrderDetails] = useState<Record<string, Order>>({})
@@ -312,8 +313,11 @@ export default function OrdersAdminPage() {
       order.username.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === "all" || order.status === filterStatus
     const matchesPaymentStatus = filterPaymentStatus === "all" || order.payment_status === filterPaymentStatus
+    const matchesGift = filterGift === "all" || 
+      (filterGift === "with_gift" && orderDetails[order.id]?.gift_name) ||
+      (filterGift === "no_gift" && !orderDetails[order.id]?.gift_name)
     
-    return matchesSearch && matchesStatus && matchesPaymentStatus
+    return matchesSearch && matchesStatus && matchesPaymentStatus && matchesGift
   })
 
   return (
@@ -332,7 +336,7 @@ export default function OrdersAdminPage() {
           {/* Filters */}
           <Card className="mb-6 border border-gray-200 bg-white">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                   <label className="text-black font-semibold block mb-2">Search Orders</label>
                   <div className="relative">
@@ -380,6 +384,20 @@ export default function OrdersAdminPage() {
                   </Select>
                 </div>
                 
+                <div>
+                  <label className="text-black font-semibold block mb-2">Gift Status</label>
+                  <Select value={filterGift} onValueChange={setFilterGift}>
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="all" className="text-black">All Orders</SelectItem>
+                      <SelectItem value="with_gift" className="text-black">With Gift</SelectItem>
+                      <SelectItem value="no_gift" className="text-black">No Gift</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div className="flex items-end">
                   <Button variant="outline" className="w-full border-gray-300 text-black">
                     <Filter className="h-4 w-4 mr-2" />
@@ -411,7 +429,20 @@ export default function OrdersAdminPage() {
                           <ShoppingCart className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-black">Order #{order.order_number}</h4>
+                                                     <div className="flex items-center space-x-2">
+                             <h4 className="font-semibold text-black">Order #{order.order_number}</h4>
+                             {orderDetails[order.id]?.gift_name ? (
+                               <Badge className="bg-amber-100 text-amber-800 text-xs">
+                                 <Gift className="h-3 w-3 mr-1" />
+                                 Gift
+                               </Badge>
+                             ) : (
+                               <Badge className="bg-gray-100 text-gray-600 text-xs">
+                                 <Gift className="h-3 w-3 mr-1" />
+                                 No Gift
+                               </Badge>
+                             )}
+                           </div>
                           <p className="text-sm text-gray-600">
                             {order.item_count} items • {new Date(order.created_at).toLocaleDateString()}
                           </p>
@@ -470,15 +501,25 @@ export default function OrdersAdminPage() {
                                     <span className="text-blue-700 font-medium">Payment:</span>
                                     <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
                                   </div>
-                                  {orderDetails[order.id].gift_name && (
-                                    <div>
-                                      <span className="text-blue-700 font-medium">Gift:</span>
-                                      <div className="flex items-center space-x-2">
-                                        <Gift className="h-4 w-4 text-amber-600" />
-                                        <p className="font-medium text-blue-900">{orderDetails[order.id].gift_name}</p>
-                                      </div>
-                                    </div>
-                                  )}
+                                                                     {orderDetails[order.id].gift_name ? (
+                                     <div>
+                                       <span className="text-blue-700 font-medium">Selected Gift:</span>
+                                       <div className="flex items-center space-x-2 mt-1">
+                                         <Gift className="h-4 w-4 text-amber-600" />
+                                         <p className="font-bold text-amber-700">{orderDetails[order.id].gift_name}</p>
+                                       </div>
+                                       <p className="text-xs text-blue-600 mt-1">Customer chose this gift with their order</p>
+                                     </div>
+                                   ) : (
+                                     <div>
+                                       <span className="text-blue-700 font-medium">Gift Selection:</span>
+                                       <div className="flex items-center space-x-2 mt-1">
+                                         <Gift className="h-4 w-4 text-gray-400" />
+                                         <p className="font-medium text-gray-600">No gift selected</p>
+                                       </div>
+                                       <p className="text-xs text-gray-500 mt-1">Customer did not choose a gift with this order</p>
+                                     </div>
+                                   )}
                                 </div>
                               </div>
 
