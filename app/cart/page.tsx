@@ -678,7 +678,7 @@ export default function CartPage() {
                                       <p className="text-sm text-gray-600 mt-1">{gift.description}</p>
                                     )}
                                     <p className="text-xs text-gray-500 mt-1">
-                                      Available for orders ${gift.price_threshold.toFixed(2)}+
+                                      Available for orders ${(parseFloat(gift.price_threshold) || 0).toFixed(2)}+
                                     </p>
                                   </div>
                                 </label>
