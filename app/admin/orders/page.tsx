@@ -246,9 +246,24 @@ export default function OrdersAdminPage() {
       })
 
       if (response.ok) {
+        // Update the order details to reflect the new admin notes
+        setOrderDetails(prev => {
+          const updatedDetails = { ...prev }
+          Object.keys(updatedDetails).forEach(orderId => {
+            if (updatedDetails[orderId].items) {
+              updatedDetails[orderId].items = updatedDetails[orderId].items.map(item => {
+                if (item.product_id === productId) {
+                  return { ...item, product_admin_notes: productNotesForm.admin_notes }
+                }
+                return item
+              })
+            }
+          })
+          return updatedDetails
+        })
+        
         setEditingProductNotes(null)
         setProductNotesForm({ admin_notes: "" })
-        // Optionally refresh the page or show a success message
       }
     } catch (error) {
       console.error('Error updating product notes:', error)
@@ -497,29 +512,10 @@ export default function OrdersAdminPage() {
                                     <span className="text-blue-700 font-medium">Character:</span>
                                     <p className="font-bold text-blue-900">{orderDetails[order.id].delivery_character || 'Not specified'}</p>
                                   </div>
-                                  <div>
-                                    <span className="text-blue-700 font-medium">Payment:</span>
-                                    <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
-                                  </div>
-                                                                     {orderDetails[order.id].gift_name ? (
-                                     <div>
-                                       <span className="text-blue-700 font-medium">Selected Gift:</span>
-                                       <div className="flex items-center space-x-2 mt-1">
-                                         <Gift className="h-4 w-4 text-amber-600" />
-                                         <p className="font-bold text-amber-700">{orderDetails[order.id].gift_name}</p>
-                                       </div>
-                                       <p className="text-xs text-blue-600 mt-1">Customer chose this gift with their order</p>
-                                     </div>
-                                   ) : (
-                                     <div>
-                                       <span className="text-blue-700 font-medium">Gift Selection:</span>
-                                       <div className="flex items-center space-x-2 mt-1">
-                                         <Gift className="h-4 w-4 text-gray-400" />
-                                         <p className="font-medium text-gray-600">No gift selected</p>
-                                       </div>
-                                       <p className="text-xs text-gray-500 mt-1">Customer did not choose a gift with this order</p>
-                                     </div>
-                                   )}
+                                                                     <div>
+                                     <span className="text-blue-700 font-medium">Payment:</span>
+                                     <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
+                                   </div>
                                 </div>
                               </div>
 
@@ -554,84 +550,84 @@ export default function OrdersAdminPage() {
                               Order Items
                             </h5>
                             <div className="space-y-2">
-                              {orderDetails[order.id].items?.map((item) => (
-                                <div key={item.id} className="bg-gray-50 p-3 rounded-lg">
-                                  <div className="flex items-center space-x-3 mb-2">
-                                    <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                      {item.product_image ? (
-                                        <Image
-                                          src={item.product_image}
-                                          alt={item.product_name}
-                                          width={32}
-                                          height={32}
-                                          className="object-cover w-full h-full"
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                          <Package className="h-4 w-4 text-gray-400" />
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center space-x-2">
-                                        <Link 
-                                          href={`/product/${item.product_slug || item.product_name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}`}
-                                          target="_blank"
-                                          className="font-medium text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
-                                        >
-                                          {item.product_name}
-                                        </Link>
-                                        <Eye className="h-3 w-3 text-gray-400" />
-                                      </div>
-                                      <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="font-semibold text-gray-900 text-sm">${parseFloat(item.total_price).toFixed(2)}</p>
-                                      <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Product Notes Section */}
-                                  {item.product_id && (
-                                    <div className="border-t border-gray-200 pt-2">
-                                      {editingProductNotes === item.product_id ? (
-                                        <div className="space-y-2">
-                                          <Textarea
-                                            value={productNotesForm.admin_notes}
-                                            onChange={(e) => setProductNotesForm({...productNotesForm, admin_notes: e.target.value})}
-                                            placeholder="Add admin notes for this product..."
-                                            className="border-gray-300 bg-white text-black text-xs"
-                                            rows={2}
-                                          />
-                                          <div className="flex space-x-2">
-                                            <Button 
-                                              onClick={() => handleSaveProductNotes(item.product_id!)}
-                                              className="bg-blue-600 hover:bg-blue-700 h-6 text-xs"
-                                              size="sm"
-                                            >
-                                              <Save className="h-3 w-3 mr-1" />
-                                              Save Notes
-                                            </Button>
-                                            <Button 
-                                              onClick={() => setEditingProductNotes(null)}
-                                              variant="outline"
-                                              className="border-gray-300 text-black h-6 text-xs"
-                                              size="sm"
-                                            >
-                                              <X className="h-3 w-3 mr-1" />
-                                              Cancel
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center justify-between">
-                                                                                     <div className="flex-1">
+                                                             {orderDetails[order.id].items?.map((item) => (
+                                 <div key={item.id} className="bg-gray-50 p-3 rounded-lg">
+                                   <div className="flex items-center space-x-3 mb-2">
+                                     <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                       {item.product_image ? (
+                                         <Image
+                                           src={item.product_image}
+                                           alt={item.product_name}
+                                           width={32}
+                                           height={32}
+                                           className="object-cover w-full h-full"
+                                         />
+                                       ) : (
+                                         <div className="w-full h-full flex items-center justify-center">
+                                           <Package className="h-4 w-4 text-gray-400" />
+                                         </div>
+                                       )}
+                                     </div>
+                                     <div className="flex-1">
+                                       <div className="flex items-center space-x-2">
+                                         <Link 
+                                           href={`/product/${item.product_slug || item.product_name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}`}
+                                           target="_blank"
+                                           className="font-medium text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
+                                         >
+                                           {item.product_name}
+                                         </Link>
+                                         <Eye className="h-3 w-3 text-gray-400" />
+                                       </div>
+                                       <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                                     </div>
+                                     <div className="text-right">
+                                       <p className="font-semibold text-gray-900 text-sm">${parseFloat(item.total_price).toFixed(2)}</p>
+                                       <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
+                                     </div>
+                                   </div>
+                                   
+                                   {/* Product Notes Section */}
+                                   {item.product_id && (
+                                     <div className="border-t border-gray-200 pt-2">
+                                       {editingProductNotes === item.product_id ? (
+                                         <div className="space-y-2">
+                                           <Textarea
+                                             value={productNotesForm.admin_notes}
+                                             onChange={(e) => setProductNotesForm({...productNotesForm, admin_notes: e.target.value})}
+                                             placeholder="Add admin notes for this product..."
+                                             className="border-gray-300 bg-white text-black text-xs"
+                                             rows={2}
+                                           />
+                                           <div className="flex space-x-2">
+                                             <Button 
+                                               onClick={() => handleSaveProductNotes(item.product_id!)}
+                                               className="bg-blue-600 hover:bg-blue-700 h-6 text-xs"
+                                               size="sm"
+                                             >
+                                               <Save className="h-3 w-3 mr-1" />
+                                               Save Notes
+                                             </Button>
+                                             <Button 
+                                               onClick={() => setEditingProductNotes(null)}
+                                               variant="outline"
+                                               className="border-gray-300 text-black h-6 text-xs"
+                                               size="sm"
+                                             >
+                                               <X className="h-3 w-3 mr-1" />
+                                               Cancel
+                                             </Button>
+                                           </div>
+                                         </div>
+                                       ) : (
+                                         <div className="flex items-center justify-between">
+                                           <div className="flex-1">
                                              <p className="text-xs text-gray-600">Admin Notes:</p>
                                              <p className="text-xs text-gray-800 font-medium">
                                                {item.product_admin_notes || 'No notes added'}
                                              </p>
                                            </div>
-                                                                                     <Button 
+                                           <Button 
                                              onClick={() => handleEditProductNotes(item.product_id!, item.product_admin_notes || '')}
                                              className="bg-gray-600 hover:bg-gray-700 h-6 text-xs"
                                              size="sm"
@@ -639,12 +635,36 @@ export default function OrdersAdminPage() {
                                              <Edit className="h-3 w-3 mr-1" />
                                              {item.product_admin_notes ? 'Edit Product Notes' : 'Add Product Notes'}
                                            </Button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
+                                         </div>
+                                       )}
+                                     </div>
+                                   )}
+                                 </div>
+                               ))}
+                               
+                               {/* Gift Item */}
+                               {orderDetails[order.id].gift_name && (
+                                 <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
+                                   <div className="flex items-center space-x-3 mb-2">
+                                     <div className="w-8 h-8 bg-amber-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                       <Gift className="h-4 w-4 text-amber-600" />
+                                     </div>
+                                     <div className="flex-1">
+                                       <div className="flex items-center space-x-2">
+                                         <span className="font-medium text-amber-800 text-sm">
+                                           {orderDetails[order.id].gift_name}
+                                         </span>
+                                         <Badge className="bg-amber-200 text-amber-800 text-xs">FREE GIFT</Badge>
+                                       </div>
+                                       <p className="text-xs text-amber-600">Customer chose this gift with their order</p>
+                                     </div>
+                                     <div className="text-right">
+                                       <p className="font-semibold text-green-600 text-sm">FREE</p>
+                                       <p className="text-xs text-amber-600">Gift</p>
+                                     </div>
+                                   </div>
+                                 </div>
+                               )}
                             </div>
                           </div>
                         </div>
