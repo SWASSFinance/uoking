@@ -16,7 +16,7 @@ A secure trading platform where only plot owners can create posts to sell Ultima
 
 ### 📝 **Post Management**
 - Create detailed trading posts with item information
-- Set prices in multiple currencies (USD, EUR, GBP)
+- Set prices in gold (e.g., 50,000,000 for 50 million gold)
 - Include shard and character information
 - Add contact details for buyers
 - Edit and delete your own posts
@@ -38,7 +38,7 @@ CREATE TABLE trading_posts (
   description TEXT NOT NULL,
   item_name VARCHAR(255) NOT NULL,
   price DECIMAL(10, 2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'USD',
+  currency VARCHAR(10) DEFAULT 'GOLD',
   shard VARCHAR(100),
   character_name VARCHAR(100),
   contact_info TEXT,
@@ -69,7 +69,7 @@ CREATE TABLE trading_posts (
   - `description`: Item description (required)
   - `item_name`: Name of the item (required)
   - `price`: Item price (required)
-  - `currency`: Currency code (optional, default: USD)
+  - `currency`: Currency code (optional, default: GOLD)
   - `shard`: Shard/server name (optional)
   - `character_name`: Character name (optional)
   - `contact_info`: Contact information (optional)
@@ -96,7 +96,7 @@ CREATE TABLE trading_posts (
 2. Click "Create Trading Post" button
 3. Fill in the required information:
    - Title and description
-   - Item name and price
+   - Item name and price in gold (e.g., 50000000 for 50 million gold)
    - Optional: shard, character name, contact info
 4. Submit the post
 

@@ -1982,24 +1982,24 @@ export async function getUserOwnedPlots(userId: string) {
 // Trading Board Functions
 export async function createTradingPost(postData: any) {
   try {
-    const result = await query(`
-      INSERT INTO trading_posts (
-        user_id, title, description, item_name, price, currency, 
-        shard, character_name, contact_info, is_plot_owner_verified
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *
-    `, [
-      postData.user_id,
-      postData.title,
-      postData.description,
-      postData.item_name,
-      postData.price,
-      postData.currency || 'USD',
-      postData.shard || null,
-      postData.character_name || null,
-      postData.contact_info || null,
-      postData.is_plot_owner_verified || false
-    ])
+         const result = await query(`
+       INSERT INTO trading_posts (
+         user_id, title, description, item_name, price, currency, 
+         shard, character_name, contact_info, is_plot_owner_verified
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING *
+     `, [
+       postData.user_id,
+       postData.title,
+       postData.description,
+       postData.item_name,
+       postData.price,
+       postData.currency || 'GOLD',
+       postData.shard || null,
+       postData.character_name || null,
+       postData.contact_info || null,
+       postData.is_plot_owner_verified || false
+     ])
     
     return result.rows[0]
   } catch (error) {
@@ -2084,33 +2084,33 @@ export async function getTradingPostById(postId: string) {
 
 export async function updateTradingPost(postId: string, userId: string, updateData: any) {
   try {
-    const result = await query(`
-      UPDATE trading_posts SET 
-        title = $1,
-        description = $2,
-        item_name = $3,
-        price = $4,
-        currency = $5,
-        shard = $6,
-        character_name = $7,
-        contact_info = $8,
-        status = $9,
-        updated_at = NOW()
-      WHERE id = $10 AND user_id = $11
-      RETURNING *
-    `, [
-      updateData.title,
-      updateData.description,
-      updateData.item_name,
-      updateData.price,
-      updateData.currency || 'USD',
-      updateData.shard || null,
-      updateData.character_name || null,
-      updateData.contact_info || null,
-      updateData.status || 'active',
-      postId,
-      userId
-    ])
+         const result = await query(`
+       UPDATE trading_posts SET 
+         title = $1,
+         description = $2,
+         item_name = $3,
+         price = $4,
+         currency = $5,
+         shard = $6,
+         character_name = $7,
+         contact_info = $8,
+         status = $9,
+         updated_at = NOW()
+       WHERE id = $10 AND user_id = $11
+       RETURNING *
+     `, [
+       updateData.title,
+       updateData.description,
+       updateData.item_name,
+       updateData.price,
+       updateData.currency || 'GOLD',
+       updateData.shard || null,
+       updateData.character_name || null,
+       updateData.contact_info || null,
+       updateData.status || 'active',
+       postId,
+       userId
+     ])
     
     return result.rows[0]
   } catch (error) {

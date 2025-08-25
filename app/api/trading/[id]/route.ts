@@ -64,17 +64,17 @@ export async function PUT(
       )
     }
 
-    const updateData = {
-      title,
-      description,
-      item_name,
-      price: parseFloat(price),
-      currency: currency || 'USD',
-      shard: shard || null,
-      character_name: character_name || null,
-      contact_info: contact_info || null,
-      status: status || 'active'
-    }
+         const updateData = {
+       title,
+       description,
+       item_name,
+       price: parseFloat(price),
+       currency: 'GOLD',
+       shard: shard || null,
+       character_name: character_name || null,
+       contact_info: contact_info || null,
+       status: status || 'active'
+     }
 
     const post = await updateTradingPost(id, session.user.id, updateData)
 

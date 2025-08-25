@@ -230,12 +230,12 @@ export default function TradingBoardPage() {
         <div className="container mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              WTS Trading Board
-            </h1>
-            <p className="text-xl text-gray-600 mb-6">
-              Buy and sell Ultima Online items from verified plot owners
-            </p>
+                         <h1 className="text-4xl font-bold text-gray-900 mb-4">
+               WTS Trading Board
+             </h1>
+             <p className="text-xl text-gray-600 mb-6">
+               Buy and sell Ultima Online items for gold from verified plot owners
+             </p>
             <div className="flex items-center justify-center space-x-2 mb-6">
               <Crown className="h-5 w-5 text-amber-600" />
               <span className="text-sm text-gray-600">
@@ -286,31 +286,17 @@ export default function TradingBoardPage() {
                             className="mt-1"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-700">Price *</label>
-                            <Input
-                              type="number"
-                              value={createForm.price}
-                              onChange={(e) => setCreateForm({...createForm, price: e.target.value})}
-                              placeholder="0.00"
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-700">Currency</label>
-                            <Select value={createForm.currency} onValueChange={(value) => setCreateForm({...createForm, currency: value})}>
-                              <SelectTrigger className="mt-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="USD">USD</SelectItem>
-                                <SelectItem value="EUR">EUR</SelectItem>
-                                <SelectItem value="GBP">GBP</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
+                                                 <div>
+                           <label className="text-sm font-medium text-gray-700">Price (Gold) *</label>
+                           <Input
+                             type="number"
+                             value={createForm.price}
+                             onChange={(e) => setCreateForm({...createForm, price: e.target.value})}
+                             placeholder="e.g., 50000000"
+                             className="mt-1"
+                           />
+                           <p className="text-xs text-gray-500 mt-1">Enter the amount in gold (e.g., 50,000,000 for 50 million gold)</p>
+                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-sm font-medium text-gray-700">Shard</label>
@@ -386,24 +372,24 @@ export default function TradingBoardPage() {
                     onChange={(e) => setFilterShard(e.target.value)}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Min Price</label>
-                  <Input
-                    type="number"
-                    placeholder="Min price..."
-                    value={filterMinPrice}
-                    onChange={(e) => setFilterMinPrice(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Max Price</label>
-                  <Input
-                    type="number"
-                    placeholder="Max price..."
-                    value={filterMaxPrice}
-                    onChange={(e) => setFilterMaxPrice(e.target.value)}
-                  />
-                </div>
+                                 <div>
+                   <label className="text-sm font-medium text-gray-700 block mb-2">Min Gold</label>
+                   <Input
+                     type="number"
+                     placeholder="Min gold..."
+                     value={filterMinPrice}
+                     onChange={(e) => setFilterMinPrice(e.target.value)}
+                   />
+                 </div>
+                 <div>
+                   <label className="text-sm font-medium text-gray-700 block mb-2">Max Gold</label>
+                   <Input
+                     type="number"
+                     placeholder="Max gold..."
+                     value={filterMaxPrice}
+                     onChange={(e) => setFilterMaxPrice(e.target.value)}
+                   />
+                 </div>
               </div>
             </CardContent>
           </Card>
@@ -453,14 +439,11 @@ export default function TradingBoardPage() {
                       <p className="text-gray-700 line-clamp-3">{post.description}</p>
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-green-600">
-                        ${post.price.toFixed(2)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {post.currency}
-                      </div>
-                    </div>
+                                         <div className="flex items-center justify-between">
+                       <div className="text-2xl font-bold text-yellow-600">
+                         {post.price.toLocaleString()} Gold
+                       </div>
+                     </div>
                     
                     <div className="space-y-2 text-sm">
                       {post.shard && (

@@ -68,18 +68,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const postData = {
-      user_id: session.user.id,
-      title,
-      description,
-      item_name,
-      price: parseFloat(price),
-      currency: currency || 'USD',
-      shard: shard || null,
-      character_name: character_name || null,
-      contact_info: contact_info || null,
-      is_plot_owner_verified: true
-    }
+         const postData = {
+       user_id: session.user.id,
+       title,
+       description,
+       item_name,
+       price: parseFloat(price),
+       currency: 'GOLD',
+       shard: shard || null,
+       character_name: character_name || null,
+       contact_info: contact_info || null,
+       is_plot_owner_verified: true
+     }
 
     const post = await createTradingPost(postData)
 
