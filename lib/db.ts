@@ -1979,6 +1979,191 @@ export async function getUserOwnedPlots(userId: string) {
   }
 }
 
+// Trading Board Functions
+export async function createTradingPost(postData: any) {
+  try {
+    const result = await query(`
+      INSERT INTO trading_posts (
+        user_id, title, description, item_name, price, currency, 
+        shard, character_name, contact_info, is_plot_owner_verified
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `, [
+      postData.user_id,
+      postData.title,
+      postData.description,
+      postData.item_name,
+      postData.price,
+      postData.currency || 'USD',
+      postData.shard || null,
+      postData.character_name || null,
+      postData.contact_info || null,
+      postData.is_plot_owner_verified || false
+    ])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error creating trading post:', error)
+    throw error
+  }
+}
+
+export async function getTradingPosts(filters: any = {}) {
+  try {
+    let queryString = `
+      SELECT 
+        tp.*,
+        u.username as author_name,
+        u.email as author_email
+      FROM trading_posts tp
+      LEFT JOIN users u ON tp.user_id = u.id
+      WHERE tp.status = 'active'
+    `
+    
+    const queryParams: any[] = []
+    let paramCount = 0
+    
+    if (filters.shard) {
+      paramCount++
+      queryString += ` AND tp.shard ILIKE $${paramCount}`
+      queryParams.push(`%${filters.shard}%`)
+    }
+    
+    if (filters.item_name) {
+      paramCount++
+      queryString += ` AND tp.item_name ILIKE $${paramCount}`
+      queryParams.push(`%${filters.item_name}%`)
+    }
+    
+    if (filters.min_price !== undefined) {
+      paramCount++
+      queryString += ` AND tp.price >= $${paramCount}`
+      queryParams.push(filters.min_price)
+    }
+    
+    if (filters.max_price !== undefined) {
+      paramCount++
+      queryString += ` AND tp.price <= $${paramCount}`
+      queryParams.push(filters.max_price)
+    }
+    
+    queryString += ` ORDER BY tp.created_at DESC`
+    
+    if (filters.limit) {
+      paramCount++
+      queryString += ` LIMIT $${paramCount}`
+      queryParams.push(filters.limit)
+    }
+    
+    const result = await query(queryString, queryParams)
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching trading posts:', error)
+    throw error
+  }
+}
+
+export async function getTradingPostById(postId: string) {
+  try {
+    const result = await query(`
+      SELECT 
+        tp.*,
+        u.username as author_name,
+        u.email as author_email
+      FROM trading_posts tp
+      LEFT JOIN users u ON tp.user_id = u.id
+      WHERE tp.id = $1
+    `, [postId])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error fetching trading post:', error)
+    throw error
+  }
+}
+
+export async function updateTradingPost(postId: string, userId: string, updateData: any) {
+  try {
+    const result = await query(`
+      UPDATE trading_posts SET 
+        title = $1,
+        description = $2,
+        item_name = $3,
+        price = $4,
+        currency = $5,
+        shard = $6,
+        character_name = $7,
+        contact_info = $8,
+        status = $9,
+        updated_at = NOW()
+      WHERE id = $10 AND user_id = $11
+      RETURNING *
+    `, [
+      updateData.title,
+      updateData.description,
+      updateData.item_name,
+      updateData.price,
+      updateData.currency || 'USD',
+      updateData.shard || null,
+      updateData.character_name || null,
+      updateData.contact_info || null,
+      updateData.status || 'active',
+      postId,
+      userId
+    ])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating trading post:', error)
+    throw error
+  }
+}
+
+export async function deleteTradingPost(postId: string, userId: string) {
+  try {
+    const result = await query(`
+      DELETE FROM trading_posts 
+      WHERE id = $1 AND user_id = $2
+      RETURNING *
+    `, [postId, userId])
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error deleting trading post:', error)
+    throw error
+  }
+}
+
+export async function getUserTradingPosts(userId: string) {
+  try {
+    const result = await query(`
+      SELECT * FROM trading_posts 
+      WHERE user_id = $1 
+      ORDER BY created_at DESC
+    `, [userId])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching user trading posts:', error)
+    throw error
+  }
+}
+
+export async function isUserPlotOwner(userId: string) {
+  try {
+    const result = await query(`
+      SELECT COUNT(*) as plot_count 
+      FROM plots 
+      WHERE owner_id = $1
+    `, [userId])
+    
+    return parseInt(result.rows[0].plot_count) > 0
+  } catch (error) {
+    console.error('Error checking if user is plot owner:', error)
+    throw error
+  }
+}
+
 // Category Review Functions
 export async function getCategoryReviews(categorySlug: string) {
   try {

@@ -234,7 +234,8 @@ export function Header() {
     "Price Checker",
     "Lost Ark Gold",
     "Auction Safes",
-    "Invasion Event"
+    "Invasion Event",
+    "Trading Board"
   ]
 
   const getCharacterName = () => {
@@ -457,7 +458,7 @@ export function Header() {
                   {toolItems.map((item) => (
                     <Link
                       key={item}
-                      href={item === 'Maps' ? '/maps' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                      href={item === 'Maps' ? '/maps' : item === 'Trading Board' ? '/trading' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
