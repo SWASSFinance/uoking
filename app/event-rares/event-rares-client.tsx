@@ -139,11 +139,15 @@ export default function EventRaresClient({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Seasons</SelectItem>
-                    {filters.seasons.map((season: any) => (
-                      <SelectItem key={season.season_number} value={season.season_number.toString()}>
-                        Season {season.season_number}: {season.season_name}
-                      </SelectItem>
-                    ))}
+                    {filters.seasons && filters.seasons.length > 0 ? (
+                      filters.seasons.map((season: any) => (
+                        <SelectItem key={season.season_number} value={season.season_number?.toString() || ''}>
+                          Season {season.season_number}: {season.season_name || 'Unknown'}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>No seasons available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -157,11 +161,15 @@ export default function EventRaresClient({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Shards</SelectItem>
-                    {filters.shards.map((shard: string) => (
-                      <SelectItem key={shard} value={shard}>
-                        {shard}
-                      </SelectItem>
-                    ))}
+                    {filters.shards && filters.shards.length > 0 ? (
+                      filters.shards.map((shard: string) => (
+                        <SelectItem key={shard} value={shard}>
+                          {shard}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>No shards available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -175,11 +183,15 @@ export default function EventRaresClient({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Types</SelectItem>
-                    {filters.itemTypes.map((type: string) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
+                    {filters.itemTypes && filters.itemTypes.length > 0 ? (
+                      filters.itemTypes.map((type: string) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>No item types available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -215,7 +227,8 @@ export default function EventRaresClient({
 
           {/* Event Items Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map((item: EventItem) => (
+            {items && items.length > 0 ? (
+              items.map((item: EventItem) => (
               <Card key={item.id} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
                 <CardContent className="p-4">
                   {/* Item Image */}
@@ -297,7 +310,14 @@ export default function EventRaresClient({
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <Gift className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Event Items Found</h3>
+                <p className="text-gray-600">Try adjusting your filters or search terms.</p>
+              </div>
+            )}
           </div>
 
           {/* Pagination */}

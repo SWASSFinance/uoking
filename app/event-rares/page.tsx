@@ -46,42 +46,82 @@ export default async function EventRaresPage({ searchParams }: EventRaresPagePro
   const status = searchParams.status
   const search = searchParams.search
 
-  // Fetch event items from the database
-  const eventItemsData = await getEventItems({
-    page,
-    limit,
-    season: season ? parseInt(season) : undefined,
-    shard,
-    itemType,
-    status,
-    search
-  })
+  try {
+    // Fetch event items from the database
+    const eventItemsData = await getEventItems({
+      page,
+      limit,
+      season: season ? parseInt(season) : undefined,
+      shard,
+      itemType,
+      status,
+      search
+    })
 
-  const { items, pagination, filters } = eventItemsData
+    const { items, pagination, filters } = eventItemsData
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      <Header />
-      <div className="py-16 px-4">
-        <div className="container mx-auto">
-          {/* Breadcrumb */}
-          <div className="mb-8">
-            <Breadcrumb 
-              items={[
-                { label: "Tools", href: "/tools" },
-                { label: "EM Rares", current: true }
-              ]} 
-            />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <Header />
+        <div className="py-16 px-4">
+          <div className="container mx-auto">
+            {/* Breadcrumb */}
+            <div className="mb-8">
+              <Breadcrumb 
+                items={[
+                  { label: "Tools", href: "/tools" },
+                  { label: "EM Rares", current: true }
+                ]} 
+              />
+            </div>
           </div>
         </div>
+        
+        <EventRaresClient 
+          initialItems={items || []}
+          initialPagination={pagination || { page: 1, limit: 20, total: 0, totalPages: 0 }}
+          initialFilters={filters || { seasons: [], shards: [], itemTypes: [] }}
+        />
+        <Footer />
       </div>
-      
-      <EventRaresClient 
-        initialItems={items}
-        initialPagination={pagination}
-        initialFilters={filters}
-      />
-      <Footer />
-    </div>
-  )
+    )
+  } catch (error) {
+    console.error('Error loading event rares page:', error)
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <Header />
+        <div className="py-16 px-4">
+          <div className="container mx-auto">
+            {/* Breadcrumb */}
+            <div className="mb-8">
+              <Breadcrumb 
+                items={[
+                  { label: "Tools", href: "/tools" },
+                  { label: "EM Rares", current: true }
+                ]} 
+              />
+            </div>
+            
+            {/* Error State */}
+            <div className="text-center py-12">
+              <div className="text-red-500 text-lg font-medium mb-4">
+                Error Loading Event Items
+              </div>
+              <p className="text-gray-600 mb-4">
+                There was an error loading the event items. Please try again later.
+              </p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
 }

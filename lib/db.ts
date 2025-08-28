@@ -2477,8 +2477,8 @@ export async function getEventItems(filters: {
       },
       filters: {
         seasons: seasonsResult.rows,
-        shards: shardsResult.rows.map(row => row.shard),
-        itemTypes: itemTypesResult.rows.map(row => row.item_type)
+        shards: shardsResult.rows.map(row => row.shard).filter(shard => shard != null),
+        itemTypes: itemTypesResult.rows.map(row => row.item_type).filter(type => type != null)
       }
     }
   } catch (error) {
