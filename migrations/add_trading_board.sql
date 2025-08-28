@@ -29,3 +29,4 @@ CREATE INDEX IF NOT EXISTS idx_trading_posts_shard ON trading_posts(shard);
 COMMENT ON TABLE trading_posts IS 'Trading board posts for WTS (Want To Sell) items. Only plot owners can create posts.';
 COMMENT ON COLUMN trading_posts.is_plot_owner_verified IS 'Indicates if the user was verified as a plot owner when creating the post';
 COMMENT ON COLUMN trading_posts.status IS 'Post status: active, sold, expired, or cancelled';
+

@@ -2372,4 +2372,119 @@ export async function createProductImageSubmission({
   }
 }
 
+// Event Items Functions
+export async function getEventItems(filters: {
+  page?: number
+  limit?: number
+  season?: number
+  shard?: string
+  itemType?: string
+  status?: string
+  search?: string
+} = {}) {
+  try {
+    const page = filters.page || 1
+    const limit = filters.limit || 20
+    const offset = (page - 1) * limit
+
+    // Build WHERE clause
+    let whereConditions = []
+    let queryParams = []
+    let paramIndex = 1
+
+    if (filters.season) {
+      whereConditions.push(`season_number = $${paramIndex}`)
+      queryParams.push(filters.season)
+      paramIndex++
+    }
+
+    if (filters.shard) {
+      whereConditions.push(`shard = $${paramIndex}`)
+      queryParams.push(filters.shard)
+      paramIndex++
+    }
+
+    if (filters.itemType) {
+      whereConditions.push(`item_type = $${paramIndex}`)
+      queryParams.push(filters.itemType)
+      paramIndex++
+    }
+
+    if (filters.status) {
+      whereConditions.push(`status = $${paramIndex}`)
+      queryParams.push(filters.status)
+      paramIndex++
+    }
+
+    if (filters.search) {
+      whereConditions.push(`(name ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`)
+      queryParams.push(`%${filters.search}%`)
+      paramIndex++
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : ''
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM event_items
+      ${whereClause}
+    `
+    const countResult = await query(countQuery, queryParams)
+    const total = parseInt(countResult.rows[0].total)
+
+    // Get items
+    const itemsQuery = `
+      SELECT 
+        id, name, slug, description, season_number, season_name,
+        event_year, event_type, shard, original_image_url, cloudinary_url,
+        item_type, hue_number, graphic_number, status, rarity_level,
+        created_at, updated_at
+      FROM event_items
+      ${whereClause}
+      ORDER BY season_number DESC, name ASC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `
+    const itemsResult = await query(itemsQuery, [...queryParams, limit, offset])
+
+    // Get unique values for filters
+    const seasonsResult = await query(`
+      SELECT DISTINCT season_number, season_name 
+      FROM event_items 
+      ORDER BY season_number DESC
+    `)
+
+    const shardsResult = await query(`
+      SELECT DISTINCT shard 
+      FROM event_items 
+      ORDER BY shard
+    `)
+
+    const itemTypesResult = await query(`
+      SELECT DISTINCT item_type 
+      FROM event_items 
+      WHERE item_type IS NOT NULL
+      ORDER BY item_type
+    `)
+
+    return {
+      items: itemsResult.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      },
+      filters: {
+        seasons: seasonsResult.rows,
+        shards: shardsResult.rows.map(row => row.shard),
+        itemTypes: itemTypesResult.rows.map(row => row.item_type)
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching event items:', error)
+    throw error
+  }
+}
+
 export default pool; 

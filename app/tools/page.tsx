@@ -8,7 +8,17 @@ import { Map, Search, Calculator, Shield, Clock, Users, DollarSign, Gift, Shoppi
 import Link from "next/link"
 import { ProductImage } from "@/components/ui/product-image"
 
-const toolItems = [
+interface ToolItem {
+  name: string
+  description: string
+  icon: any
+  color: string
+  status: string
+  features: string[]
+  href?: string
+}
+
+const toolItems: ToolItem[] = [
   {
     name: "Maps",
     description: "Interactive maps and location guides",
@@ -34,12 +44,13 @@ const toolItems = [
     features: ["Event schedules", "Event details", "Reminders"]
   },
   {
-    name: "Event Rares",
-    description: "Rare items from special events",
+    name: "EM Rares",
+    description: "Event Master rare items database",
     icon: Gift,
     color: "bg-yellow-500",
     status: "Available",
-    features: ["Event items", "Rare collectibles", "Limited editions"]
+    features: ["Event items", "Rare collectibles", "Limited editions"],
+    href: "/event-rares"
   },
   {
     name: "Price Checker",
@@ -111,7 +122,7 @@ export default function ToolsPage() {
               return (
                 <Card key={item.name} className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-3">
-                    <Link href={`/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <Link href={item.href || `/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
                       <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
                         <ProductImage
                           src={`/uo/tools.png`}
@@ -161,7 +172,7 @@ export default function ToolsPage() {
                         className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2"
                         asChild
                       >
-                        <Link href={`/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                        <Link href={item.href || `/UO/${item.name.toLowerCase().replace(/\s+/g, '-')}`}>
                           <ShoppingCart className="h-3 w-3 mr-1" />
                           Access Tool
                         </Link>
