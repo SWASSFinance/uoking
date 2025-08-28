@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Clock, MapPin, Calendar, RefreshCw, Globe, AlertCircle } from "lucide-react"
+import { Clock, MapPin, Calendar, RefreshCw, Globe, AlertCircle, Timer } from "lucide-react"
 
 interface Event {
   title: string
@@ -21,6 +21,7 @@ export default function EMEventsClient() {
   const [error, setError] = useState<string | null>(null)
   const [userTimezone, setUserTimezone] = useState<string>('UTC')
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [currentTime, setCurrentTime] = useState(new Date())
 
   // Get user's timezone on component mount
   useEffect(() => {
@@ -36,6 +37,15 @@ export default function EMEventsClient() {
     }
 
     getUserTimezone()
+  }, [])
+
+  // Update current time every second for countdown timers
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
   }, [])
 
   const fetchEvents = async () => {
@@ -82,8 +92,7 @@ export default function EMEventsClient() {
   const getTimeUntilEvent = (eventTime: string) => {
     try {
       const eventDate = new Date(eventTime)
-      const now = new Date()
-      const diff = eventDate.getTime() - now.getTime()
+      const diff = eventDate.getTime() - currentTime.getTime()
       
       if (diff < 0) {
         return 'Event has passed'
@@ -92,13 +101,16 @@ export default function EMEventsClient() {
       const days = Math.floor(diff / (1000 * 60 * 60 * 24))
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
       
       if (days > 0) {
-        return `${days}d ${hours}h ${minutes}m`
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`
       } else if (hours > 0) {
-        return `${hours}h ${minutes}m`
+        return `${hours}h ${minutes}m ${seconds}s`
+      } else if (minutes > 0) {
+        return `${minutes}m ${seconds}s`
       } else {
-        return `${minutes}m`
+        return `${seconds}s`
       }
     } catch (error) {
       return 'Time unavailable'
@@ -108,8 +120,7 @@ export default function EMEventsClient() {
   const isEventUpcoming = (eventTime: string) => {
     try {
       const eventDate = new Date(eventTime)
-      const now = new Date()
-      return eventDate.getTime() > now.getTime()
+      return eventDate.getTime() > currentTime.getTime()
     } catch (error) {
       return false
     }
@@ -118,8 +129,7 @@ export default function EMEventsClient() {
   const isEventToday = (eventTime: string) => {
     try {
       const eventDate = new Date(eventTime)
-      const now = new Date()
-      return eventDate.toDateString() === now.toDateString()
+      return eventDate.toDateString() === currentTime.toDateString()
     } catch (error) {
       return false
     }
@@ -128,13 +138,22 @@ export default function EMEventsClient() {
   const isEventThisWeek = (eventTime: string) => {
     try {
       const eventDate = new Date(eventTime)
-      const now = new Date()
-      const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      return eventDate.getTime() <= weekFromNow.getTime() && eventDate.getTime() > now.getTime()
+      const weekFromNow = new Date(currentTime.getTime() + 7 * 24 * 60 * 60 * 1000)
+      return eventDate.getTime() <= weekFromNow.getTime() && eventDate.getTime() > currentTime.getTime()
     } catch (error) {
       return false
     }
   }
+
+  // Get next 3 upcoming events for countdown section
+  const getUpcomingEvents = () => {
+    return events
+      .filter(event => isEventUpcoming(event.time))
+      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+      .slice(0, 3)
+  }
+
+  const upcomingEvents = getUpcomingEvents()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
@@ -182,6 +201,77 @@ export default function EMEventsClient() {
             </div>
           </div>
 
+          {/* Countdown Section for Next 3 Events */}
+          {!loading && !error && upcomingEvents.length > 0 && (
+            <div className="mb-12">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                  <Timer className="h-6 w-6 text-amber-600" />
+                  Next Upcoming Events
+                </h2>
+                <p className="text-gray-600">Countdown to the next 3 events</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {upcomingEvents.map((event, index) => {
+                  const localTime = formatLocalTime(event.time)
+                  const timeUntil = getTimeUntilEvent(event.time)
+                  const isToday = isEventToday(event.time)
+                  const isThisWeek = isEventThisWeek(event.time)
+
+                  return (
+                    <Card key={`countdown-${index}`} className="border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg">
+                      <CardHeader className="pb-3">
+                        <div className="text-center">
+                          <Badge className={`mb-2 ${
+                            isToday 
+                              ? 'bg-red-500 text-white' 
+                              : isThisWeek 
+                                ? 'bg-orange-500 text-white' 
+                                : 'bg-green-500 text-white'
+                          }`}>
+                            {isToday ? 'Today' : isThisWeek ? 'This Week' : 'Upcoming'}
+                          </Badge>
+                          <CardTitle className="text-lg font-semibold text-gray-800 line-clamp-2">
+                            {event.title}
+                          </CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        {/* Countdown Timer */}
+                        <div className="text-center mb-4">
+                          <div className="text-2xl font-bold text-amber-600 font-mono">
+                            {timeUntil}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {localTime}
+                          </div>
+                        </div>
+
+                        {/* Event Description */}
+                        {event.desc && event.desc !== 'No Description' && (
+                          <div className="mb-3">
+                            <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                              {event.desc}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Location */}
+                        {event.summary && event.summary !== 'No Location' && (
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <MapPin className="h-3 w-3" />
+                            <span className="line-clamp-1">{event.summary}</span>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Error State */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
@@ -200,75 +290,80 @@ export default function EMEventsClient() {
             </div>
           )}
 
-          {/* Events Grid */}
+          {/* All Events Section */}
           {!loading && !error && (
-            <div className="space-y-6">
-              {events.length > 0 ? (
-                events.map((event, index) => {
-                  const localTime = formatLocalTime(event.time)
-                  const timeUntil = getTimeUntilEvent(event.time)
-                  const isUpcoming = isEventUpcoming(event.time)
-                  const isToday = isEventToday(event.time)
-                  const isThisWeek = isEventThisWeek(event.time)
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                All Events
+              </h2>
+              <div className="space-y-6">
+                {events.length > 0 ? (
+                  events.map((event, index) => {
+                    const localTime = formatLocalTime(event.time)
+                    const timeUntil = getTimeUntilEvent(event.time)
+                    const isUpcoming = isEventUpcoming(event.time)
+                    const isToday = isEventToday(event.time)
+                    const isThisWeek = isEventThisWeek(event.time)
 
-                  return (
-                    <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-amber-200 bg-white/90 backdrop-blur-sm">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <CardTitle className="text-xl font-semibold text-gray-800 group-hover:text-amber-600 transition-colors">
-                              {event.title}
-                            </CardTitle>
-                            <div className="flex items-center gap-4 mt-2">
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
-                                <Clock className="h-4 w-4" />
-                                <span>{localTime}</span>
-                              </div>
-                              {event.summary && event.summary !== 'No Location' && (
+                    return (
+                      <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-amber-200 bg-white/90 backdrop-blur-sm">
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-xl font-semibold text-gray-800 group-hover:text-amber-600 transition-colors">
+                                {event.title}
+                              </CardTitle>
+                              <div className="flex items-center gap-4 mt-2">
                                 <div className="flex items-center gap-1 text-sm text-gray-600">
-                                  <MapPin className="h-4 w-4" />
-                                  <span>{event.summary}</span>
+                                  <Clock className="h-4 w-4" />
+                                  <span>{localTime}</span>
                                 </div>
+                                {event.summary && event.summary !== 'No Location' && (
+                                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                                    <MapPin className="h-4 w-4" />
+                                    <span>{event.summary}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              {isUpcoming && (
+                                <Badge className={
+                                  isToday 
+                                    ? 'bg-red-500 text-white' 
+                                    : isThisWeek 
+                                      ? 'bg-orange-500 text-white' 
+                                      : 'bg-green-500 text-white'
+                                }>
+                                  {isToday ? 'Today' : isThisWeek ? 'This Week' : timeUntil}
+                                </Badge>
+                              )}
+                              {!isUpcoming && (
+                                <Badge variant="secondary" className="bg-gray-500 text-white">
+                                  Past Event
+                                </Badge>
                               )}
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
-                            {isUpcoming && (
-                              <Badge className={
-                                isToday 
-                                  ? 'bg-red-500 text-white' 
-                                  : isThisWeek 
-                                    ? 'bg-orange-500 text-white' 
-                                    : 'bg-green-500 text-white'
-                              }>
-                                {isToday ? 'Today' : isThisWeek ? 'This Week' : timeUntil}
-                              </Badge>
-                            )}
-                            {!isUpcoming && (
-                              <Badge variant="secondary" className="bg-gray-500 text-white">
-                                Past Event
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </CardHeader>
-                      {event.desc && event.desc !== 'No Description' && (
-                        <CardContent>
-                          <p className="text-gray-600 leading-relaxed">
-                            {event.desc}
-                          </p>
-                        </CardContent>
-                      )}
-                    </Card>
-                  )
-                })
-              ) : (
-                <div className="text-center py-12">
-                  <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Events Found</h3>
-                  <p className="text-gray-600">There are currently no scheduled events.</p>
-                </div>
-              )}
+                        </CardHeader>
+                        {event.desc && event.desc !== 'No Description' && (
+                          <CardContent>
+                            <p className="text-gray-600 leading-relaxed">
+                              {event.desc}
+                            </p>
+                          </CardContent>
+                        )}
+                      </Card>
+                    )
+                  })
+                ) : (
+                  <div className="text-center py-12">
+                    <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Events Found</h3>
+                    <p className="text-gray-600">There are currently no scheduled events.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
