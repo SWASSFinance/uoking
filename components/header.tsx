@@ -231,10 +231,6 @@ export function Header() {
     "IDOC",
     "EM Event List",
     "Event Rares",
-    "Price Checker",
-    "Lost Ark Gold",
-    "Auction Safes",
-    "Invasion Event",
     "Trading Board"
   ]
 
