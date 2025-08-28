@@ -138,15 +138,15 @@ export default function EventRaresClient({
                     <SelectValue placeholder="All Seasons" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Seasons</SelectItem>
+                    <SelectItem value="all">All Seasons</SelectItem>
                     {filters.seasons && filters.seasons.length > 0 ? (
                       filters.seasons.map((season: any) => (
-                        <SelectItem key={season.season_number} value={season.season_number?.toString() || ''}>
+                        <SelectItem key={season.season_number} value={season.season_number?.toString() || 'unknown'}>
                           Season {season.season_number}: {season.season_name || 'Unknown'}
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>No seasons available</SelectItem>
+                      <SelectItem value="none" disabled>No seasons available</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -160,7 +160,7 @@ export default function EventRaresClient({
                     <SelectValue placeholder="All Shards" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Shards</SelectItem>
+                    <SelectItem value="all">All Shards</SelectItem>
                     {filters.shards && filters.shards.length > 0 ? (
                       filters.shards.map((shard: string) => (
                         <SelectItem key={shard} value={shard}>
@@ -168,7 +168,7 @@ export default function EventRaresClient({
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>No shards available</SelectItem>
+                      <SelectItem value="none" disabled>No shards available</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -368,3 +368,4 @@ export default function EventRaresClient({
     </div>
   )
 }
+
