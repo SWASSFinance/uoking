@@ -153,6 +153,10 @@ export default function IDOCPage() {
                         <span className="text-amber-600 font-bold">•</span>
                         <span>House becomes vulnerable to IDOC status</span>
                       </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span>Timer resets if owner logs in during this period</span>
+                      </li>
                     </ul>
                   </div>
                   
@@ -171,16 +175,79 @@ export default function IDOCPage() {
                         <span className="text-red-600 font-bold">•</span>
                         <span>Final countdown to collapse begins</span>
                       </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-red-600 font-bold">•</span>
+                        <span>Cannot be stopped once IDOC status is reached</span>
+                      </li>
                     </ul>
                   </div>
                 </div>
 
-                <Alert className="border-blue-200 bg-blue-50">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Note:</strong> Decay timers can be reset if the owner logs in and secures the house before it goes IDOC. Once IDOC status is reached, the countdown cannot be stopped.
-                  </AlertDescription>
-                </Alert>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">Important Notes:</h4>
+                  <ul className="text-blue-700 text-sm space-y-1">
+                    <li>• Decay timers can be reset if the owner logs in and secures the house before it goes IDOC</li>
+                    <li>• Once IDOC status is reached, the countdown cannot be stopped</li>
+                    <li>• House collapse occurs at server maintenance time</li>
+                    <li>• Different house types may have slightly different decay timers</li>
+                    <li>• Houses with co-owners may have extended protection periods</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* House Types and Decay Variations */}
+          <div className="mb-12">
+            <Card className="border-purple-200 bg-white/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <Home className="h-6 w-6 text-purple-600" />
+                  House Types & Decay Variations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-700 leading-relaxed">
+                  Different house types and ownership arrangements can affect decay timers:
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Standard Houses</h3>
+                    <ul className="space-y-2 text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="text-purple-600 font-bold">•</span>
+                        <span>7 days initial decay period</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-purple-600 font-bold">•</span>
+                        <span>3 days IDOC period</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-purple-600 font-bold">•</span>
+                        <span>Total: 10 days from inactivity to collapse</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Special Cases</h3>
+                    <ul className="space-y-2 text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="text-purple-600 font-bold">•</span>
+                        <span>Co-owned houses may have extended protection</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-purple-600 font-bold">•</span>
+                        <span>Some premium houses have longer decay periods</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-purple-600 font-bold">•</span>
+                        <span>Houses in certain areas may have different rules</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -235,7 +302,7 @@ export default function IDOCPage() {
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-green-600 font-bold">✓</span>
-                        <span>Consider house insurance options</span>
+                        <span>Consider house sharing with trusted friends</span>
                       </li>
                     </ul>
                   </div>
