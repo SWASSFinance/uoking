@@ -70,9 +70,9 @@ export default function EventRaresClient({
     
     const params = new URLSearchParams()
     if (searchTerm) params.set('search', searchTerm)
-    if (selectedSeason) params.set('season', selectedSeason)
-    if (selectedShard) params.set('shard', selectedShard)
-    if (selectedItemType) params.set('itemType', selectedItemType)
+    if (selectedSeason && selectedSeason !== 'all') params.set('season', selectedSeason)
+    if (selectedShard && selectedShard !== 'all') params.set('shard', selectedShard)
+    if (selectedItemType && selectedItemType !== 'all') params.set('itemType', selectedItemType)
     
     // Reset to page 1 when applying filters
     params.set('page', '1')
@@ -182,7 +182,7 @@ export default function EventRaresClient({
                     <SelectValue placeholder="All Types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
                     {filters.itemTypes && filters.itemTypes.length > 0 ? (
                       filters.itemTypes.map((type: string) => (
                         <SelectItem key={type} value={type}>
@@ -190,7 +190,7 @@ export default function EventRaresClient({
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>No item types available</SelectItem>
+                      <SelectItem value="none" disabled>No item types available</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
