@@ -61,9 +61,9 @@ export default function EventRaresClient({
   
   // Form state
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
-  const [selectedSeason, setSelectedSeason] = useState(searchParams.get('season') || '')
-  const [selectedShard, setSelectedShard] = useState(searchParams.get('shard') || '')
-  const [selectedItemType, setSelectedItemType] = useState(searchParams.get('itemType') || '')
+  const [selectedSeason, setSelectedSeason] = useState(searchParams.get('season') || 'all')
+  const [selectedShard, setSelectedShard] = useState(searchParams.get('shard') || 'all')
+  const [selectedItemType, setSelectedItemType] = useState(searchParams.get('itemType') || 'all')
 
   const applyFilters = () => {
     setLoading(true)
@@ -82,9 +82,9 @@ export default function EventRaresClient({
 
   const clearFilters = () => {
     setSearchTerm('')
-    setSelectedSeason('')
-    setSelectedShard('')
-    setSelectedItemType('')
+    setSelectedSeason('all')
+    setSelectedShard('all')
+    setSelectedItemType('all')
     router.push('/event-rares')
   }
 
