@@ -458,7 +458,7 @@ export function Header() {
                   {toolItems.map((item) => (
                     <Link
                       key={item}
-                      href={item === 'Maps' ? '/maps' : item === 'Trading Board' ? '/trading' : item === 'Event Rares' ? '/event-rares' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                      href={item === 'Maps' ? '/maps' : item === 'Trading Board' ? '/trading' : item === 'Event Rares' ? '/event-rares' : item === 'EM Event List' ? '/em-events' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
                       {item}
@@ -750,7 +750,7 @@ export function Header() {
                         <div className="grid grid-cols-2 gap-2">
                           {toolItems.map((item) => (
                             <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={item === 'Maps' ? '/maps' : item === 'Trading Board' ? '/trading' : item === 'Event Rares' ? '/event-rares' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+                              <Link href={item === 'Maps' ? '/maps' : item === 'Trading Board' ? '/trading' : item === 'Event Rares' ? '/event-rares' : item === 'EM Event List' ? '/em-events' : `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                                 {item}
                               </Link>
                             </Button>

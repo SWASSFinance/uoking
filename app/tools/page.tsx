@@ -41,7 +41,8 @@ const toolItems: ToolItem[] = [
     icon: Clock,
     color: "bg-purple-500",
     status: "Available",
-    features: ["Event schedules", "Event details", "Reminders"]
+    features: ["Event schedules", "Event details", "Reminders"],
+    href: "/em-events"
   },
   {
     name: "EM Rares",
