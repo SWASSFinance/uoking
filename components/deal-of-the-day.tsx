@@ -91,15 +91,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
 
   return (
     <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50/95 to-amber-50/95 backdrop-blur-md shadow-2xl ${className}`}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-       
-          <Badge variant="destructive" className="flex items-center">
-            <Clock className="h-3 w-3 mr-1" />
-            {timeRemaining}
-          </Badge>
-        </div>
-      </CardHeader>
+      
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Product Image */}
@@ -120,8 +112,11 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
           <div className="space-y-4">
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                {deal.name}
-              </h3>
+                {deal.name} 
+              </h3>   <Badge variant="destructive" className="flex items-center">
+            <Clock className="h-3 w-3 mr-1" />
+            {timeRemaining}
+          </Badge>
               <div className="text-gray-600 text-sm mb-4">
                 <pre className="whitespace-pre-wrap font-sans">{deal.short_description}</pre>
               </div>
