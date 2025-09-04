@@ -420,12 +420,12 @@ export function ServerStatusGrid() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'online': return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Online</Badge>
-      case 'lag': return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Lag</Badge>
+      case 'online': return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs px-2 py-0.5">Online</Badge>
+      case 'lag': return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs px-2 py-0.5">Lag</Badge>
       case 'offline':
       case 'timeout':
-      case 'error': return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Offline</Badge>
-      default: return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Unknown</Badge>
+      case 'error': return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs px-2 py-0.5">Offline</Badge>
+      default: return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 text-xs px-2 py-0.5">Unknown</Badge>
     }
   }
 
@@ -472,19 +472,19 @@ export function ServerStatusGrid() {
             {region} Shards
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {regionServers.map((server) => (
               <Card key={server.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2 pt-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
                       {server.name}
                     </CardTitle>
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(server.status)}`}></div>
+                    <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor(server.status)}`}></div>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 pt-0">
                   <div className="flex items-center justify-between">
                     {getStatusBadge(server.status)}
                     {server.responseTime && (
@@ -494,33 +494,25 @@ export function ServerStatusGrid() {
                     )}
                   </div>
                   
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center space-x-1.5">
+                      <MapPin className="h-3 w-3 text-gray-400" />
                       <span className="text-gray-600 dark:text-gray-300">{server.timezone}</span>
                     </div>
                     
                     {server.dnsAddress && (
-                      <div className="flex items-center space-x-2">
-                        <ExternalLink className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">
+                      <div className="flex items-center space-x-1.5">
+                        <ExternalLink className="h-3 w-3 text-gray-400" />
+                        <span className="text-gray-600 dark:text-gray-300 font-mono text-xs truncate">
                           {server.dnsAddress}
                         </span>
                       </div>
                     )}
                     
-                    {server.ipAddress && (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">
-                          {server.ipAddress}
-                        </span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
+                    <div className="flex items-center space-x-1.5">
+                      <Clock className="h-3 w-3 text-gray-400" />
                       <span className="text-gray-500 dark:text-gray-400 text-xs">
-                        Updated {new Date(server.lastChecked).toLocaleTimeString()}
+                        {new Date(server.lastChecked).toLocaleTimeString()}
                       </span>
                     </div>
                   </div>
