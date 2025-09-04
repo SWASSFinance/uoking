@@ -76,6 +76,6 @@ export default async function HomePage() {
         </main>
         <Footer />
       </div>
-    </div>
+    
   )
 }
