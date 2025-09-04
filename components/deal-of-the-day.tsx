@@ -52,7 +52,6 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
     
     if (diff <= 0) {
       setTimeRemaining('Deal ended')
-      fetchDealOfTheDay() // Refresh for new deal
       return
     }
     
@@ -94,10 +93,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
     <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50/95 to-amber-50/95 backdrop-blur-md shadow-2xl ${className}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-orange-800 flex items-center">
-            <Tag className="h-5 w-5 mr-2" />
-            Deal of the Day
-          </CardTitle>
+       
           <Badge variant="destructive" className="flex items-center">
             <Clock className="h-3 w-3 mr-1" />
             {timeRemaining}
