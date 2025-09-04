@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, ExternalLink, MapPin, Clock } from "lucide-react"
+import { pingMultipleServers, getServersByRegion, UO_SERVERS } from "@/lib/ping-utils"
 
 interface ServerStatus {
   id: string
   name: string
   region: string
   timezone: string
-  status: 'online' | 'lag' | 'offline' | 'unknown'
+  status: 'online' | 'lag' | 'offline' | 'unknown' | 'timeout' | 'error'
   lastChecked: string
   responseTime?: number
   dnsAddress?: string
@@ -350,11 +351,50 @@ export function ServerStatusGrid() {
   const fetchServerStatus = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/server-status')
-      const data = await response.json()
-      setServers(data.servers)
+      // Get all server IDs from our ping utils
+      const allServerIds = Object.keys(UO_SERVERS)
+      
+      // Ping all servers directly from the user's browser
+      const pingResults = await pingMultipleServers(allServerIds, 5000) // 5 second timeout
+      
+      // Convert ping results to our server status format
+      const updatedServers = pingResults.map(result => {
+        const serverInfo = UO_SERVERS[result.server as keyof typeof UO_SERVERS]
+        if (!serverInfo) return null
+        
+        // Determine timezone based on region
+        let timezone = 'UTC'
+        if (serverInfo.region === 'American') {
+          timezone = result.server.includes('pacific') || result.server.includes('baja') || 
+                    result.server.includes('sonoma') || result.server.includes('lake-austin') ||
+                    result.server.includes('napa-valley') || result.server.includes('oceania') ||
+                    result.server.includes('origin') ? 'PST (-8)' : 'EST (-5)'
+        } else if (serverInfo.region === 'European') {
+          timezone = 'GMT (0)'
+        } else if (serverInfo.region === 'Japanese') {
+          timezone = 'JST (+9)'
+        } else if (serverInfo.region === 'Korean') {
+          timezone = 'KST (+9)'
+        } else if (serverInfo.region === 'Taiwanese') {
+          timezone = 'CST (+8)'
+        }
+        
+        return {
+          id: result.server,
+          name: serverInfo.name,
+          region: serverInfo.region,
+          timezone,
+          status: result.status === 'online' ? 'online' : 
+                  result.status === 'timeout' ? 'offline' : 'offline',
+          lastChecked: new Date().toISOString(),
+          responseTime: result.latency || undefined,
+          dnsAddress: serverInfo.host
+        }
+      }).filter(Boolean) as ServerStatus[]
+      
+      setServers(updatedServers)
     } catch (error) {
-      console.error('Failed to fetch server status:', error)
+      console.error('Failed to ping servers:', error)
       // Fallback to mock data
       setServers(serverData)
     } finally {
@@ -371,7 +411,9 @@ export function ServerStatusGrid() {
     switch (status) {
       case 'online': return 'bg-green-500'
       case 'lag': return 'bg-yellow-500'
-      case 'offline': return 'bg-red-500'
+      case 'offline':
+      case 'timeout':
+      case 'error': return 'bg-red-500'
       default: return 'bg-gray-400'
     }
   }
@@ -380,7 +422,9 @@ export function ServerStatusGrid() {
     switch (status) {
       case 'online': return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Online</Badge>
       case 'lag': return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Lag</Badge>
-      case 'offline': return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Offline</Badge>
+      case 'offline':
+      case 'timeout':
+      case 'error': return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Offline</Badge>
       default: return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Unknown</Badge>
     }
   }

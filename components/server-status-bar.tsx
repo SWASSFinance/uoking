@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react"
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from "lucide-react"
 import Link from "next/link"
+import { pingMultipleServers, getKeyServers, UO_SERVERS } from "@/lib/ping-utils"
 
 interface ServerStatus {
   name: string
-  status: 'online' | 'offline' | 'lag'
+  status: 'online' | 'offline' | 'lag' | 'timeout' | 'error'
   responseTime?: number
 }
 
@@ -19,23 +20,35 @@ export function ServerStatusBar() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // Initial ping on component mount
+  useEffect(() => {
+    refreshStatus()
+  }, [])
+
   const refreshStatus = async () => {
     setIsRefreshing(true)
     
     try {
-      const response = await fetch('/api/server-status')
-      const data = await response.json()
+      // Ping the key servers directly from the user's browser
+      const keyServerIds = getKeyServers()
+      const pingResults = await pingMultipleServers(keyServerIds, 3000) // 3 second timeout
       
-      // Update with key servers for the status bar
-      setServers([
-        { name: 'Login', status: data.servers.find((s: any) => s.id === 'login')?.status || 'unknown' },
-        { name: 'Patch', status: data.servers.find((s: any) => s.id === 'patch')?.status || 'unknown' },
-        { name: 'Atlantic', status: data.servers.find((s: any) => s.id === 'atlantic')?.status || 'unknown' }
-      ])
+      // Update servers with real ping results
+      const updatedServers = pingResults.map(result => {
+        const serverInfo = UO_SERVERS[result.server as keyof typeof UO_SERVERS]
+        return {
+          name: serverInfo?.name || result.server,
+          status: result.status === 'online' ? 'online' : 
+                  result.status === 'timeout' ? 'offline' : 'offline',
+          responseTime: result.latency || undefined
+        }
+      })
       
+      setServers(updatedServers)
       setLastUpdate(new Date())
     } catch (error) {
-      console.error('Failed to fetch server status:', error)
+      console.error('Failed to ping servers:', error)
+      // Keep existing data on error
     } finally {
       setIsRefreshing(false)
     }
@@ -48,6 +61,8 @@ export function ServerStatusBar() {
       case 'lag':
         return <AlertCircle className="h-3 w-3 text-yellow-500" />
       case 'offline':
+      case 'timeout':
+      case 'error':
         return <XCircle className="h-3 w-3 text-red-500" />
       default:
         return <XCircle className="h-3 w-3 text-gray-400" />
@@ -58,7 +73,9 @@ export function ServerStatusBar() {
     switch (status) {
       case 'online': return 'text-green-600 dark:text-green-400'
       case 'lag': return 'text-yellow-600 dark:text-yellow-400'
-      case 'offline': return 'text-red-600 dark:text-red-400'
+      case 'offline':
+      case 'timeout':
+      case 'error': return 'text-red-600 dark:text-red-400'
       default: return 'text-gray-600 dark:text-gray-400'
     }
   }
