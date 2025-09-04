@@ -65,30 +65,30 @@ export default function SkillsGrid({ skills }: SkillsGridProps) {
             placeholder="Search skills..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-gray-300 focus:border-amber-500 focus:ring-amber-500"
+            className="border-gray-300 dark:border-gray-600 focus:border-amber-500 dark:focus:border-amber-400 focus:ring-amber-500 dark:focus:ring-amber-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full md:w-48 border-gray-300 focus:border-amber-500 focus:ring-amber-500">
+          <SelectTrigger className="w-full md:w-48 border-gray-300 dark:border-gray-600 focus:border-amber-500 dark:focus:border-amber-400 focus:ring-amber-500 dark:focus:ring-amber-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+          <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+            <SelectItem value="all" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">All Categories</SelectItem>
             {categories.map(category => (
-              <SelectItem key={category} value={category}>
+              <SelectItem key={category} value={category} className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-          <SelectTrigger className="w-full md:w-48 border-gray-300 focus:border-amber-500 focus:ring-amber-500">
+          <SelectTrigger className="w-full md:w-48 border-gray-300 dark:border-gray-600 focus:border-amber-500 dark:focus:border-amber-400 focus:ring-amber-500 dark:focus:ring-amber-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
             <SelectValue placeholder="Difficulty" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
+          <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+            <SelectItem value="all" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">All Levels</SelectItem>
             {Object.entries(difficultyLabels).map(([level, label]) => (
-              <SelectItem key={level} value={level}>
+              <SelectItem key={level} value={level} className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">
                 {label}
               </SelectItem>
             ))}
@@ -97,7 +97,7 @@ export default function SkillsGrid({ skills }: SkillsGridProps) {
       </div>
 
       {/* Results count */}
-      <div className="text-gray-600 mb-6">
+      <div className="text-gray-600 dark:text-gray-400 mb-6">
         Showing {filteredSkills.length} of {skills.length} skills
       </div>
 
@@ -105,10 +105,10 @@ export default function SkillsGrid({ skills }: SkillsGridProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredSkills.map((skill) => (
           <Link key={skill.id} href={`/skills/${skill.slug}`}>
-            <Card className="bg-white border-gray-200 hover:border-amber-500 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 cursor-pointer group">
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-amber-500 dark:hover:border-amber-400 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 dark:hover:shadow-amber-400/20 cursor-pointer group">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-gray-900 group-hover:text-amber-600 transition-colors">
+                  <CardTitle className="text-gray-900 dark:text-gray-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                     {skill.name}
                   </CardTitle>
                   <Badge 
@@ -117,15 +117,15 @@ export default function SkillsGrid({ skills }: SkillsGridProps) {
                     {difficultyLabels[skill.difficulty_level as keyof typeof difficultyLabels]}
                   </Badge>
                 </div>
-                <Badge variant="outline" className="text-gray-600 border-gray-400 w-fit">
+                <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-400 dark:border-gray-600 w-fit">
                   {skill.category}
                 </Badge>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-gray-600 line-clamp-3">
+                <CardDescription className="text-gray-600 dark:text-gray-400 line-clamp-3">
                   {skill.description}
                 </CardDescription>
-                <div className="mt-3 text-sm text-gray-500">
+                <div className="mt-3 text-sm text-gray-500 dark:text-gray-500">
                   {skill.training_range_count} training ranges
                 </div>
               </CardContent>
@@ -136,7 +136,7 @@ export default function SkillsGrid({ skills }: SkillsGridProps) {
 
       {filteredSkills.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-gray-600 text-lg">No skills found matching your criteria.</div>
+          <div className="text-gray-600 dark:text-gray-400 text-lg">No skills found matching your criteria.</div>
           <Button 
             onClick={() => {
               setSearchTerm('');
@@ -144,7 +144,7 @@ export default function SkillsGrid({ skills }: SkillsGridProps) {
               setSelectedDifficulty('all');
             }}
             variant="outline"
-            className="mt-4 border-amber-500 text-amber-600 hover:bg-amber-50"
+            className="mt-4 border-amber-500 dark:border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20"
           >
             Clear filters
           </Button>

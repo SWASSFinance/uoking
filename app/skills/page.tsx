@@ -22,12 +22,12 @@ export default async function SkillsPage() {
       <Header />
       
       {/* Page Header */}
-      <section className="bg-gradient-to-r from-amber-600 to-orange-600 text-white py-16">
+      <section className="bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-700 dark:to-orange-700 text-white py-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Ultima Online Skills Guide
           </h1>
-          <p className="text-xl text-amber-100 max-w-3xl mx-auto">
+          <p className="text-xl text-amber-100 dark:text-amber-200 max-w-3xl mx-auto">
             Master every skill in Britannia with our comprehensive training guides, 
             tips, and recommended templates for all character builds.
           </p>

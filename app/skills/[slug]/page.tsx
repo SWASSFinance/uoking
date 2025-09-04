@@ -47,18 +47,18 @@ export default async function SkillPage({ params }: SkillPageProps) {
       <Header />
       
       {/* Breadcrumb */}
-      <nav className="bg-gray-50 border-b border-gray-200">
+      <nav className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-amber-600 transition-colors">
+          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+            <Link href="/" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
               Home
             </Link>
             <span>/</span>
-            <Link href="/skills" className="hover:text-amber-600 transition-colors">
+            <Link href="/skills" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
               Skills
             </Link>
             <span>/</span>
-            <span className="text-gray-900 font-medium">{skill.name}</span>
+            <span className="text-gray-900 dark:text-gray-100 font-medium">{skill.name}</span>
           </div>
         </div>
       </nav>

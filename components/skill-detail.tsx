@@ -60,7 +60,7 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
       {/* Header */}
       <div className="text-center">
         <div className="flex items-center justify-center gap-4 mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100">
             {skill.name}
           </h1>
           <Badge 
@@ -69,11 +69,11 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
             {difficultyLabels[skill.difficulty_level as keyof typeof difficultyLabels]}
           </Badge>
         </div>
-        <Badge variant="outline" className="text-gray-600 border-gray-400 mb-6">
+        <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-400 dark:border-gray-600 mb-6">
           {skill.category}
         </Badge>
         {skill.description && (
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             {skill.description}
           </p>
         )}
@@ -81,12 +81,12 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
 
       {/* Overview */}
       {skill.overview && (
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-gray-900">Overview</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-gray-700 prose max-w-none">
+            <div className="text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none">
               {renderHtmlContent(skill.overview)}
             </div>
           </CardContent>
@@ -95,12 +95,12 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
 
       {/* Training Guide */}
       {skill.training_guide && (
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-gray-900">Training Guide</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Training Guide</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-gray-700 prose max-w-none">
+            <div className="text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none">
               {renderHtmlContent(skill.training_guide)}
             </div>
           </CardContent>
@@ -109,31 +109,31 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
 
       {/* Training Ranges */}
       {skill.training_ranges && skill.training_ranges.length > 0 && (
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-gray-900">Training Ranges</CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardTitle className="text-gray-900 dark:text-gray-100">Training Ranges</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
               Recommended training targets for different skill levels
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {skill.training_ranges.map((range, index) => (
-                <div key={range.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div key={range.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-lg font-semibold text-gray-900">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                       {range.skill_range}
                     </h4>
-                    <Badge variant="outline" className="text-gray-600 border-gray-400">
+                    <Badge variant="outline" className="text-gray-600 dark:text-gray-400 border-gray-400 dark:border-gray-600">
                       Range {index + 1}
                     </Badge>
                   </div>
-                  <div className="text-gray-700 mb-2">
-                    <strong className="text-gray-900">Targets:</strong> {range.suggested_targets}
+                  <div className="text-gray-700 dark:text-gray-300 mb-2">
+                    <strong className="text-gray-900 dark:text-gray-100">Targets:</strong> {range.suggested_targets}
                   </div>
                   {range.training_notes && (
-                    <div className="text-gray-600 text-sm">
-                      <strong className="text-gray-800">Notes:</strong> {range.training_notes}
+                    <div className="text-gray-600 dark:text-gray-400 text-sm">
+                      <strong className="text-gray-800 dark:text-gray-200">Notes:</strong> {range.training_notes}
                     </div>
                   )}
                 </div>
@@ -145,12 +145,12 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
 
       {/* Skill Bonuses */}
       {skill.skill_bonuses && (
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-gray-900">Skill Bonuses</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Skill Bonuses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-gray-700 prose max-w-none">
+            <div className="text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none">
               {renderHtmlContent(skill.skill_bonuses)}
             </div>
           </CardContent>
@@ -159,12 +159,12 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
 
       {/* Recommended Template */}
       {skill.recommended_template && (
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-gray-900">Recommended Template</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Recommended Template</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-gray-700 prose max-w-none">
+            <div className="text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none">
               {renderHtmlContent(skill.recommended_template)}
             </div>
           </CardContent>
@@ -173,12 +173,12 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
 
       {/* Advanced Notes */}
       {skill.advanced_notes && (
-        <Card className="bg-white border-gray-200">
+        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-gray-900">Advanced Notes</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-gray-100">Advanced Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-gray-700 prose max-w-none">
+            <div className="text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none">
               {renderHtmlContent(skill.advanced_notes)}
             </div>
           </CardContent>
