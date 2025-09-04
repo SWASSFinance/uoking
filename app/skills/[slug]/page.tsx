@@ -25,6 +25,27 @@ export async function generateMetadata({ params }: SkillPageProps): Promise<Meta
     title: `${skill.name} Skill Guide | UO King`,
     description: skill.meta_description || skill.description || `Complete guide to training ${skill.name} in Ultima Online.`,
     keywords: `ultima online, ${skill.name}, skill, training, guide, UO, ${skill.category}`,
+    openGraph: {
+      title: `${skill.name} Skill Guide | UO King`,
+      description: skill.meta_description || skill.description || `Complete guide to training ${skill.name} in Ultima Online.`,
+      url: `https://www.uoking.com/skills/${params.slug}`,
+      siteName: 'UO King',
+      type: 'article',
+      images: [
+        {
+          url: '/uo-king-logo.png',
+          width: 1200,
+          height: 630,
+          alt: `${skill.name} Skill Guide - UO King`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${skill.name} Skill Guide | UO King`,
+      description: skill.meta_description || skill.description || `Complete guide to training ${skill.name} in Ultima Online.`,
+      images: ['/uo-king-logo.png'],
+    },
   };
 }
 

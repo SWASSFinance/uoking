@@ -9,6 +9,27 @@ export const metadata: Metadata = {
   title: 'Ultima Online Skills Guide | UO King',
   description: 'Complete guide to all Ultima Online skills including training methods, tips, and recommended templates.',
   keywords: 'ultima online, skills, training, guide, UO, mmorpg',
+  openGraph: {
+    title: 'Ultima Online Skills Guide | UO King',
+    description: 'Complete guide to all Ultima Online skills including training methods, tips, and recommended templates.',
+    url: 'https://www.uoking.com/skills',
+    siteName: 'UO King',
+    type: 'website',
+    images: [
+      {
+        url: '/uo-king-logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Ultima Online Skills Guide - UO King',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ultima Online Skills Guide | UO King',
+    description: 'Complete guide to all Ultima Online skills including training methods, tips, and recommended templates.',
+    images: ['/uo-king-logo.png'],
+  },
 };
 
 export default async function SkillsPage() {
