@@ -2576,7 +2576,11 @@ export async function getSkillCategories() {
       GROUP BY category 
       ORDER BY category
     `);
-    return result.rows;
+    // Convert skill_count to number since PostgreSQL returns it as string
+    return result.rows.map(row => ({
+      ...row,
+      skill_count: parseInt(row.skill_count, 10)
+    }));
   } catch (error) {
     console.error('Error fetching skill categories:', error);
     throw error;
