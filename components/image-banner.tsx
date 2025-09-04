@@ -18,7 +18,6 @@ export function ImageBanner({ imagePath, alt = "Banner" }: ImageBannerProps) {
           className="object-cover object-center transform -translate-y-24"
           priority
           quality={90}
-          unoptimized={true}
           sizes="100vw"
         />
       </div>
