@@ -113,10 +113,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {deal.name} 
-              </h3>   <Badge variant="destructive" className="flex items-center">
-            <Clock className="h-3 w-3 mr-1" />
-            {timeRemaining}
-          </Badge>
+              </h3>  
               <div className="text-gray-600 text-sm mb-4">
                 <pre className="whitespace-pre-wrap font-sans">{deal.short_description}</pre>
               </div>
@@ -148,6 +145,10 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
               <p className="text-xs text-gray-500 text-center">
                 This deal expires at midnight! Don't miss out!
               </p>
+              <Badge variant="destructive" className="flex items-center">
+            <Clock className="h-3 w-3 mr-1" />
+            {timeRemaining}
+          </Badge>
             </div>
           </div>
         </div>
