@@ -305,14 +305,14 @@ export function ClassSection() {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <Crown className="h-8 w-8 text-amber-600 mr-3" />
-            <h2 className="text-3xl md:text-4xl font-bold text-white">Ultima Online Items - By Slot</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Ultima Online Classes</h2>
           </div>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Find the perfect equipment for every equipment slot
+            Choose your character class and find the perfect equipment
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {classItems.map((classData) => (
             <GamingButton
               key={classData.slug}
