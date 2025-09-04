@@ -65,7 +65,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
 
   if (loading) {
     return (
-      <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 ${className}`}>
+      <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50/95 to-amber-50/95 backdrop-blur-md shadow-2xl ${className}`}>
         <CardHeader>
           <CardTitle className="text-orange-800 flex items-center">
             <Tag className="h-5 w-5 mr-2" />
@@ -91,7 +91,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
   const savingsPercentage = Math.round((savings / deal.price) * 100)
 
   return (
-    <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 ${className}`}>
+    <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50/95 to-amber-50/95 backdrop-blur-md shadow-2xl ${className}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-orange-800 flex items-center">

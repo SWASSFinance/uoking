@@ -27,6 +27,13 @@ export default async function HomePage() {
         
         {/* Dragon Animation */}
         <DragonAnimation />
+        
+        {/* Deal of the Day Overlay - positioned at bottom of banner */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 p-8">
+          <div className="container mx-auto">
+            <DealOfTheDay />
+          </div>
+        </div>
       </div>
 
       {/* Scrollable Content */}
@@ -37,12 +44,6 @@ export default async function HomePage() {
         <BannerSection banners={banners} />
 
         <main>
-          {/* Deal of the Day */}
-          <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 backdrop-blur-sm">
-            <div className="container mx-auto px-4">
-              <DealOfTheDay />
-            </div>
-          </section>
 
           {/* Class Section */}
           <section className="py-16 bg-white/80 backdrop-blur-sm">
