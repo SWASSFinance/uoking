@@ -11,6 +11,9 @@ const nextConfig = {
     // Add image optimization settings
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
+    // Ensure static images are properly served
+    domains: [],
+    remotePatterns: [],
   },
   serverExternalPackages: ['pg'],
   experimental: {

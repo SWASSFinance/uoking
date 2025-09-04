@@ -19,7 +19,7 @@ export default async function HomePage() {
       {/* Fixed Image Background - Reduced Height */}
       <div className="fixed inset-0 w-full h-[calc(100vh-800px)] z-0">
         <ImageBanner 
-          imagePath="/uo/banner.png" 
+          imagePath="/uo/banner.jpg" 
           alt="UO King Banner" 
         />
         {/* Semi-transparent overlay */}
