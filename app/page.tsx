@@ -45,12 +45,12 @@ export default async function HomePage() {
             )}
           </div>
         </div>
-        
-        {/* Deal of the Day - positioned at bottom of banner */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 p-8">
-          <div className="container mx-auto">
-            <DealOfTheDay />
-          </div>
+      </section>
+
+      {/* Deal of the Day - Separate section below banner */}
+      <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 backdrop-blur-sm">
+        <div className="container mx-auto px-4">
+          <DealOfTheDay />
         </div>
       </section>
 
