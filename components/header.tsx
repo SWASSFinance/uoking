@@ -233,8 +233,7 @@ export function Header() {
     "IDOC",
     "EM Event List",
     "Event Rares",
-    "Trading Board",
-    "Server Status"
+    "Trading Board"
   ]
 
   const getCharacterName = () => {
@@ -463,8 +462,7 @@ export function Header() {
                            item === 'Trading Board' ? '/trading' : 
                            item === 'Event Rares' ? '/event-rares' : 
                            item === 'EM Event List' ? '/em-events' : 
-                           item === 'IDOC' ? '/IDOC' : 
-                           item === 'Server Status' ? '/server-status' :
+                           item === 'IDOC' ? '/IDOC' :
                            `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
@@ -770,8 +768,7 @@ export function Header() {
                                            item === 'Trading Board' ? '/trading' : 
                                            item === 'Event Rares' ? '/event-rares' : 
                                            item === 'EM Event List' ? '/em-events' : 
-                                           item === 'IDOC' ? '/IDOC' : 
-                                           item === 'Server Status' ? '/server-status' :
+                                           item === 'IDOC' ? '/IDOC' :
                                            `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
                                 {item}
                               </Link>
