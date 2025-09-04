@@ -9,7 +9,7 @@ interface ImageBannerProps {
 
 export function ImageBanner({ imagePath, alt = "Banner" }: ImageBannerProps) {
   return (
-    <div className="relative w-full h-full overflow-hidden bg-black">
+    <div className="relative w-full h-full overflow-hidden bg-gray-900 dark:bg-gray-800">
       <div className="absolute inset-0 w-full h-full">
         <Image
           src={imagePath}

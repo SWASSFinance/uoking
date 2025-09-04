@@ -24,8 +24,8 @@ export default async function HomePage() {
           imagePath="/uo/banner.png" 
           alt="UO King Banner" 
         />
-        {/* Semi-transparent overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+        {/* Semi-transparent overlay - responsive to theme */}
+        <div className="absolute inset-0 bg-black/30 dark:bg-black/20 z-10"></div>
         
         {/* Dragon Animation */}
         <DragonAnimation />
@@ -55,10 +55,10 @@ export default async function HomePage() {
             {/* Classes Section - Left Side */}
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                   Ultima Online Classes
                 </h2>
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-600 dark:text-gray-300">
                   Choose your character class and find the perfect equipment
                 </p>
               </div>
@@ -74,7 +74,7 @@ export default async function HomePage() {
                   <a
                     key={classData.slug}
                     href={`/Class/${classData.name}`}
-                    className="block p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 hover:border-amber-500 hover:shadow-lg transition-all duration-300 text-center group"
+                    className="block p-4 bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-600 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-center group"
                   >
                     <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
                       {classData.name === "Mage" && "🧙‍♂️"}
@@ -84,7 +84,7 @@ export default async function HomePage() {
                       {classData.name === "Thief" && "🗡️"}
                       {classData.name === "Crafter" && "🔨"}
                     </div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">
+                    <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300">
                       {classData.name}
                     </h3>
                   </a>
@@ -95,10 +95,10 @@ export default async function HomePage() {
             {/* Deal of the Day - Right Side */}
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                   Deal of the Day
                 </h2>
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-600 dark:text-gray-300">
                   Don't miss out on today's special offer!
                 </p>
               </div>

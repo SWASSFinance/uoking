@@ -64,9 +64,9 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
 
   if (loading) {
     return (
-      <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50/95 to-amber-50/95 backdrop-blur-md shadow-2xl ${className}`}>
+      <Card className={`border-2 border-orange-200 dark:border-orange-400 bg-gradient-to-r from-orange-50/95 to-amber-50/95 dark:from-orange-900/80 dark:to-amber-900/80 backdrop-blur-md shadow-2xl ${className}`}>
         <CardHeader>
-          <CardTitle className="text-orange-800 flex items-center">
+          <CardTitle className="text-orange-800 dark:text-orange-200 flex items-center">
             <Tag className="h-5 w-5 mr-2" />
             Deal of the Day
           </CardTitle>
@@ -90,7 +90,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
   const savingsPercentage = Math.round((savings / deal.price) * 100)
 
   return (
-    <Card className={`border-2 border-orange-200 bg-gradient-to-r from-orange-50/95 to-amber-50/95 backdrop-blur-md shadow-2xl ${className}`}>
+    <Card className={`border-2 border-orange-200 dark:border-orange-400 bg-gradient-to-r from-orange-50/95 to-amber-50/95 dark:from-orange-900/80 dark:to-amber-900/80 backdrop-blur-md shadow-2xl ${className}`}>
       
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -111,10 +111,10 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
           {/* Product Details */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 {deal.name} 
               </h3>  
-              <div className="text-gray-600 text-sm mb-4">
+              <div className="text-gray-600 dark:text-gray-300 text-sm mb-4">
                 <pre className="whitespace-pre-wrap font-sans">{deal.short_description}</pre>
               </div>
             </div>
@@ -122,14 +122,14 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
             {/* Pricing */}
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold text-amber-600">
+                <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                   ${deal.sale_price.toFixed(2)}
                 </span>
-                <span className="text-lg text-gray-500 line-through">
+                <span className="text-lg text-gray-500 dark:text-gray-400 line-through">
                   ${deal.price.toFixed(2)}
                 </span>
               </div>
-              <p className="text-sm text-amber-600 font-medium">
+              <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
                 You save ${savings.toFixed(2)} ({savingsPercentage}% off!)
               </p>
             </div>
@@ -142,7 +142,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
                   View Deal
                 </Button>
               </Link>
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                 This deal expires at midnight! Don't miss out!
               </p>
               <Badge variant="destructive" className="flex items-center">
