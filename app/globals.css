@@ -47,7 +47,7 @@
   /* Dragon Animation */
   .dragon-animation {
     position: absolute;
-    top: 50%;
+    top: calc(50% + 80px);
     right: -200px;
     transform: translateY(-50%);
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
