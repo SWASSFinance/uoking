@@ -22,7 +22,7 @@ interface BannerSectionProps {
 
 export function BannerSection({ banners }: BannerSectionProps) {
   return (
-    <section className="relative h-[1000px] flex items-center justify-center">
+    <section className="relative h-[450px] flex items-center justify-center">
       <div className="text-center text-white z-30 relative">
         <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl">
           Welcome to UO KING

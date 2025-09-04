@@ -182,6 +182,71 @@ export default function ProductsAdminPage() {
     onSave: (data: any) => void, 
     onCancel: () => void 
   }) => {
+    const [searchUOPrice, setSearchUOPrice] = useState<{
+      price: number | null
+      itemName: string | null
+      imageUrl: string | null
+      itemDetails: string | null
+      found: boolean
+      loading: boolean
+      error: string | null
+    }>({
+      price: null,
+      itemName: null,
+      imageUrl: null,
+      itemDetails: null,
+      found: false,
+      loading: false,
+      error: null
+    })
+
+    // Fetch SearchUO price when product is loaded
+    useEffect(() => {
+      if (product?.name) {
+        fetchSearchUOPrice(product.name)
+      }
+    }, [product?.name])
+
+    const fetchSearchUOPrice = async (productName: string) => {
+      setSearchUOPrice(prev => ({ ...prev, loading: true, error: null }))
+      
+      try {
+        const response = await fetch('/api/searchuo/price', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ productName }),
+        })
+
+        const data = await response.json()
+
+        if (response.ok && data.success) {
+          setSearchUOPrice({
+            price: data.found ? data.price : null,
+            itemName: data.found ? data.itemName : null,
+            imageUrl: data.found ? data.imageUrl : null,
+            itemDetails: data.found ? data.itemDetails : null,
+            found: data.found,
+            loading: false,
+            error: data.found ? null : data.message
+          })
+        } else {
+          setSearchUOPrice(prev => ({
+            ...prev,
+            loading: false,
+            error: data.error || 'Failed to fetch price'
+          }))
+        }
+      } catch (error) {
+        setSearchUOPrice(prev => ({
+          ...prev,
+          loading: false,
+          error: 'Network error'
+        }))
+      }
+    }
+
              const [formData, setFormData] = useState({
      name: product?.name || '',
      slug: product?.slug || '',
@@ -245,6 +310,86 @@ export default function ProductsAdminPage() {
                   required
                   className="border-gray-300 bg-white text-black"
                 />
+                
+                {/* SearchUO Price Display */}
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-blue-800">SearchUO Price:</span>
+                      {searchUOPrice.loading && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchSearchUOPrice(product?.name || '')}
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                    >
+                      Refresh
+                    </Button>
+                  </div>
+                  
+                  {searchUOPrice.found && searchUOPrice.price && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          {searchUOPrice.imageUrl && (
+                            <img 
+                              src={searchUOPrice.imageUrl} 
+                              alt={searchUOPrice.itemName || ''} 
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          )}
+                          <div>
+                            <div className="font-semibold text-green-600">
+                              ${searchUOPrice.price.toFixed(2)}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {searchUOPrice.itemName}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData({...formData, price: searchUOPrice.price!.toString()})}
+                          className="text-green-600 border-green-300 hover:bg-green-50"
+                        >
+                          Use This Price
+                        </Button>
+                      </div>
+                      {searchUOPrice.itemDetails && (
+                        <div className="mt-2 p-3 bg-gray-50 rounded border">
+                          <div className="text-xs font-semibold text-gray-700 mb-2">Item Stats:</div>
+                          <div className="text-xs text-gray-600 space-y-1">
+                            {searchUOPrice.itemDetails
+                              .split(/(?=[A-Z][a-z]+ \d+)/)
+                              .filter(stat => stat.trim())
+                              .map((stat, index) => (
+                                <div key={index} className="flex justify-between items-center py-1 px-2 bg-white rounded border-l-2 border-blue-200">
+                                  <span className="font-medium text-gray-700">
+                                    {stat.trim().replace(/(\d+)/, ' $1').trim()}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {!searchUOPrice.loading && !searchUOPrice.found && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      {searchUOPrice.error || 'No results found on SearchUO'}
+                    </div>
+                  )}
+                </div>
               </div>
               
 
@@ -698,6 +843,7 @@ export default function ProductsAdminPage() {
               </Button>
             </div>
           )}
+
         </div>
       </main>
     </div>

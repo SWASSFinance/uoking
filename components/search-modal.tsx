@@ -31,6 +31,7 @@ interface SearchResult {
   url: string
   description?: string
   image_url?: string
+  price?: string
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
@@ -107,8 +108,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           name: product.name,
           type: 'product' as const,
           url: `/product/${product.slug}`,
-          description: product.short_description || `Price: $${product.price}`,
-          image_url: product.image_url
+          description: product.short_description,
+          image_url: product.image_url,
+          price: product.price
         })),
         
         // Categories
@@ -296,13 +298,20 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-gray-900 truncate">
-                              {result.name}
-                            </span>
-                            <Badge className={`text-xs ${getBadgeColor(result.type)}`}>
-                              {result.type}
-                            </Badge>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium text-gray-900 truncate">
+                                {result.name}
+                              </span>
+                              <Badge className={`text-xs ${getBadgeColor(result.type)}`}>
+                                {result.type}
+                              </Badge>
+                            </div>
+                            {result.type === 'product' && result.price && (
+                              <div className="text-sm font-semibold text-green-600">
+                                ${parseFloat(result.price).toFixed(2)}
+                              </div>
+                            )}
                           </div>
                           {result.description && (
                             <p className="text-sm text-gray-600 truncate mt-1">

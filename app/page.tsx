@@ -1,5 +1,6 @@
 import { Header } from "@/components/header"
-import { VideoBanner } from "@/components/video-banner"
+import { ImageBanner } from "@/components/image-banner"
+import { DragonAnimation } from "@/components/dragon-animation"
 import { ClassSection } from "@/components/class-section"
 import { FeaturedProducts } from "@/components/featured-products"
 import { HelpSection } from "@/components/help-section"
@@ -15,20 +16,17 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen relative">
-      {/* Fixed Video Background */}
-      <div className="fixed inset-0 w-full h-full z-0">
-        {banners.length > 0 ? (
-          <VideoBanner banners={banners} />
-        ) : (
-          <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h1 className="text-5xl md:text-7xl font-bold mb-4">Welcome to UO KING</h1>
-           
-            </div>
-          </div>
-        )}
+      {/* Fixed Image Background - Reduced Height */}
+      <div className="fixed inset-0 w-full h-[calc(100vh-800px)] z-0">
+        <ImageBanner 
+          imagePath="/uo/banner.png" 
+          alt="UO King Banner" 
+        />
         {/* Semi-transparent overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+        
+        {/* Dragon Animation */}
+        <DragonAnimation />
       </div>
 
       {/* Scrollable Content */}
