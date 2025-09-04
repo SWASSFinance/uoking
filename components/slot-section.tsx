@@ -1,128 +1,93 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Crown, Star, Sword, Shield, Zap, Target, Users } from "lucide-react"
-import Link from "next/link"
+"use client"
 
-const classes = [
-  {
-    name: "Mage",
-    description: "Powerful spellcasters with devastating magical abilities",
-    icon: Zap,
-    color: "from-purple-500 to-purple-600",
-    items: 150,
-    popular: true,
-    href: "/Class/Mage",
-  },
-  {
-    name: "Tamer",
-    description: "Masters of beasts and creatures, commanding powerful pets",
-    icon: Users,
-    color: "from-green-500 to-green-600",
-    items: 120,
-    popular: false,
-    href: "/Class/Tamer",
-  },
-  {
-    name: "Melee",
-    description: "Close combat warriors with exceptional physical strength",
-    icon: Sword,
-    color: "from-red-500 to-red-600",
-    items: 200,
-    popular: true,
-    href: "/Class/Melee",
-  },
-  {
-    name: "Ranged",
-    description: "Skilled archers and marksmen with precision accuracy",
-    icon: Target,
-    color: "from-blue-500 to-blue-600",
-    items: 180,
-    popular: false,
-    href: "/Class/Ranged",
-  },
-  {
-    name: "Thief",
-    description: "Stealthy rogues with exceptional agility and cunning",
-    icon: Shield,
-    color: "from-gray-500 to-gray-600",
-    items: 90,
-    popular: false,
-    href: "/Class/Thief",
-  },
-  {
-    name: "Crafter",
-    description: "Master artisans creating powerful equipment and items",
-    icon: Crown,
-    color: "from-amber-500 to-amber-600",
-    items: 250,
-    popular: true,
-    href: "/Class/Crafter",
-  },
-]
+import Link from 'next/link'
+import { Shield, Crown } from 'lucide-react'
 
 export function SlotSection() {
+  const slotItems = [
+    "Head",
+    "Chest Armor",
+    "Leg Armor",
+    "Glove Armor",
+    "Sleeve Armor",
+    "Footwear",
+    "Neck Armor",
+    "Jewelry",
+    "Talismans",
+    "Robes",
+    "Belts Aprons",
+    "Sashes",
+    "Cloaks Quivers"
+  ]
+
+  // Helper function to convert slot name to category URL (same as header)
+  const slotToCategoryUrl = (slotName: string) => {
+    const slotToCategoryMap: { [key: string]: string } = {
+      "Head": "Head",
+      "Chest Armor": "Chest-Armor", 
+      "Leg Armor": "Leg-Armor",
+      "Glove Armor": "Glove-Armor",
+      "Sleeve Armor": "Sleeve-Armor", 
+      "Footwear": "Footwear",
+      "Neck Armor": "Neck-Armor",
+      "Jewelry": "Jewelry",
+      "Talismans": "Talismans",
+      "Robes": "Robes",
+      "Belts Aprons": "Belts-Aprons",
+      "Sashes": "Sashes",
+      "Cloaks Quivers": "Cloaks-Quivers"
+    }
+    return slotToCategoryMap[slotName] || slotName.replace(/\s+/g, '-')
+  }
+
+  // Get emoji for each slot
+  const getSlotEmoji = (slotName: string) => {
+    const emojiMap: { [key: string]: string } = {
+      "Head": "⛑️",
+      "Chest Armor": "🛡️",
+      "Leg Armor": "🦵",
+      "Glove Armor": "🧤",
+      "Sleeve Armor": "👕",
+      "Footwear": "👢",
+      "Neck Armor": "📿",
+      "Jewelry": "💍",
+      "Talismans": "🔮",
+      "Robes": "👘",
+      "Belts Aprons": "🎗️",
+      "Sashes": "🎀",
+      "Cloaks Quivers": "🧥"
+    }
+    return emojiMap[slotName] || "⚔️"
+  }
+
   return (
-    <section className="py-16 px-4">
-      <div className="container mx-auto">
-        <div className="text-center mb-12">
+    <section className="py-12 bg-white/80 backdrop-blur-sm">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Crown className="h-8 w-8 text-amber-600 mr-3" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Ultima Online Items - By Slot</h2>
+            <Shield className="h-6 w-6 text-amber-600 mr-2" />
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Equipment Slots</h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Find the perfect equipment for every equipment slot
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Browse equipment by specific body slots to find the perfect gear for your character
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classes.map((classItem) => {
-            const IconComponent = classItem.icon
-            return (
-              <Link key={classItem.name} href={classItem.href}>
-                <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 cursor-pointer">
-                  <div className={`h-32 bg-gradient-to-r ${classItem.color} flex items-center justify-center`}>
-                    <IconComponent className="h-16 w-16 text-white" />
-                  </div>
-                  
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">{classItem.name}</h3>
-                      {classItem.popular && (
-                        <Badge className="bg-amber-500 text-white">Popular</Badge>
-                      )}
-                    </div>
-                    
-                    <p className="text-gray-600 mb-4">{classItem.description}</p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Star className="h-4 w-4 text-amber-500" />
-                        <span className="text-sm text-gray-600">{classItem.items} items</span>
-                      </div>
-                      
-                      <Button 
-                        variant="outline" 
-                        className="border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white"
-                      >
-                        Browse {classItem.name}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-
-        <div className="text-center mt-12">
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="px-8 bg-white border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white"
-          >
-            View All Slots
-          </Button>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {slotItems.map((slot) => (
+            <Link
+              key={slot}
+              href={`/UO/${slotToCategoryUrl(slot)}`}
+              className="group block p-3 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200 hover:border-amber-500 hover:shadow-md transition-all duration-300 text-center"
+            >
+              <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                {getSlotEmoji(slot)}
+              </div>
+              <h3 className="text-sm font-medium text-gray-900 group-hover:text-amber-600 transition-colors duration-300">
+                {slot}
+              </h3>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

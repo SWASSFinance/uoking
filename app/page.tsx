@@ -5,6 +5,7 @@ import { ClassSection } from "@/components/class-section"
 import { FeaturedProducts } from "@/components/featured-products"
 import { HelpSection } from "@/components/help-section"
 import { DealOfTheDay } from "@/components/deal-of-the-day"
+import { SlotSection } from "@/components/slot-section"
 import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 import { getActiveBanners } from "@/lib/db"
@@ -106,6 +107,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Slot Section */}
+      <SlotSection />
 
       <main>
 
