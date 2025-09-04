@@ -23,7 +23,7 @@ export default async function SkillsPage() {
       
       {/* Page Header */}
       <section className="bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-700 dark:to-orange-700 text-white py-16">
-        <div className="max-w-6xl mx-auto px-4 text-center">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Ultima Online Skills Guide
           </h1>
@@ -35,7 +35,7 @@ export default async function SkillsPage() {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filters */}
         <div className="mb-8">
           <SkillsFilters categories={categories} />
