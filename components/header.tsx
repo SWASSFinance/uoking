@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SearchModal } from "@/components/search-modal"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { ServerStatusBar } from "@/components/server-status-bar"
 import { useCart } from "@/contexts/cart-context"
 import { 
   Search, 
@@ -245,7 +247,9 @@ export function Header() {
   }
 
   return (
-    <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <>
+      <ServerStatusBar />
+      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -406,6 +410,10 @@ export function Header() {
               Suits
             </Link>
 
+            <Link href="/server-status" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
+              Server Status
+            </Link>
+
             {/* Scrolls Dropdown */}
             <div 
               className="relative"
@@ -467,6 +475,9 @@ export function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* Search Button */}
             <Button 
               variant="ghost" 
@@ -586,6 +597,12 @@ export function Header() {
                     Search
                   </Button>
 
+                  {/* Mobile Theme Toggle */}
+                  <div className="flex items-center justify-between p-2">
+                    <span className="text-sm font-medium">Theme</span>
+                    <ThemeToggle />
+                  </div>
+
                   {/* Mobile Auth Section */}
                   {session ? (
                     <div className="flex flex-col space-y-2">
@@ -661,6 +678,9 @@ export function Header() {
                           </Button>
                           <Button variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
                             <Link href="/UO/Custom-Suits/">Suits</Link>
+                          </Button>
+                          <Button variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
+                            <Link href="/server-status">Server Status</Link>
                           </Button>
                         </div>
                       </div>
@@ -767,6 +787,7 @@ export function Header() {
         isOpen={isSearchModalOpen} 
         onClose={() => setIsSearchModalOpen(false)} 
       />
-    </header>
+      </header>
+    </>
   )
 }

@@ -10,6 +10,25 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "*.{js,ts,jsx,tsx,mdx}"
   ],
+  safelist: [
+    // Dark mode classes for deal of the day and class cards
+    'dark:border-orange-400',
+    'dark:from-orange-900/80',
+    'dark:to-amber-900/80',
+    'dark:text-orange-200',
+    'dark:text-white',
+    'dark:text-gray-300',
+    'dark:text-amber-400',
+    'dark:text-gray-400',
+    'dark:bg-gray-800/90',
+    'dark:border-gray-600',
+    'dark:hover:border-amber-400',
+    'dark:group-hover:text-amber-400',
+    'dark:bg-gray-800',
+    'dark:bg-gray-900',
+    'dark:bg-black/20',
+    'dark:bg-black/30'
+  ],
   theme: {
   	extend: {
   		fontFamily: {
