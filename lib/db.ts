@@ -2487,4 +2487,312 @@ export async function getEventItems(filters: {
   }
 }
 
+// Skills functions
+export async function getSkills(filters?: {
+  category?: string;
+  difficulty?: number;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    let whereConditions = ['s.is_active = $1'];
+    let params: any[] = [true];
+    let paramCount = 1;
+
+    if (filters?.category) {
+      whereConditions.push(`s.category = $${++paramCount}`);
+      params.push(filters.category);
+    }
+
+    if (filters?.difficulty) {
+      whereConditions.push(`s.difficulty_level = $${++paramCount}`);
+      params.push(filters.difficulty);
+    }
+
+    if (filters?.search) {
+      whereConditions.push(`(s.name ILIKE $${++paramCount} OR s.description ILIKE $${++paramCount})`);
+      params.push(`%${filters.search}%`, `%${filters.search}%`);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+    const limitClause = filters?.limit ? `LIMIT $${++paramCount}` : '';
+    const offsetClause = filters?.offset ? `OFFSET $${++paramCount}` : '';
+
+    if (filters?.limit) params.push(filters.limit);
+    if (filters?.offset) params.push(filters.offset);
+
+    const result = await query(`
+      SELECT 
+        s.*,
+        COUNT(str.id) as training_range_count
+      FROM skills s
+      LEFT JOIN skill_training_ranges str ON s.id = str.skill_id
+      WHERE ${whereClause}
+      GROUP BY s.id
+      ORDER BY s.sort_order ASC, s.name ASC
+      ${limitClause} ${offsetClause}
+    `, params);
+
+    return result.rows;
+  } catch (error) {
+    console.error('Error fetching skills:', error);
+    throw error;
+  }
+}
+
+export async function getSkillBySlug(slug: string) {
+  try {
+    const result = await query(`
+      SELECT * FROM skills 
+      WHERE slug = $1 AND is_active = true
+    `, [slug]);
+    
+    const skill = result.rows[0];
+    if (skill) {
+      // Get training ranges for this skill
+      const trainingRangesResult = await query(`
+        SELECT * FROM skill_training_ranges 
+        WHERE skill_id = $1 
+        ORDER BY sort_order ASC
+      `, [skill.id]);
+      
+      skill.training_ranges = trainingRangesResult.rows;
+    }
+    
+    return skill;
+  } catch (error) {
+    console.error('Error fetching skill:', error);
+    throw error;
+  }
+}
+
+export async function getSkillCategories() {
+  try {
+    const result = await query(`
+      SELECT DISTINCT category, COUNT(*) as skill_count
+      FROM skills 
+      WHERE is_active = true 
+      GROUP BY category 
+      ORDER BY category
+    `);
+    return result.rows;
+  } catch (error) {
+    console.error('Error fetching skill categories:', error);
+    throw error;
+  }
+}
+
+// Admin functions for skills
+export async function getAllSkills() {
+  try {
+    const result = await query(`
+      SELECT 
+        s.*,
+        COUNT(str.id) as training_range_count
+      FROM skills s
+      LEFT JOIN skill_training_ranges str ON s.id = str.skill_id
+      GROUP BY s.id
+      ORDER BY s.sort_order ASC, s.name ASC
+    `);
+    return result.rows;
+  } catch (error) {
+    console.error('Error fetching all skills:', error);
+    throw error;
+  }
+}
+
+export async function createSkill(skillData: any) {
+  try {
+    const result = await query(`
+      INSERT INTO skills (
+        name, slug, description, overview, training_guide, skill_bonuses,
+        recommended_template, advanced_notes, category, difficulty_level,
+        is_active, sort_order, meta_title, meta_description
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING *
+    `, [
+      skillData.name,
+      skillData.slug,
+      skillData.description || '',
+      skillData.overview || '',
+      skillData.training_guide || '',
+      skillData.skill_bonuses || '',
+      skillData.recommended_template || '',
+      skillData.advanced_notes || '',
+      skillData.category || 'general',
+      skillData.difficulty_level || 1,
+      skillData.is_active !== false,
+      skillData.sort_order || 0,
+      skillData.meta_title || '',
+      skillData.meta_description || ''
+    ]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error creating skill:', error);
+    throw error;
+  }
+}
+
+export async function updateSkill(id: string, skillData: any) {
+  try {
+    const result = await query(`
+      UPDATE skills SET 
+        name = $1,
+        slug = $2,
+        description = $3,
+        overview = $4,
+        training_guide = $5,
+        skill_bonuses = $6,
+        recommended_template = $7,
+        advanced_notes = $8,
+        category = $9,
+        difficulty_level = $10,
+        is_active = $11,
+        sort_order = $12,
+        meta_title = $13,
+        meta_description = $14,
+        updated_at = NOW()
+      WHERE id = $15
+      RETURNING *
+    `, [
+      skillData.name,
+      skillData.slug,
+      skillData.description || '',
+      skillData.overview || '',
+      skillData.training_guide || '',
+      skillData.skill_bonuses || '',
+      skillData.recommended_template || '',
+      skillData.advanced_notes || '',
+      skillData.category || 'general',
+      skillData.difficulty_level || 1,
+      skillData.is_active !== false,
+      skillData.sort_order || 0,
+      skillData.meta_title || '',
+      skillData.meta_description || '',
+      id
+    ]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error updating skill:', error);
+    throw error;
+  }
+}
+
+export async function deleteSkill(id: string) {
+  try {
+    const result = await query(`
+      DELETE FROM skills 
+      WHERE id = $1
+      RETURNING id
+    `, [id]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error deleting skill:', error);
+    throw error;
+  }
+}
+
+// Training ranges functions
+export async function getSkillTrainingRanges(skillId: string) {
+  try {
+    const result = await query(`
+      SELECT * FROM skill_training_ranges 
+      WHERE skill_id = $1 
+      ORDER BY sort_order ASC
+    `, [skillId]);
+    return result.rows;
+  } catch (error) {
+    console.error('Error fetching skill training ranges:', error);
+    throw error;
+  }
+}
+
+export async function createSkillTrainingRange(trainingRangeData: any) {
+  try {
+    const result = await query(`
+      INSERT INTO skill_training_ranges (
+        skill_id, skill_range, suggested_targets, training_notes, sort_order
+      ) VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [
+      trainingRangeData.skill_id,
+      trainingRangeData.skill_range,
+      trainingRangeData.suggested_targets,
+      trainingRangeData.training_notes || '',
+      trainingRangeData.sort_order || 0
+    ]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error creating skill training range:', error);
+    throw error;
+  }
+}
+
+export async function updateSkillTrainingRange(id: string, trainingRangeData: any) {
+  try {
+    const result = await query(`
+      UPDATE skill_training_ranges SET 
+        skill_range = $1,
+        suggested_targets = $2,
+        training_notes = $3,
+        sort_order = $4
+      WHERE id = $5
+      RETURNING *
+    `, [
+      trainingRangeData.skill_range,
+      trainingRangeData.suggested_targets,
+      trainingRangeData.training_notes || '',
+      trainingRangeData.sort_order || 0,
+      id
+    ]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error updating skill training range:', error);
+    throw error;
+  }
+}
+
+export async function deleteSkillTrainingRange(id: string) {
+  try {
+    const result = await query(`
+      DELETE FROM skill_training_ranges 
+      WHERE id = $1
+      RETURNING id
+    `, [id]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error deleting skill training range:', error);
+    throw error;
+  }
+}
+
+export async function updateSkillTrainingRanges(skillId: string, trainingRanges: any[]) {
+  try {
+    // Start a transaction
+    await query('BEGIN');
+    
+    // Delete existing training ranges for this skill
+    await query('DELETE FROM skill_training_ranges WHERE skill_id = $1', [skillId]);
+    
+    // Insert new training ranges
+    for (let i = 0; i < trainingRanges.length; i++) {
+      const range = trainingRanges[i];
+      if (range.skill_range && range.suggested_targets) {
+        await query(`
+          INSERT INTO skill_training_ranges (skill_id, skill_range, suggested_targets, training_notes, sort_order)
+          VALUES ($1, $2, $3, $4, $5)
+        `, [skillId, range.skill_range, range.suggested_targets, range.training_notes || '', i]);
+      }
+    }
+    
+    await query('COMMIT');
+    return true;
+  } catch (error) {
+    await query('ROLLBACK');
+    console.error('Error updating skill training ranges:', error);
+    throw error;
+  }
+}
+
 export default pool; 

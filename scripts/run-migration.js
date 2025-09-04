@@ -1,7 +1,8 @@
 const { Pool } = require('pg');
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 
-// Create a connection pool
+// Database connection
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL || 'postgres://neondb_owner:npg_RPzI0AWebu8l@ep-royal-waterfall-adludrzw-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require',
   ssl: {
@@ -10,74 +11,43 @@ const pool = new Pool({
 });
 
 async function runMigration() {
-  const client = await pool.connect();
-  
   try {
-    console.log('Starting migration...');
+    console.log('Running skills table migration...');
     
-    // Create the spawn_location_submissions table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS spawn_location_submissions (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        spawn_location VARCHAR(500) NOT NULL,
-        description TEXT,
-        coordinates VARCHAR(100),
-        shard VARCHAR(100),
-        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
-        review_notes TEXT,
-        points_awarded INTEGER DEFAULT 0,
-        reviewed_by UUID REFERENCES users(id),
-        reviewed_at TIMESTAMP WITH TIME ZONE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        UNIQUE(product_id, user_id)
-      )
-    `);
+    // Read the migration file
+    const migrationPath = path.join(__dirname, '..', 'migrations', 'add_skills_table.sql');
+    const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
     
-    console.log('✓ Created spawn_location_submissions table');
+    // Split the SQL into individual statements
+    const statements = migrationSQL
+      .split(';')
+      .map(stmt => stmt.trim())
+      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
     
-    // Create indexes
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_spawn_location_submissions_product_id ON spawn_location_submissions(product_id)`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_spawn_location_submissions_user_id ON spawn_location_submissions(user_id)`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_spawn_location_submissions_status ON spawn_location_submissions(status)`);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_spawn_location_submissions_created_at ON spawn_location_submissions(created_at)`);
+    // Execute each statement
+    for (const statement of statements) {
+      if (statement.trim()) {
+        console.log(`Executing: ${statement.substring(0, 50)}...`);
+        await pool.query(statement);
+      }
+    }
     
-    console.log('✓ Created indexes');
+    console.log('✅ Migration completed successfully!');
     
-    // Create trigger for updated_at
-    await client.query(`
-      CREATE OR REPLACE FUNCTION update_updated_at_column()
-      RETURNS TRIGGER AS $$
-      BEGIN
-          NEW.updated_at = NOW();
-          RETURN NEW;
-      END;
-      $$ language 'plpgsql'
-    `);
+    // Test the tables were created
+    const skillsCheck = await pool.query('SELECT COUNT(*) FROM skills');
+    const rangesCheck = await pool.query('SELECT COUNT(*) FROM skill_training_ranges');
     
-    await client.query(`
-      DROP TRIGGER IF EXISTS update_spawn_location_submissions_updated_at ON spawn_location_submissions
-    `);
-    
-    await client.query(`
-      CREATE TRIGGER update_spawn_location_submissions_updated_at 
-      BEFORE UPDATE ON spawn_location_submissions
-      FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
-    `);
-    
-    console.log('✓ Created trigger for updated_at');
-    
-    console.log('Migration completed successfully!');
+    console.log(`📊 Skills table: ${skillsCheck.rows[0].count} records`);
+    console.log(`📊 Training ranges table: ${rangesCheck.rows[0].count} records`);
     
   } catch (error) {
-    console.error('Migration failed:', error);
+    console.error('❌ Migration failed:', error.message);
     throw error;
   } finally {
-    client.release();
     await pool.end();
   }
 }
 
-runMigration().catch(console.error);
+// Run the migration
+runMigration();

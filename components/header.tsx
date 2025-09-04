@@ -229,6 +229,7 @@ export function Header() {
   ]
 
   const toolItems = [
+    "Skills",
     "Maps",
     "IDOC",
     "EM Event List",
@@ -458,7 +459,8 @@ export function Header() {
                   {toolItems.map((item) => (
                     <Link
                       key={item}
-                      href={item === 'Maps' ? '/maps' : 
+                      href={item === 'Skills' ? '/skills' :
+                           item === 'Maps' ? '/maps' : 
                            item === 'Trading Board' ? '/trading' : 
                            item === 'Event Rares' ? '/event-rares' : 
                            item === 'EM Event List' ? '/em-events' : 
@@ -764,7 +766,8 @@ export function Header() {
                         <div className="grid grid-cols-2 gap-2">
                           {toolItems.map((item) => (
                             <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={item === 'Maps' ? '/maps' : 
+                              <Link href={item === 'Skills' ? '/skills' :
+                                           item === 'Maps' ? '/maps' : 
                                            item === 'Trading Board' ? '/trading' : 
                                            item === 'Event Rares' ? '/event-rares' : 
                                            item === 'EM Event List' ? '/em-events' : 

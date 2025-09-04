@@ -23,7 +23,8 @@ import {
   Newspaper,
   Store,
   AlertTriangle,
-  Gift
+  Gift,
+  BookOpen
 } from "lucide-react"
 
 const adminNavItems = [
@@ -31,6 +32,11 @@ const adminNavItems = [
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart
+  },
+  {
+    name: "Skills",
+    href: "/admin/skills",
+    icon: BookOpen
   }
 ]
 
