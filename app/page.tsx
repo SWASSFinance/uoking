@@ -8,16 +8,17 @@ import { DealOfTheDay } from "@/components/deal-of-the-day"
 import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 import { getActiveBanners } from "@/lib/db"
-import { BannerSection } from "@/components/banner-section"
 
 export default async function HomePage() {
   // Fetch active homepage banners
   const banners = await getActiveBanners('homepage')
 
   return (
-    <div className="min-h-screen relative">
-      {/* Fixed Image Background - Reduced Height */}
-      <div className="fixed inset-0 w-full h-[calc(100vh-800px)] z-0">
+    <div className="min-h-screen">
+      <Header />
+      
+      {/* Banner Section - Takes up actual space */}
+      <section className="relative h-[400px] w-full overflow-hidden">
         <ImageBanner 
           imagePath="/uo/banner.png" 
           alt="UO King Banner" 
@@ -28,22 +29,32 @@ export default async function HomePage() {
         {/* Dragon Animation */}
         <DragonAnimation />
         
-        {/* Deal of the Day Overlay - positioned at bottom of banner */}
+        {/* Welcome Text - Centered in banner */}
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="text-center text-white">
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl">
+              Welcome to UO KING
+            </h1>
+            {banners.length > 0 && banners[0]?.button_text && (
+              <a
+                href={banners[0].button_url || '#'}
+                className="inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg font-semibold rounded-lg transition-colors drop-shadow-lg"
+              >
+                {banners[0].button_text}
+              </a>
+            )}
+          </div>
+        </div>
+        
+        {/* Deal of the Day - positioned at bottom of banner */}
         <div className="absolute bottom-0 left-0 right-0 z-30 p-8">
           <div className="container mx-auto">
             <DealOfTheDay />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Scrollable Content */}
-      <div className="relative z-20">
-        <Header />
-        
-        {/* Dedicated Banner Section */}
-        <BannerSection banners={banners} />
-
-        <main>
+      <main>
 
           {/* Class Section */}
           <section className="py-16 bg-white/80 backdrop-blur-sm">
