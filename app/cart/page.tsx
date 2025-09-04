@@ -424,8 +424,96 @@ export default function CartPage() {
             <div className="lg:col-span-2 space-y-4">
               {cart.items.map((item) => (
                 <Card key={item.id} className="bg-white/80 backdrop-blur-sm border border-amber-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
+                  <CardContent className="p-4 sm:p-6">
+                    {/* Mobile Layout */}
+                    <div className="block sm:hidden space-y-4">
+                      {/* Top Row: Image and Details */}
+                      <div className="flex items-start space-x-3">
+                        {/* Item Image */}
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.name}
+                              width={64}
+                              height={64}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-6 w-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Item Details */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-sm leading-tight">{item.name}</h3>
+                          {item.category && (
+                            <Badge variant="secondary" className="mt-1 text-xs">
+                              {item.category}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Remove Button */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Bottom Row: Quantity and Price */}
+                      <div className="flex items-center justify-between">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                            disabled={isUpdating === item.id || item.quantity <= 1}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          
+                          <div className="w-10 text-center">
+                            {isUpdating === item.id ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <span className="font-medium text-sm">{item.quantity}</span>
+                            )}
+                          </div>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                            disabled={isUpdating === item.id || item.quantity >= 10000}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+
+                        {/* Item Total */}
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-gray-900">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ${item.price.toFixed(2)} each
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden sm:flex items-center space-x-4">
                       {/* Item Image */}
                       <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                         {item.image_url ? (
