@@ -109,8 +109,7 @@ const GamingButton = ({
         {/* Bottom section */}
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center space-x-2 text-amber-400">
-            <Star className="h-4 w-4" />
-            <span className="text-sm font-medium">Browse Items</span>
+        
           </div>
           
           <div className="relative">

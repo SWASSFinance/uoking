@@ -47,19 +47,67 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Deal of the Day - Separate section below banner */}
+      {/* Combined Classes and Deal of the Day Section */}
       <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 backdrop-blur-sm">
         <div className="container mx-auto px-4">
-          <DealOfTheDay />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Classes Section - Left Side */}
+            <div>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Ultima Online Classes
+                </h2>
+                <p className="text-lg text-gray-600">
+                  Choose your character class and find the perfect equipment
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { name: "Mage", slug: "mage", color: "purple" },
+                  { name: "Tamer", slug: "tamer", color: "red" },
+                  { name: "Melee", slug: "melee", color: "amber" },
+                  { name: "Ranged", slug: "ranged", color: "green" },
+                  { name: "Thief", slug: "thief", color: "gray" },
+                  { name: "Crafter", slug: "crafter", color: "amber" }
+                ].map((classData) => (
+                  <a
+                    key={classData.slug}
+                    href={`/Class/${classData.name}`}
+                    className="block p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200 hover:border-amber-500 hover:shadow-lg transition-all duration-300 text-center group"
+                  >
+                    <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                      {classData.name === "Mage" && "🧙‍♂️"}
+                      {classData.name === "Tamer" && "🐉"}
+                      {classData.name === "Melee" && "⚔️"}
+                      {classData.name === "Ranged" && "🏹"}
+                      {classData.name === "Thief" && "🗡️"}
+                      {classData.name === "Crafter" && "🔨"}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">
+                      {classData.name}
+                    </h3>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Deal of the Day - Right Side */}
+            <div>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Deal of the Day
+                </h2>
+                <p className="text-lg text-gray-600">
+                  Don't miss out on today's special offer!
+                </p>
+              </div>
+              <DealOfTheDay />
+            </div>
+          </div>
         </div>
       </section>
 
       <main>
-
-          {/* Class Section */}
-          <section className="py-16 bg-white/80 backdrop-blur-sm">
-            <ClassSection />
-          </section>
 
           {/* Featured Products */}
           <section className="py-16 bg-white/80 backdrop-blur-sm">
