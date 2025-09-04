@@ -15,10 +15,9 @@ export function ImageBanner({ imagePath, alt = "Banner" }: ImageBannerProps) {
           src={imagePath}
           alt={alt}
           fill
-          className="object-cover object-center transform -translate-y-24"
+          className="object-cover"
           priority
           quality={90}
-          sizes="100vw"
         />
       </div>
     </div>
