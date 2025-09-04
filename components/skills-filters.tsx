@@ -18,19 +18,19 @@ export default function SkillsFilters({ categories }: SkillsFiltersProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white">Filter by Category</h3>
+      <h3 className="text-lg font-semibold text-gray-900">Filter by Category</h3>
       <div className="flex flex-wrap gap-2">
         <Button
           variant={activeCategory === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setActiveCategory('all')}
           className={activeCategory === 'all' 
-            ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-            : 'bg-slate-800 border-slate-700 text-gray-300 hover:bg-slate-700'
+            ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
           }
         >
           All Skills
-          <Badge variant="secondary" className="ml-2 bg-slate-600 text-white">
+          <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700">
             {categories.reduce((sum, cat) => sum + cat.skill_count, 0)}
           </Badge>
         </Button>
@@ -41,12 +41,12 @@ export default function SkillsFilters({ categories }: SkillsFiltersProps) {
             size="sm"
             onClick={() => setActiveCategory(category.category)}
             className={activeCategory === category.category 
-              ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-              : 'bg-slate-800 border-slate-700 text-gray-300 hover:bg-slate-700'
+              ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
             }
           >
             {category.category.charAt(0).toUpperCase() + category.category.slice(1)}
-            <Badge variant="secondary" className="ml-2 bg-slate-600 text-white">
+            <Badge variant="secondary" className="ml-2 bg-gray-200 text-gray-700">
               {category.skill_count}
             </Badge>
           </Button>

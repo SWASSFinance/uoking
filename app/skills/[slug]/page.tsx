@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 import { getSkillBySlug, getSkills } from '@/lib/db';
 import SkillDetail from '@/components/skill-detail';
 import Link from 'next/link';
@@ -41,26 +43,32 @@ export default async function SkillPage({ params }: SkillPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="mb-6">
-          <div className="flex items-center space-x-2 text-sm text-gray-400">
-            <Link href="/" className="hover:text-white transition-colors">
+    <div className="min-h-screen">
+      <Header />
+      
+      {/* Breadcrumb */}
+      <nav className="bg-gray-50 border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-amber-600 transition-colors">
               Home
             </Link>
             <span>/</span>
-            <Link href="/skills" className="hover:text-white transition-colors">
+            <Link href="/skills" className="hover:text-amber-600 transition-colors">
               Skills
             </Link>
             <span>/</span>
-            <span className="text-white">{skill.name}</span>
+            <span className="text-gray-900 font-medium">{skill.name}</span>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        {/* Skill Detail */}
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-8">
         <SkillDetail skill={skill} />
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
