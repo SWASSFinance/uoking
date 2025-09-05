@@ -56,7 +56,7 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center">
         <div className="flex items-center justify-center gap-4 mb-4">
