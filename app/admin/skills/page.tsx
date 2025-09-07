@@ -525,3 +525,4 @@ export default function AdminSkillsPage() {
     </div>
   );
 }
+

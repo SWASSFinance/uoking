@@ -615,7 +615,6 @@ export default function UsersAdminPage() {
                     <TableRow>
                       <TableHead className="text-black font-semibold">User</TableHead>
                       <TableHead className="text-black font-semibold">Contact</TableHead>
-                      <TableHead className="text-black font-semibold">Gaming Info</TableHead>
                       <TableHead className="text-black font-semibold">Status</TableHead>
                       <TableHead className="text-black font-semibold">Points</TableHead>
                       <TableHead className="text-black font-semibold">Cashback</TableHead>
@@ -654,12 +653,8 @@ export default function UsersAdminPage() {
                                 Discord: {user.discord_username}
                               </div>
                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
                             {user.main_shard && (
-                              <div className="text-sm text-gray-700">
+                              <div className="text-xs text-gray-500">
                                 Shard: {user.main_shard}
                               </div>
                             )}
