@@ -610,29 +610,224 @@ export default function UsersAdminPage() {
                 <CardTitle className="text-black">Users ({filteredUsers.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-black font-semibold">User</TableHead>
-                      <TableHead className="text-black font-semibold">Contact</TableHead>
-                      <TableHead className="text-black font-semibold">Status</TableHead>
-                      <TableHead className="text-black font-semibold">Points</TableHead>
-                      <TableHead className="text-black font-semibold">Cashback</TableHead>
-                      <TableHead className="text-black font-semibold">Referrals</TableHead>
-                      <TableHead className="text-black font-semibold">Account</TableHead>
-                      <TableHead className="text-black font-semibold">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.id} className="hover:bg-gray-50">
-                        <TableCell>
+                {/* Desktop Table View */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-black font-semibold">User</TableHead>
+                        <TableHead className="text-black font-semibold">Contact</TableHead>
+                        <TableHead className="text-black font-semibold">Status</TableHead>
+                        <TableHead className="text-black font-semibold">Points</TableHead>
+                        <TableHead className="text-black font-semibold">Cashback</TableHead>
+                        <TableHead className="text-black font-semibold">Referrals</TableHead>
+                        <TableHead className="text-black font-semibold">Account</TableHead>
+                        <TableHead className="text-black font-semibold">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((user) => (
+                        <TableRow key={user.id} className="hover:bg-gray-50">
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <User className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="font-semibold text-black">
+                                  {user.first_name} {user.last_name}
+                                </div>
+                                <div className="text-sm text-gray-700">@{user.username}</div>
+                                {user.is_admin && (
+                                  <Badge className="bg-purple-100 text-purple-800 text-xs mt-1">Admin</Badge>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center text-sm text-gray-700">
+                                <Mail className="h-4 w-4 mr-2" />
+                                <span className="truncate max-w-xs">{user.email}</span>
+                              </div>
+                              {user.discord_username && (
+                                <div className="text-xs text-gray-500">
+                                  Discord: {user.discord_username}
+                                </div>
+                              )}
+                              {user.main_shard && (
+                                <div className="text-xs text-gray-500">
+                                  Shard: {user.main_shard}
+                                </div>
+                              )}
+                              {user.character_names && user.character_names.length > 0 && (
+                                <div className="text-xs text-gray-500">
+                                  Characters: {user.character_names.slice(0, 2).join(', ')}
+                                  {user.character_names.length > 2 && ` +${user.character_names.length - 2} more`}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <Badge 
+                                className={`${
+                                  user.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                  user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
+                                  user.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {user.status}
+                              </Badge>
+                              {user.email_verified && (
+                                <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
+                              )}
+                              {user.status === 'banned' && (
+                                <div className="mt-1">
+                                  {user.is_permanently_banned ? (
+                                    <Badge className="bg-red-100 text-red-800 text-xs flex items-center">
+                                      <Ban className="h-3 w-3 mr-1" />
+                                      Permanent Ban
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-orange-100 text-orange-800 text-xs flex items-center">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      Temporary Ban
+                                    </Badge>
+                                  )}
+                                  {user.ban_reason && (
+                                    <div className="text-xs text-gray-500 mt-1 max-w-xs truncate" title={user.ban_reason}>
+                                      Reason: {user.ban_reason}
+                                    </div>
+                                  )}
+                                  {user.banned_by_email && (
+                                    <div className="text-xs text-gray-500">
+                                      Banned by: {user.banned_by_email}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center text-sm text-gray-700">
+                                <span className="font-semibold text-amber-600">
+                                  {user.current_points || 0} pts
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {user.review_count || 0} reviews, {user.rating_count || 0} ratings
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center text-sm text-gray-700">
+                                <span className="font-semibold text-green-600">
+                                  ${(typeof user.referral_cash === 'string' ? parseFloat(user.referral_cash) : user.referral_cash || 0).toFixed(2)}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Cashback Balance
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {user.referral_code ? (
+                                <div className="flex items-center text-sm text-gray-700">
+                                  <span className="font-semibold text-purple-600">
+                                    {user.referral_code}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="text-xs text-gray-500">
+                                  No code
+                                </div>
+                              )}
+                              <div className="text-xs text-gray-500">
+                                {user.referral_count || 0} referred, {user.referred_by_count || 0} referred by
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center text-sm text-gray-700">
+                                <Calendar className="h-4 w-4 mr-2" />
+                                <span>{new Date(user.created_at).toLocaleDateString()}</span>
+                              </div>
+                              {user.last_login_at && (
+                                <div className="text-xs text-gray-500">
+                                  Last login: {new Date(user.last_login_at).toLocaleDateString()}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingUser(user)
+                                  setShowForm(true)
+                                }}
+                                className="border-gray-300 text-gray-700"
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                              {user.status === 'banned' ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleUnbanUser(user)}
+                                  className="border-green-300 text-green-600 hover:bg-green-50"
+                                >
+                                  <Unlock className="h-4 w-4 mr-1" />
+                                  Unban
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openBanModal(user)}
+                                  className="border-red-300 text-red-600 hover:bg-red-50"
+                                >
+                                  <Ban className="h-4 w-4 mr-1" />
+                                  Ban
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDelete(user.id)}
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {filteredUsers.map((user) => (
+                    <Card key={user.id} className="border border-gray-200 bg-white">
+                      <CardContent className="p-4">
+                        {/* User Header */}
+                        <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <User className="h-5 w-5 text-blue-600" />
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                              <div className="font-semibold text-black">
+                              <div className="font-semibold text-black text-lg">
                                 {user.first_name} {user.last_name}
                               </div>
                               <div className="text-sm text-gray-700">@{user.username}</div>
@@ -641,128 +836,6 @@ export default function UsersAdminPage() {
                               )}
                             </div>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center text-sm text-gray-700">
-                              <Mail className="h-4 w-4 mr-2" />
-                              <span className="truncate max-w-xs">{user.email}</span>
-                            </div>
-                            {user.discord_username && (
-                              <div className="text-xs text-gray-500">
-                                Discord: {user.discord_username}
-                              </div>
-                            )}
-                            {user.main_shard && (
-                              <div className="text-xs text-gray-500">
-                                Shard: {user.main_shard}
-                              </div>
-                            )}
-                            {user.character_names && user.character_names.length > 0 && (
-                              <div className="text-xs text-gray-500">
-                                Characters: {user.character_names.slice(0, 2).join(', ')}
-                                {user.character_names.length > 2 && ` +${user.character_names.length - 2} more`}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <Badge 
-                              className={`${
-                                user.status === 'active' ? 'bg-green-100 text-green-800' : 
-                                user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
-                                user.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {user.status}
-                            </Badge>
-                            {user.email_verified && (
-                              <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
-                            )}
-                            {user.status === 'banned' && (
-                              <div className="mt-1">
-                                {user.is_permanently_banned ? (
-                                  <Badge className="bg-red-100 text-red-800 text-xs flex items-center">
-                                    <Ban className="h-3 w-3 mr-1" />
-                                    Permanent Ban
-                                  </Badge>
-                                ) : (
-                                  <Badge className="bg-orange-100 text-orange-800 text-xs flex items-center">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    Temporary Ban
-                                  </Badge>
-                                )}
-                                {user.ban_reason && (
-                                  <div className="text-xs text-gray-500 mt-1 max-w-xs truncate" title={user.ban_reason}>
-                                    Reason: {user.ban_reason}
-                                  </div>
-                                )}
-                                {user.banned_by_email && (
-                                  <div className="text-xs text-gray-500">
-                                    Banned by: {user.banned_by_email}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center text-sm text-gray-700">
-                              <span className="font-semibold text-amber-600">
-                                {user.current_points || 0} pts
-                              </span>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {user.review_count || 0} reviews, {user.rating_count || 0} ratings
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center text-sm text-gray-700">
-                              <span className="font-semibold text-green-600">
-                                ${(typeof user.referral_cash === 'string' ? parseFloat(user.referral_cash) : user.referral_cash || 0).toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Cashback Balance
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            {user.referral_code ? (
-                              <div className="flex items-center text-sm text-gray-700">
-                                <span className="font-semibold text-purple-600">
-                                  {user.referral_code}
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="text-xs text-gray-500">
-                                No code
-                              </div>
-                            )}
-                            <div className="text-xs text-gray-500">
-                              {user.referral_count || 0} referred, {user.referred_by_count || 0} referred by
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center text-sm text-gray-700">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              <span>{new Date(user.created_at).toLocaleDateString()}</span>
-                            </div>
-                            {user.last_login_at && (
-                              <div className="text-xs text-gray-500">
-                                Last login: {new Date(user.last_login_at).toLocaleDateString()}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
@@ -773,8 +846,7 @@ export default function UsersAdminPage() {
                               }}
                               className="border-gray-300 text-gray-700"
                             >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
+                              <Edit className="h-4 w-4" />
                             </Button>
                             {user.status === 'banned' ? (
                               <Button
@@ -783,8 +855,7 @@ export default function UsersAdminPage() {
                                 onClick={() => handleUnbanUser(user)}
                                 className="border-green-300 text-green-600 hover:bg-green-50"
                               >
-                                <Unlock className="h-4 w-4 mr-1" />
-                                Unban
+                                <Unlock className="h-4 w-4" />
                               </Button>
                             ) : (
                               <Button
@@ -793,8 +864,7 @@ export default function UsersAdminPage() {
                                 onClick={() => openBanModal(user)}
                                 className="border-red-300 text-red-600 hover:bg-red-50"
                               >
-                                <Ban className="h-4 w-4 mr-1" />
-                                Ban
+                                <Ban className="h-4 w-4" />
                               </Button>
                             )}
                             <Button
@@ -806,11 +876,133 @@ export default function UsersAdminPage() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+
+                        {/* Contact & Gaming Info */}
+                        <div className="space-y-3 mb-4">
+                          <div className="flex items-center text-sm text-gray-700">
+                            <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                            <span className="truncate">{user.email}</span>
+                          </div>
+                          {user.discord_username && (
+                            <div className="text-sm text-gray-700">
+                              <span className="font-medium">Discord:</span> {user.discord_username}
+                            </div>
+                          )}
+                          {user.main_shard && (
+                            <div className="text-sm text-gray-700">
+                              <span className="font-medium">Shard:</span> {user.main_shard}
+                            </div>
+                          )}
+                          {user.character_names && user.character_names.length > 0 && (
+                            <div className="text-sm text-gray-700">
+                              <span className="font-medium">Characters:</span> {user.character_names.join(', ')}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Status & Stats Row */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-700 mb-1">Status</div>
+                            <div className="space-y-1">
+                              <Badge 
+                                className={`${
+                                  user.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                  user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
+                                  user.status === 'suspended' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {user.status}
+                              </Badge>
+                              {user.email_verified && (
+                                <Badge className="bg-blue-100 text-blue-800 text-xs">Verified</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-700 mb-1">Points</div>
+                            <div className="text-lg font-semibold text-amber-600">
+                              {user.current_points || 0} pts
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Financial Info Row */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-700 mb-1">Cashback</div>
+                            <div className="text-lg font-semibold text-green-600">
+                              ${(typeof user.referral_cash === 'string' ? parseFloat(user.referral_cash) : user.referral_cash || 0).toFixed(2)}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-700 mb-1">Referrals</div>
+                            <div className="text-sm text-gray-600">
+                              {user.referral_code ? (
+                                <div>
+                                  <div className="font-semibold text-purple-600">{user.referral_code}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {user.referral_count || 0} referred, {user.referred_by_count || 0} referred by
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-gray-500">No code</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Account Info */}
+                        <div className="border-t border-gray-200 pt-3">
+                          <div className="text-sm text-gray-600">
+                            <div className="flex items-center mb-1">
+                              <Calendar className="h-4 w-4 mr-2" />
+                              Joined: {new Date(user.created_at).toLocaleDateString()}
+                            </div>
+                            {user.last_login_at && (
+                              <div className="text-xs text-gray-500">
+                                Last login: {new Date(user.last_login_at).toLocaleDateString()}
+                              </div>
+                            )}
+                            <div className="text-xs text-gray-500 mt-1">
+                              {user.review_count || 0} reviews, {user.rating_count || 0} ratings
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Ban Info */}
+                        {user.status === 'banned' && (
+                          <div className="border-t border-gray-200 pt-3 mt-3">
+                            <div className="space-y-2">
+                              {user.is_permanently_banned ? (
+                                <Badge className="bg-red-100 text-red-800 text-xs flex items-center w-fit">
+                                  <Ban className="h-3 w-3 mr-1" />
+                                  Permanent Ban
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-orange-100 text-orange-800 text-xs flex items-center w-fit">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  Temporary Ban
+                                </Badge>
+                              )}
+                              {user.ban_reason && (
+                                <div className="text-sm text-gray-600">
+                                  <span className="font-medium">Reason:</span> {user.ban_reason}
+                                </div>
+                              )}
+                              {user.banned_by_email && (
+                                <div className="text-sm text-gray-600">
+                                  <span className="font-medium">Banned by:</span> {user.banned_by_email}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}

@@ -350,8 +350,8 @@ export default function OrdersAdminPage() {
 
           {/* Filters */}
           <Card className="mb-6 border border-gray-200 bg-white">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <label className="text-black font-semibold block mb-2">Search Orders</label>
                   <div className="relative">
@@ -413,7 +413,7 @@ export default function OrdersAdminPage() {
                   </Select>
                 </div>
                 
-                <div className="flex items-end">
+                <div className="flex items-end sm:col-span-2 lg:col-span-1">
                   <Button variant="outline" className="w-full border-gray-300 text-black">
                     <Filter className="h-4 w-4 mr-2" />
                     Apply Filters
@@ -438,26 +438,77 @@ export default function OrdersAdminPage() {
                     className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
                     onClick={() => toggleOrderExpansion(order.id)}
                   >
-                    <div className="flex items-center justify-between">
+                    {/* Mobile Layout */}
+                    <div className="block sm:hidden">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <ShoppingCart className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-black text-lg">Order #{order.order_number}</h4>
+                            <p className="text-sm text-gray-600">
+                              {order.item_count} items • {new Date(order.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600 text-lg">${parseFloat(order.total_amount).toFixed(2)}</p>
+                          {loadingOrders.has(order.id) ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mt-1"></div>
+                          ) : (
+                            <div className="text-gray-400 mt-1">
+                              {expandedOrders.has(order.id) ? (
+                                <ChevronUp className="h-5 w-5" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {getStatusIcon(order.status)}
+                          {getStatusBadge(order.status)}
+                        </div>
+                        <div>
+                          {orderDetails[order.id]?.gift_name ? (
+                            <Badge className="bg-amber-100 text-amber-800 text-xs">
+                              <Gift className="h-3 w-3 mr-1" />
+                              Gift
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-600 text-xs">
+                              <Gift className="h-3 w-3 mr-1" />
+                              No Gift
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden sm:flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                           <ShoppingCart className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
-                                                     <div className="flex items-center space-x-2">
-                             <h4 className="font-semibold text-black">Order #{order.order_number}</h4>
-                             {orderDetails[order.id]?.gift_name ? (
-                               <Badge className="bg-amber-100 text-amber-800 text-xs">
-                                 <Gift className="h-3 w-3 mr-1" />
-                                 Gift
-                               </Badge>
-                             ) : (
-                               <Badge className="bg-gray-100 text-gray-600 text-xs">
-                                 <Gift className="h-3 w-3 mr-1" />
-                                 No Gift
-                               </Badge>
-                             )}
-                           </div>
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-semibold text-black">Order #{order.order_number}</h4>
+                            {orderDetails[order.id]?.gift_name ? (
+                              <Badge className="bg-amber-100 text-amber-800 text-xs">
+                                <Gift className="h-3 w-3 mr-1" />
+                                Gift
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-gray-100 text-gray-600 text-xs">
+                                <Gift className="h-3 w-3 mr-1" />
+                                No Gift
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-600">
                             {order.item_count} items • {new Date(order.created_at).toLocaleDateString()}
                           </p>
@@ -490,8 +541,8 @@ export default function OrdersAdminPage() {
 
                   {/* Order Details Dropdown */}
                   {expandedOrders.has(order.id) && orderDetails[order.id] && (
-                    <div className="border-t border-gray-200 bg-gray-50 p-4">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="border-t border-gray-200 bg-gray-50 p-3 md:p-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
                         {/* Left Column */}
                         <div className="space-y-4">
                           {/* Delivery & Customer Info Combined */}
@@ -777,10 +828,10 @@ export default function OrdersAdminPage() {
                                     rows={2}
                                   />
                                 </div>
-                                <div className="flex space-x-2">
+                                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                                   <Button 
                                     onClick={() => handleSaveOrder(order.id)}
-                                    className="bg-blue-600 hover:bg-blue-700 h-8"
+                                    className="bg-blue-600 hover:bg-blue-700 h-10 sm:h-8 w-full sm:w-auto"
                                     size="sm"
                                   >
                                     <Save className="h-4 w-4 mr-1" />
@@ -789,7 +840,7 @@ export default function OrdersAdminPage() {
                                   <Button 
                                     onClick={() => setEditingOrder(null)}
                                     variant="outline"
-                                    className="border-gray-300 text-black h-8"
+                                    className="border-gray-300 text-black h-10 sm:h-8 w-full sm:w-auto"
                                     size="sm"
                                   >
                                     <X className="h-4 w-4 mr-1" />
@@ -818,10 +869,10 @@ export default function OrdersAdminPage() {
                                     <p className="font-medium mt-1 text-sm">{orderDetails[order.id].admin_notes || 'No notes'}</p>
                                   </div>
                                 </div>
-                                                                 <div className="flex justify-between items-center">
+                                                                 <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:justify-between sm:items-center">
                                    <Button 
                                      onClick={() => handleEditOrder(orderDetails[order.id])}
-                                     className="bg-blue-600 hover:bg-blue-700 h-8"
+                                     className="bg-blue-600 hover:bg-blue-700 h-10 sm:h-8 w-full sm:w-auto"
                                      size="sm"
                                    >
                                      <Edit className="h-4 w-4 mr-1" />
@@ -831,7 +882,7 @@ export default function OrdersAdminPage() {
                                      onClick={() => handleDeleteOrder(order.id)}
                                      variant="destructive"
                                      size="sm"
-                                     className="h-8"
+                                     className="h-10 sm:h-8 w-full sm:w-auto"
                                    >
                                      <Trash2 className="h-4 w-4 mr-1" />
                                      Delete Order
