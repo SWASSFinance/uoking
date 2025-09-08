@@ -20,111 +20,139 @@ import {
   GraduationCap,
   MapPin,
   ChevronDown,
+  ChevronRight,
   Newspaper,
   Store,
   AlertTriangle,
   Gift,
-  BookOpen
+  BookOpen,
+  Menu,
+  X
 } from "lucide-react"
 
-const adminNavItems = [
+// Organized navigation structure
+const navigationSections = [
   {
-    name: "Orders",
-    href: "/admin/orders",
-    icon: ShoppingCart
+    title: "Core",
+    items: [
+      {
+        name: "Dashboard",
+        href: "/admin",
+        icon: Settings
+      },
+      {
+        name: "Orders",
+        href: "/admin/orders",
+        icon: ShoppingCart
+      },
+      {
+        name: "Users",
+        href: "/admin/users",
+        icon: Users
+      }
+    ]
   },
   {
-    name: "Skills",
-    href: "/admin/skills",
-    icon: BookOpen
-  }
-]
-
-const storeSubItems = [
-  {
-    name: "Products",
-    href: "/admin/products",
-    icon: Package
+    title: "Store Management",
+    items: [
+      {
+        name: "Products",
+        href: "/admin/products",
+        icon: Package
+      },
+      {
+        name: "Categories",
+        href: "/admin/categories",
+        icon: FolderOpen
+      },
+      {
+        name: "Coupons",
+        href: "/admin/coupons",
+        icon: Tag
+      },
+      {
+        name: "Skills",
+        href: "/admin/skills",
+        icon: BookOpen
+      },
+      {
+        name: "Gifts",
+        href: "/admin/gifts",
+        icon: Gift
+      }
+    ]
   },
   {
-    name: "Categories",
-    href: "/admin/categories",
-    icon: FolderOpen
+    title: "Content & Reviews",
+    items: [
+      {
+        name: "News",
+        href: "/admin/news",
+        icon: Newspaper
+      },
+      {
+        name: "Reviews",
+        href: "/admin/reviews",
+        icon: MessageCircle
+      },
+      {
+        name: "Category Reviews",
+        href: "/admin/category-reviews",
+        icon: MessageCircle
+      },
+      {
+        name: "Image Submissions",
+        href: "/admin/image-submissions",
+        icon: Video
+      }
+    ]
   },
   {
-    name: "Coupons",
-    href: "/admin/coupons",
-    icon: Tag
+    title: "Game Management",
+    items: [
+      {
+        name: "Shards",
+        href: "/admin/shard",
+        icon: Globe
+      },
+      {
+        name: "Classes",
+        href: "/admin/classes",
+        icon: GraduationCap
+      },
+      {
+        name: "Maps",
+        href: "/admin/maps",
+        icon: Map
+      },
+      {
+        name: "Spawn Locations",
+        href: "/admin/spawn-locations",
+        icon: MapPin
+      }
+    ]
   },
   {
-    name: "Users",
-    href: "/admin/users",
-    icon: Users
-  },
-  {
-    name: "News",
-    href: "/admin/news",
-    icon: Newspaper
-  }
-]
-
-const settingsSubItems = [
-  {
-    name: "General Settings",
-    href: "/admin/settings",
-    icon: Settings
-  },
-  {
-    name: "Gifts",
-    href: "/admin/gifts",
-    icon: Gift
-  },
-  {
-    name: "Shards",
-    href: "/admin/shard",
-    icon: Globe
-  },
-  {
-    name: "Classes",
-    href: "/admin/classes",
-    icon: GraduationCap
-  },
-  {
-    name: "Reviews",
-    href: "/admin/reviews",
-    icon: MessageCircle
-  },
-  {
-    name: "Category Reviews",
-    href: "/admin/category-reviews",
-    icon: MessageCircle
-  },
-  {
-    name: "Image Submissions",
-    href: "/admin/image-submissions",
-    icon: Video
-  },
-  {
-    name: "Maps",
-    href: "/admin/maps",
-    icon: Map
-  },
-  {
-    name: "Spawn Locations",
-    href: "/admin/spawn-locations",
-    icon: MapPin
-  },
-  {
-    name: "Test Email",
-    href: "/admin/test-email",
-    icon: MessageCircle
+    title: "System",
+    items: [
+      {
+        name: "General Settings",
+        href: "/admin/settings",
+        icon: Settings
+      },
+      {
+        name: "Test Email",
+        href: "/admin/test-email",
+        icon: MessageCircle
+      }
+    ]
   }
 ]
 
 export function AdminHeader() {
   const pathname = usePathname()
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isStoreOpen, setIsStoreOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const [maintenanceMode, setMaintenanceMode] = useState(false)
 
   // Global cache for maintenance mode
@@ -160,254 +188,185 @@ export function AdminHeader() {
     return () => clearInterval(interval)
   }, [])
 
-  const isSettingsActive = pathname === "/admin/settings" || 
-                          pathname === "/admin/gifts" ||
-                          pathname === "/admin/shard" || 
-                          pathname === "/admin/classes" ||
-                          pathname === "/admin/reviews" ||
-                          pathname === "/admin/category-reviews" ||
-                          pathname === "/admin/image-submissions" ||
-                          pathname === "/admin/maps" ||
-                          pathname === "/admin/spawn-locations" ||
-                          pathname === "/admin/test-email"
+  // Helper functions
+  const toggleSection = (sectionTitle: string) => {
+    const newExpanded = new Set(expandedSections)
+    if (newExpanded.has(sectionTitle)) {
+      newExpanded.delete(sectionTitle)
+    } else {
+      newExpanded.add(sectionTitle)
+    }
+    setExpandedSections(newExpanded)
+  }
 
-  const isStoreActive = pathname === "/admin/products" || 
-                       pathname === "/admin/categories" || 
-                       pathname === "/admin/coupons" ||
-                       pathname === "/admin/users" ||
-                       pathname === "/admin/news"
+  const isActivePath = (href: string) => {
+    if (href === "/admin") {
+      return pathname === "/admin"
+    }
+    return pathname.startsWith(href)
+  }
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+    setExpandedSections(new Set())
+  }
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
-            <Link href="/admin" className="flex items-center space-x-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Settings className="h-6 w-6 text-blue-600" />
-              </div>
-              <span className="text-xl font-bold text-black">Admin Panel</span>
-            </Link>
-            
-            {/* Maintenance Mode Indicator */}
-            {maintenanceMode && (
-              <div className="flex items-center space-x-2">
-                <Badge variant="destructive" className="flex items-center space-x-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  <span>Maintenance Mode Active</span>
-                </Badge>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {adminNavItems.map((item) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href
+    <>
+      <header className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Brand */}
+            <div className="flex items-center space-x-4">
+              <Link href="/admin" className="flex items-center space-x-2">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Settings className="h-6 w-6 text-blue-600" />
+                </div>
+                <span className="text-xl font-bold text-black">Admin Panel</span>
+              </Link>
               
-              return (
-                <Link key={item.name} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className={`flex items-center space-x-2 ${
-                      isActive 
-                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                        : "text-black hover:bg-gray-100"
-                    }`}
-                  >
-                    <IconComponent className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </Button>
-                </Link>
-              )
-            })}
-
-            {/* Store Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setIsStoreOpen(true)}
-              onMouseLeave={() => setIsStoreOpen(false)}
-            >
-              <Button
-                variant={isStoreActive ? "default" : "ghost"}
-                size="sm"
-                className={`flex items-center space-x-2 ${
-                  isStoreActive 
-                    ? "bg-blue-600 text-white hover:bg-blue-700" 
-                    : "text-black hover:bg-gray-100"
-                }`}
-              >
-                <Store className="h-4 w-4" />
-                <span>Store</span>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-
-              {/* Dropdown Menu */}
-              {isStoreOpen && (
-                <>
-                  {/* Invisible bridge to prevent gap */}
-                  <div className="absolute top-full left-0 w-full h-1 bg-transparent"></div>
-                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                    {storeSubItems.map((item) => {
-                      const IconComponent = item.icon
-                      const isActive = pathname === item.href
-                      
-                      return (
-                        <Link key={item.name} href={item.href}>
-                          <div className={`
-                            flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
-                            ${isActive 
-                              ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
-                              : "text-gray-700 hover:bg-gray-50"
-                            }
-                          `}>
-                            <IconComponent className="h-4 w-4" />
-                            <span>{item.name}</span>
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </>
+              {/* Maintenance Mode Indicator */}
+              {maintenanceMode && (
+                <div className="flex items-center space-x-2">
+                  <Badge variant="destructive" className="flex items-center space-x-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    <span className="hidden sm:inline">Maintenance Mode Active</span>
+                    <span className="sm:hidden">Maintenance</span>
+                  </Badge>
+                </div>
               )}
             </div>
 
-            {/* Settings Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setIsSettingsOpen(true)}
-              onMouseLeave={() => setIsSettingsOpen(false)}
-            >
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-1">
+              {navigationSections.map((section) => (
+                <div key={section.title} className="relative group">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center space-x-2 text-black hover:bg-gray-100"
+                  >
+                    <span>{section.title}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+
+                  {/* Desktop Dropdown */}
+                  <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <div className="p-2">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-2">
+                        {section.title}
+                      </div>
+                      {section.items.map((item) => {
+                        const IconComponent = item.icon
+                        const isActive = isActivePath(item.href)
+                        
+                        return (
+                          <Link key={item.name} href={item.href}>
+                            <div className={`
+                              flex items-center space-x-3 px-3 py-2 text-sm cursor-pointer rounded-md
+                              ${isActive 
+                                ? "bg-blue-50 text-blue-600" 
+                                : "text-gray-700 hover:bg-gray-50"
+                              }
+                            `}>
+                              <IconComponent className="h-4 w-4" />
+                              <span>{item.name}</span>
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            {/* Right side actions */}
+            <div className="flex items-center space-x-2">
+              {/* Mobile Menu Button */}
               <Button
-                variant={isSettingsActive ? "default" : "ghost"}
+                variant="ghost"
                 size="sm"
-                className={`flex items-center space-x-2 ${
-                  isSettingsActive 
-                    ? "bg-blue-600 text-white hover:bg-blue-700" 
-                    : "text-black hover:bg-gray-100"
-                }`}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="lg:hidden text-black hover:bg-gray-100"
               >
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-                <ChevronDown className="h-3 w-3" />
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </Button>
 
-              {/* Dropdown Menu */}
-              {isSettingsOpen && (
-                <>
-                  {/* Invisible bridge to prevent gap */}
-                  <div className="absolute top-full left-0 w-full h-1 bg-transparent"></div>
-                  <div className="absolute top-full left-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                    {settingsSubItems.map((item) => {
-                      const IconComponent = item.icon
-                      const isActive = pathname === item.href
-                      
-                      return (
-                        <Link key={item.name} href={item.href}>
-                          <div className={`
-                            flex items-center space-x-2 px-4 py-2 text-sm cursor-pointer
-                            ${isActive 
-                              ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
-                              : "text-gray-700 hover:bg-gray-50"
-                            }
-                          `}>
-                            <IconComponent className="h-4 w-4" />
-                            <span>{item.name}</span>
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </>
-              )}
+              {/* Logout Button */}
+              <Button variant="outline" size="sm" className="text-black border-gray-300">
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
             </div>
-          </nav>
-
-          {/* Right side actions */}
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" className="text-black border-gray-300">
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile navigation */}
-        <div className="lg:hidden py-4 border-t border-gray-200">
-          <div className="grid grid-cols-3 gap-2">
-            {adminNavItems.map((item) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href
-              
-              return (
-                <Link key={item.name} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className={`flex flex-col items-center space-y-1 p-2 h-auto ${
-                      isActive 
-                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                        : "text-black hover:bg-gray-100"
-                    }`}
+      {/* Mobile Navigation Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={closeMobileMenu}>
+          <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-black">Admin Navigation</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={closeMobileMenu}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="overflow-y-auto h-full pb-20">
+              {navigationSections.map((section) => (
+                <div key={section.title} className="border-b border-gray-100">
+                  <button
+                    onClick={() => toggleSection(section.title)}
+                    className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
                   >
-                    <IconComponent className="h-4 w-4" />
-                    <span className="text-xs">{item.name}</span>
-                  </Button>
-                </Link>
-              )
-            })}
-            
-            {/* Mobile Store - show all sub-items */}
-            {storeSubItems.map((item) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href
-              
-              return (
-                <Link key={item.name} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className={`flex flex-col items-center space-y-1 p-2 h-auto ${
-                      isActive 
-                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                        : "text-black hover:bg-gray-100"
-                    }`}
-                  >
-                    <IconComponent className="h-4 w-4" />
-                    <span className="text-xs">{item.name}</span>
-                  </Button>
-                </Link>
-              )
-            })}
-            
-            {/* Mobile Settings - show all sub-items */}
-            {settingsSubItems.map((item) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href
-              
-              return (
-                <Link key={item.name} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className={`flex flex-col items-center space-y-1 p-2 h-auto ${
-                      isActive 
-                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                        : "text-black hover:bg-gray-100"
-                    }`}
-                  >
-                    <IconComponent className="h-4 w-4" />
-                    <span className="text-xs">{item.name}</span>
-                  </Button>
-                </Link>
-              )
-            })}
+                    <span className="font-medium text-gray-900">{section.title}</span>
+                    {expandedSections.has(section.title) ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
+
+                  {expandedSections.has(section.title) && (
+                    <div className="bg-gray-50">
+                      {section.items.map((item) => {
+                        const IconComponent = item.icon
+                        const isActive = isActivePath(item.href)
+                        
+                        return (
+                          <Link key={item.name} href={item.href} onClick={closeMobileMenu}>
+                            <div className={`
+                              flex items-center space-x-3 px-6 py-3 text-sm cursor-pointer
+                              ${isActive 
+                                ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" 
+                                : "text-gray-700 hover:bg-gray-100"
+                              }
+                            `}>
+                              <IconComponent className="h-4 w-4" />
+                              <span>{item.name}</span>
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   )
 } 
