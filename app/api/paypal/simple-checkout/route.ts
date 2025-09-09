@@ -40,15 +40,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user exists in database
-    const userResult = await query(`
+    const userCheckResult = await query(`
       SELECT id FROM users WHERE email = $1
     `, [session.user.email])
     
-    if (!userResult.rows || userResult.rows.length === 0) {
+    if (!userCheckResult.rows || userCheckResult.rows.length === 0) {
       return NextResponse.json({ error: 'User not found in database' }, { status: 404 })
     }
     
-    console.log('User found:', userResult.rows[0].id)
+    console.log('User found:', userCheckResult.rows[0].id)
 
     // Get PayPal email from admin settings
     const settingsResult = await query(`
@@ -202,15 +202,15 @@ export async function POST(request: NextRequest) {
       console.log('Existing order updated successfully:', orderId)
     } else {
       // Get user's character name from profile
-      const userResult = await query(`
+      const userDetailsResult = await query(`
         SELECT id, character_names, main_shard FROM users WHERE email = $1
       `, [session.user.email])
 
-      if (!userResult.rows || userResult.rows.length === 0) {
+      if (!userDetailsResult.rows || userDetailsResult.rows.length === 0) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      const user = userResult.rows[0]
+      const user = userDetailsResult.rows[0]
       const userCharacterName = user.character_names && user.character_names.length > 0 
         ? user.character_names[0] 
         : null
