@@ -2799,4 +2799,76 @@ export async function updateSkillTrainingRanges(skillId: string, trainingRanges:
   }
 }
 
+// Account upgrade functions
+export async function upgradeUserAccount(userId: string) {
+  const client = await pool.connect()
+  
+  try {
+    await client.query('BEGIN')
+    
+    const UPGRADE_COST = 2000
+    
+    // Check if user already has premium account
+    const userResult = await client.query(`
+      SELECT account_rank FROM users WHERE id = $1
+    `, [userId])
+    
+    if (userResult.rows.length === 0) {
+      throw new Error('User not found')
+    }
+    
+    if (userResult.rows[0].account_rank === 1) {
+      throw new Error('User already has a premium account')
+    }
+    
+    // Check user has enough points
+    const userPointsResult = await client.query(`
+      SELECT current_points FROM user_points WHERE user_id = $1
+    `, [userId])
+    
+    if (userPointsResult.rows.length === 0) {
+      throw new Error('User points record not found')
+    }
+    
+    const userPoints = userPointsResult.rows[0]
+    
+    if (userPoints.current_points < UPGRADE_COST) {
+      throw new Error('Insufficient points')
+    }
+    
+    // Deduct points from user
+    await client.query(`
+      UPDATE user_points 
+      SET current_points = current_points - $1, 
+          points_spent = points_spent + $1,
+          updated_at = NOW()
+      WHERE user_id = $2
+    `, [UPGRADE_COST, userId])
+    
+    // Upgrade user account
+    const updateResult = await client.query(`
+      UPDATE users 
+      SET account_rank = 1, 
+          updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `, [userId])
+    
+    await client.query('COMMIT')
+    
+    return {
+      user: updateResult.rows[0],
+      pointsSpent: UPGRADE_COST,
+      newPointsBalance: userPoints.current_points - UPGRADE_COST
+    }
+    
+  } catch (error) {
+    await client.query('ROLLBACK')
+    console.error('Error upgrading user account:', error)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
 export default pool; 

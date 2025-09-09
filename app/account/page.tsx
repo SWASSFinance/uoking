@@ -115,6 +115,7 @@ interface UserProfile {
   review_count?: number
   rating_count?: number
   total_points_earned?: number
+  account_rank?: number
 }
 
 export default function AccountPage() {
@@ -143,6 +144,7 @@ export default function AccountPage() {
   const [countdown, setCountdown] = useState<string>('')
   const [ownedPlots, setOwnedPlots] = useState<OwnedPlot[]>([])
   const [isLoadingPlots, setIsLoadingPlots] = useState(false)
+  const [isUpgrading, setIsUpgrading] = useState(false)
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
@@ -765,6 +767,73 @@ export default function AccountPage() {
     setEditForm({...editForm, character_names: names})
   }
 
+  const handleAccountUpgrade = async () => {
+    if (!userProfile) return
+
+    if (userProfile.account_rank === 1) {
+      toast({
+        title: "Already Upgraded",
+        description: "Your account is already upgraded to premium!",
+        variant: "default",
+      })
+      return
+    }
+
+    const currentPoints = userPoints?.current_points || 0
+    if (currentPoints < 2000) {
+      toast({
+        title: "Insufficient Points",
+        description: `You need 2000 points to upgrade your account, but you only have ${currentPoints} points.`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!confirm('Are you sure you want to upgrade your account for 2000 points? This action cannot be undone.')) {
+      return
+    }
+
+    setIsUpgrading(true)
+
+    try {
+      const response = await fetch('/api/user/upgrade-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "Account Upgraded!",
+          description: `Congratulations! Your account has been upgraded to premium. You spent ${data.pointsSpent} points.`,
+          variant: "default",
+        })
+        
+        // Reload user data to reflect the changes
+        loadUserData()
+        loadUserPoints()
+      } else {
+        toast({
+          title: "Upgrade Failed",
+          description: data.error || "Failed to upgrade account. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error upgrading account:', error)
+      toast({
+        title: "Error",
+        description: "An error occurred while upgrading your account. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpgrading(false)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -833,14 +902,47 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className={`min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 ${userProfile?.account_rank === 1 ? 'premium-account' : ''}`}>
       <Header />
       <main className="py-16 px-4">
-        <div className="container mx-auto max-w-6xl">
+        <div className={`container mx-auto max-w-6xl ${userProfile?.account_rank === 1 ? 'premium-border' : ''}`}>
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">My Account</h1>
-            <p className="text-gray-600">Manage your profile, orders, and preferences</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">My Account</h1>
+                <p className="text-gray-600">Manage your profile, orders, and preferences</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                {userProfile?.account_rank === 1 ? (
+                  <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 text-lg">
+                    <Crown className="h-5 w-5 mr-2" />
+                    Premium Account
+                  </Badge>
+                ) : (
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600 mb-2">Upgrade your account for</p>
+                    <Button 
+                      onClick={handleAccountUpgrade}
+                      disabled={isUpgrading || (userPoints?.current_points || 0) < 2000}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-2"
+                    >
+                      {isUpgrading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Upgrading...
+                        </>
+                      ) : (
+                        <>
+                          <Crown className="h-4 w-4 mr-2" />
+                          2500 Points
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Quick Stats */}
@@ -1620,6 +1722,57 @@ export default function AccountPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Account Upgrade Section */}
+                      {userProfile?.account_rank !== 1 && (
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                                <Crown className="h-5 w-5 mr-2 text-purple-600" />
+                                Upgrade Your Account
+                              </h4>
+                              <p className="text-sm text-gray-600 mb-4">
+                                Get premium features and exclusive benefits with a premium account upgrade!
+                              </p>
+                              <div className="flex items-center space-x-4 text-sm">
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span>Premium account badge</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span>Special styling</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span>Future premium features</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-purple-600 mb-2">2000 Points</p>
+                              <Button 
+                                onClick={handleAccountUpgrade}
+                                disabled={isUpgrading || (userPoints?.current_points || 0) < 2000}
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                              >
+                                {isUpgrading ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Upgrading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Crown className="h-4 w-4 mr-2" />
+                                    Upgrade Now
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* How to Earn Points */}
                       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
