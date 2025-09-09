@@ -935,7 +935,7 @@ export default function AccountPage() {
                       ) : (
                         <>
                           <Crown className="h-4 w-4 mr-2" />
-                          2500 Points
+                          2000 Points
                         </>
                       )}
                     </Button>
