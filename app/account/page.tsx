@@ -955,7 +955,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Cashback Balance</p>
-                    <p className="text-2xl font-bold text-green-600">${cashbackBalance.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-green-600">${cashbackBalance.toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -969,7 +969,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Total Orders</p>
-                    <p className="text-2xl font-bold text-blue-600">{orders.length}</p>
+                    <p className="text-lg font-bold text-blue-600">{orders.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -983,7 +983,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Reviews</p>
-                    <p className="text-2xl font-bold text-purple-600">{userProfile.review_count || 0}</p>
+                    <p className="text-lg font-bold text-purple-600">{userProfile.review_count || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -997,7 +997,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Points</p>
-                    <p className="text-2xl font-bold text-amber-600">{userPoints?.current_points || 0}</p>
+                    <p className="text-lg font-bold text-amber-600">{userPoints?.current_points || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -1011,7 +1011,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Member Since</p>
-                    <p className="text-2xl font-bold text-cyan-600">
+                    <p className="text-lg font-bold text-cyan-600">
                       {new Date(userProfile.created_at).toLocaleDateString()}
                     </p>
                   </div>
