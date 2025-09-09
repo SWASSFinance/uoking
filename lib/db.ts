@@ -2871,4 +2871,169 @@ export async function upgradeUserAccount(userId: string) {
   }
 }
 
+// Premium settings functions
+export async function getPremiumSettings() {
+  try {
+    const result = await query(`
+      SELECT setting_key, setting_value, description 
+      FROM premium_settings 
+      ORDER BY setting_key
+    `)
+    
+    const settings: Record<string, any> = {}
+    result.rows.forEach(row => {
+      // Convert numeric values
+      if (['premium_discount_percentage', 'deal_of_day_regular_discount', 'deal_of_day_premium_discount', 'prize_amount', 'winners_count'].includes(row.setting_key)) {
+        settings[row.setting_key] = parseFloat(row.setting_value)
+      } else if (row.setting_key === 'contest_enabled') {
+        settings[row.setting_key] = row.setting_value === 'true'
+      } else {
+        settings[row.setting_key] = row.setting_value
+      }
+    })
+    
+    return settings
+  } catch (error) {
+    console.error('Error fetching premium settings:', error)
+    throw error
+  }
+}
+
+export async function updatePremiumSetting(key: string, value: string) {
+  try {
+    const result = await query(`
+      UPDATE premium_settings 
+      SET setting_value = $1, updated_at = NOW()
+      WHERE setting_key = $2
+      RETURNING *
+    `, [value, key])
+    
+    if (result.rows.length === 0) {
+      throw new Error(`Setting ${key} not found`)
+    }
+    
+    return result.rows[0]
+  } catch (error) {
+    console.error('Error updating premium setting:', error)
+    throw error
+  }
+}
+
+export async function getContestWinners(limit: number = 10) {
+  try {
+    const result = await query(`
+      SELECT 
+        cw.*,
+        u.first_name,
+        u.last_name,
+        u.email
+      FROM contest_winners cw
+      JOIN users u ON cw.user_id = u.id
+      ORDER BY cw.contest_period DESC, cw.awarded_at DESC
+      LIMIT $1
+    `, [limit])
+    
+    return result.rows
+  } catch (error) {
+    console.error('Error fetching contest winners:', error)
+    throw error
+  }
+}
+
+export async function selectContestWinners() {
+  const client = await pool.connect()
+  
+  try {
+    await client.query('BEGIN')
+    
+    // Get current contest period (bi-weekly)
+    const now = new Date()
+    const year = now.getFullYear()
+    const week = Math.ceil((now.getTime() - new Date(year, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))
+    const biWeek = Math.ceil(week / 2)
+    const contestPeriod = `${year}-${biWeek.toString().padStart(2, '0')}`
+    
+    // Check if winners already selected for this period
+    const existingWinners = await client.query(`
+      SELECT COUNT(*) as count FROM contest_winners WHERE contest_period = $1
+    `, [contestPeriod])
+    
+    if (parseInt(existingWinners.rows[0].count) > 0) {
+      throw new Error(`Winners already selected for contest period ${contestPeriod}`)
+    }
+    
+    // Get premium users (account_rank = 1)
+    const premiumUsers = await client.query(`
+      SELECT id, first_name, last_name, email 
+      FROM users 
+      WHERE account_rank = 1 
+      ORDER BY RANDOM()
+    `)
+    
+    if (premiumUsers.rows.length === 0) {
+      throw new Error('No premium users found for contest')
+    }
+    
+    // Get contest settings
+    const settings = await client.query(`
+      SELECT setting_key, setting_value 
+      FROM premium_settings 
+      WHERE setting_key IN ('contest_prize_amount', 'contest_winners_count')
+    `)
+    
+    const settingsMap: Record<string, any> = {}
+    settings.rows.forEach(row => {
+      if (row.setting_key === 'contest_prize_amount') {
+        settingsMap.prizeAmount = parseFloat(row.setting_value)
+      } else if (row.setting_key === 'contest_winners_count') {
+        settingsMap.winnersCount = parseInt(row.setting_value)
+      }
+    })
+    
+    const prizeAmount = settingsMap.prizeAmount || 50
+    const winnersCount = Math.min(settingsMap.winnersCount || 2, premiumUsers.rows.length)
+    
+    const winners = []
+    
+    // Select winners and award prizes
+    for (let i = 0; i < winnersCount; i++) {
+      const winner = premiumUsers.rows[i]
+      
+      // Add to contest winners table
+      await client.query(`
+        INSERT INTO contest_winners (user_id, contest_period, prize_amount)
+        VALUES ($1, $2, $3)
+      `, [winner.id, contestPeriod, prizeAmount])
+      
+      // Add cashback to user's balance
+      await client.query(`
+        UPDATE user_points 
+        SET referral_cash = referral_cash + $1, updated_at = NOW()
+        WHERE user_id = $2
+      `, [prizeAmount, winner.id])
+      
+      winners.push({
+        ...winner,
+        prize_amount: prizeAmount,
+        contest_period: contestPeriod
+      })
+    }
+    
+    await client.query('COMMIT')
+    
+    return {
+      contest_period: contestPeriod,
+      winners: winners,
+      total_prize_amount: prizeAmount * winnersCount
+    }
+    
+  } catch (error) {
+    await client.query('ROLLBACK')
+    console.error('Error selecting contest winners:', error)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
 export default pool; 

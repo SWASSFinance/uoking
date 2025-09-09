@@ -98,9 +98,30 @@ export async function POST(request: NextRequest) {
     // Calculate totals
     let subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
     let discount = 0
+    let premiumDiscount = 0
     let finalTotal = subtotal - cashbackToUse
 
-    // Apply coupon if provided
+    // Check if user is premium and apply premium discount
+    const userResult = await query(`
+      SELECT account_rank FROM users WHERE email = $1
+    `, [session.user.email])
+
+    const isPremiumUser = userResult.rows[0]?.account_rank === 1
+
+    if (isPremiumUser) {
+      // Get premium discount percentage from settings
+      const premiumSettingsResult = await query(`
+        SELECT setting_value FROM premium_settings WHERE setting_key = 'premium_discount_percentage'
+      `)
+      
+      if (premiumSettingsResult.rows && premiumSettingsResult.rows.length > 0) {
+        const premiumDiscountPercentage = parseFloat(premiumSettingsResult.rows[0].setting_value) || 0
+        premiumDiscount = (subtotal * premiumDiscountPercentage) / 100
+        finalTotal = subtotal - premiumDiscount - cashbackToUse
+      }
+    }
+
+    // Apply coupon if provided (coupon discounts are applied on top of premium discount)
     if (couponCode) {
       const couponResult = await query(`
         SELECT * FROM coupons WHERE code = $1 AND is_active = true 
@@ -116,7 +137,7 @@ export async function POST(request: NextRequest) {
           } else if (coupon.type === 'fixed') {
             discount = coupon.value
           }
-          finalTotal = subtotal - discount - cashbackToUse
+          finalTotal = subtotal - premiumDiscount - discount - cashbackToUse
         }
       }
     }
@@ -148,12 +169,13 @@ export async function POST(request: NextRequest) {
           total_amount = $1,
           subtotal = $2,
           discount_amount = $3,
-          cashback_used = $4,
-          delivery_shard = $5,
-          coupon_code = $6,
+          premium_discount = $4,
+          cashback_used = $5,
+          delivery_shard = $6,
+          coupon_code = $7,
           updated_at = NOW()
-        WHERE id = $7
-      `, [finalTotal, subtotal, discount, cashbackToUse, selectedShard, couponCode || null, existingOrderId])
+        WHERE id = $8
+      `, [finalTotal, subtotal, discount, premiumDiscount, cashbackToUse, selectedShard, couponCode || null, existingOrderId])
 
       // Clear existing order items
       await query(`
@@ -202,6 +224,7 @@ export async function POST(request: NextRequest) {
           status, 
           subtotal,
           discount_amount,
+          premium_discount,
           total_amount,
           currency,
           payment_method,
@@ -217,15 +240,16 @@ export async function POST(request: NextRequest) {
           $2,
           $3,
           $4,
+          $5,
           'USD',
           'paypal_form',
           'pending',
-          $5,
           $6,
           $7,
-          $8
+          $8,
+          $9
         ) RETURNING id
-      `, [user.id, subtotal, discount, finalTotal, selectedShard, userCharacterName, cashbackToUse, giftId || null])
+      `, [user.id, subtotal, discount, premiumDiscount, finalTotal, selectedShard, userCharacterName, cashbackToUse, giftId || null])
 
       orderId = orderResult.rows[0].id
       console.log('New order created with ID:', orderId)

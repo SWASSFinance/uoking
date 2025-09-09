@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductImage } from '@/components/ui/product-image'
-import { Clock, Tag, ShoppingCart } from 'lucide-react'
+import { Clock, Tag, ShoppingCart, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { useApiCache } from '@/hooks/use-api-cache'
 
@@ -25,16 +25,24 @@ interface DealProduct {
   time_remaining: string
 }
 
+interface DealResponse {
+  deal: DealProduct | null
+  enabled: boolean
+  isDefault?: boolean
+  isPremiumUser?: boolean
+}
+
 export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
   const [timeRemaining, setTimeRemaining] = useState('')
   
-  const { data: dealData, loading } = useApiCache<{ deal: DealProduct }>({
+  const { data: dealData, loading } = useApiCache<DealResponse>({
     cacheKey: 'deal-of-the-day',
     url: '/api/deal-of-the-day',
     cacheDuration: 60 * 1000 // 1 minute cache for deals
   })
   
   const deal = dealData?.deal || null
+  const isPremiumUser = dealData?.isPremiumUser || false
 
   useEffect(() => {
     const interval = setInterval(updateTimeRemaining, 1000)
@@ -103,9 +111,17 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
               height={300}
               className="rounded-lg object-contain w-full max-h-64"
             />
-            <Badge className="absolute top-2 left-2 bg-amber-600 text-white">
-              -{deal.discount_percentage}%
-            </Badge>
+            <div className="absolute top-2 left-2 flex flex-col space-y-1">
+              <Badge className="bg-amber-600 text-white">
+                -{deal.discount_percentage}%
+              </Badge>
+              {isPremiumUser && (
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center">
+                  <Crown className="h-3 w-3 mr-1" />
+                  Premium
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Product Details */}

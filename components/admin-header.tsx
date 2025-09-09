@@ -27,7 +27,8 @@ import {
   Gift,
   BookOpen,
   Menu,
-  X
+  X,
+  Crown
 } from "lucide-react"
 
 // Organized navigation structure
@@ -129,6 +130,16 @@ const navigationSections = [
         name: "Spawn Locations",
         href: "/admin/spawn-locations",
         icon: MapPin
+      }
+    ]
+  },
+  {
+    title: "Premium",
+    items: [
+      {
+        name: "Premium Settings",
+        href: "/admin/premium-settings",
+        icon: Crown
       }
     ]
   },

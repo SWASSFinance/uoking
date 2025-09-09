@@ -1,8 +1,20 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
+import { auth } from '@/app/api/auth/[...nextauth]/route'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check if user is premium
+    const session = await auth()
+    let isPremiumUser = false
+    
+    if (session?.user?.email) {
+      const userResult = await query(`
+        SELECT account_rank FROM users WHERE email = $1
+      `, [session.user.email])
+      isPremiumUser = userResult.rows[0]?.account_rank === 1
+    }
+
     // First check if deal of the day is enabled
     const settingsResult = await query(`
       SELECT setting_value FROM site_settings 
@@ -14,6 +26,20 @@ export async function GET() {
     if (!isEnabled) {
       return NextResponse.json({ deal: null, enabled: false })
     }
+
+    // Get premium discount settings
+    const premiumSettingsResult = await query(`
+      SELECT setting_key, setting_value FROM premium_settings 
+      WHERE setting_key IN ('deal_of_day_regular_discount', 'deal_of_day_premium_discount')
+    `)
+    
+    const premiumSettings: Record<string, number> = {}
+    premiumSettingsResult.rows.forEach(row => {
+      premiumSettings[row.setting_key] = parseFloat(row.setting_value)
+    })
+    
+    const regularDiscount = premiumSettings.deal_of_day_regular_discount || 15
+    const premiumDiscount = premiumSettings.deal_of_day_premium_discount || 25
 
     // Get today's date
     const today = new Date().toISOString().split('T')[0]
@@ -78,21 +104,24 @@ export async function GET() {
 
       if (randomProductResult.rows && randomProductResult.rows.length > 0) {
         const product = randomProductResult.rows[0]
-        const defaultDiscount = 15 // Default 15% discount
+        const discountPercentage = isPremiumUser ? premiumDiscount : regularDiscount
+        const originalPrice = parseFloat(product.price)
+        const salePrice = originalPrice * (1 - discountPercentage / 100)
         
         return NextResponse.json({
           deal: {
             id: product.id,
             name: product.name,
             slug: product.slug,
-            price: parseFloat(product.price),
-            sale_price: parseFloat(product.price) * (1 - defaultDiscount / 100),
+            price: originalPrice,
+            sale_price: salePrice,
             image_url: product.image_url,
             short_description: product.short_description,
-            discount_percentage: defaultDiscount
+            discount_percentage: discountPercentage
           },
           enabled: true,
-          isDefault: true
+          isDefault: true,
+          isPremiumUser: isPremiumUser
         })
       }
       
@@ -101,7 +130,10 @@ export async function GET() {
 
     const dealData = result.rows[0]
     const originalPrice = parseFloat(dealData.price)
-    const discountPercentage = parseFloat(dealData.discount_percentage)
+    
+    // Use premium discount if user is premium, otherwise use the deal's discount
+    const baseDiscountPercentage = parseFloat(dealData.discount_percentage)
+    const discountPercentage = isPremiumUser ? premiumDiscount : baseDiscountPercentage
     const salePrice = originalPrice * (1 - discountPercentage / 100)
 
     return NextResponse.json({
@@ -116,7 +148,8 @@ export async function GET() {
         discount_percentage: discountPercentage
       },
       enabled: true,
-      isDefault: false
+      isDefault: false,
+      isPremiumUser: isPremiumUser
     })
 
   } catch (error) {
