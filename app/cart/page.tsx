@@ -26,7 +26,8 @@ import {
   AlertCircle,
   Tag,
   X,
-  Gift
+  Gift,
+  Crown
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -50,24 +51,51 @@ export default function CartPage() {
   const [availableGifts, setAvailableGifts] = useState<any[]>([])
   const [selectedGift, setSelectedGift] = useState<string>('')
   const [isLoadingGifts, setIsLoadingGifts] = useState(false)
+  const [isPremiumUser, setIsPremiumUser] = useState(false)
+  const [premiumDiscount, setPremiumDiscount] = useState(0)
 
-  // Fetch cashback balance when user is authenticated
+  // Fetch cashback balance and premium status when user is authenticated
   useEffect(() => {
     if (session?.user?.email) {
       setIsLoadingBalance(true)
-      fetch('/api/user/cashback-balance')
-        .then(res => res.json())
-        .then(data => {
-          setCashbackBalance(data.referral_cash || 0)
-        })
-        .catch(error => {
-          console.error('Error fetching cashback balance:', error)
-        })
-        .finally(() => {
-          setIsLoadingBalance(false)
-        })
+      
+      // Fetch both cashback balance and user profile
+      Promise.all([
+        fetch('/api/user/cashback-balance').then(res => res.json()),
+        fetch('/api/user/profile').then(res => res.json())
+      ])
+      .then(([cashbackData, profileData]) => {
+        setCashbackBalance(cashbackData.referral_cash || 0)
+        setIsPremiumUser(profileData.account_rank === 1)
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error)
+      })
+      .finally(() => {
+        setIsLoadingBalance(false)
+      })
     }
   }, [session])
+
+  // Calculate premium discount when cart or premium status changes
+  useEffect(() => {
+    if (isPremiumUser && cart.total > 0) {
+      // Get premium discount percentage from settings
+      fetch('/api/admin/premium-settings')
+        .then(res => res.json())
+        .then(data => {
+          const discountPercentage = data.settings?.premium_discount_percentage || 10
+          setPremiumDiscount((cart.total * discountPercentage) / 100)
+        })
+        .catch(error => {
+          console.error('Error fetching premium settings:', error)
+          // Fallback to 10% if API fails
+          setPremiumDiscount((cart.total * 10) / 100)
+        })
+    } else {
+      setPremiumDiscount(0)
+    }
+  }, [isPremiumUser, cart.total])
 
   // Fetch shards
   useEffect(() => {
@@ -786,6 +814,18 @@ export default function CartPage() {
                       <span className="font-medium">${cart.total.toFixed(2)}</span>
                     </div>
                     
+                    {isPremiumUser && premiumDiscount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 flex items-center">
+                          <Crown className="h-3 w-3 mr-1 text-purple-600" />
+                          Premium Discount
+                        </span>
+                        <span className="font-medium text-purple-600">
+                          -${premiumDiscount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+
                     {appliedCoupon && (
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Discount ({appliedCoupon.code})</span>
@@ -809,7 +849,7 @@ export default function CartPage() {
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-amber-600">
-                        ${(cart.total - (appliedCoupon?.discount_amount || 0) - cashbackToUse).toFixed(2)}
+                        ${(cart.total - premiumDiscount - (appliedCoupon?.discount_amount || 0) - cashbackToUse).toFixed(2)}
                       </span>
                     </div>
                   </div>

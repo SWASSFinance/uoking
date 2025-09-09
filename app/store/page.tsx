@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { getCategories, getProducts } from "@/lib/db"
+import { PremiumBenefitsAd } from "@/components/premium-benefits-ad"
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -110,6 +111,11 @@ export default async function StorePage() {
                 <span>24/7 Support</span>
               </div>
             </div>
+          </div>
+
+          {/* Premium Benefits Advertisement */}
+          <div className="mb-12">
+            <PremiumBenefitsAd variant="card" />
           </div>
 
           {/* Categories Grid */}

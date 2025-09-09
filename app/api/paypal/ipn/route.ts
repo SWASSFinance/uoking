@@ -220,6 +220,9 @@ export async function POST(request: NextRequest) {
       case 'Reversed':
         newStatus = 'refunded'
         paymentStatusDB = 'refunded'
+        
+        // Handle refund processing
+        await handleRefund(order, ipnLogId)
         break
       default:
         console.log('Unknown payment status:', paymentStatus)
@@ -549,5 +552,96 @@ async function verifyIPN(body: string, userAgent: string): Promise<boolean> {
     }
     
     return false
+  }
+}
+
+// Function to handle refund processing
+async function handleRefund(order: any, ipnLogId: string | null) {
+  try {
+    console.log('Processing refund for order:', order.id)
+    
+    // 1. Subtract cashback the customer received from this order
+    if (order.cashback_used > 0) {
+      await query(`
+        UPDATE user_points 
+        SET referral_cash = referral_cash - $1,
+            updated_at = NOW()
+        WHERE user_id = $2
+      `, [order.cashback_used, order.user_id])
+      console.log('Subtracted cashback used from customer:', order.cashback_used)
+    }
+    
+    // 2. Find and subtract referral cashback if this order generated any
+    const referralResult = await query(`
+      SELECT ur.*, u.email as referrer_email, u.first_name, u.last_name
+      FROM user_referrals ur
+      JOIN users u ON ur.referrer_id = u.id
+      WHERE ur.order_id = $1 AND ur.type = 'purchase_cashback'
+    `, [order.id])
+    
+    if (referralResult.rows && referralResult.rows.length > 0) {
+      for (const referral of referralResult.rows) {
+        // Subtract the cashback from the referrer
+        await query(`
+          UPDATE user_points 
+          SET referral_cash = referral_cash - $1,
+              updated_at = NOW()
+          WHERE user_id = $2
+        `, [referral.amount, referral.referrer_id])
+        
+        console.log('Subtracted referral cashback from referrer:', referral.amount)
+        
+        // Update referral status to refunded
+        await query(`
+          UPDATE user_referrals 
+          SET status = 'refunded', updated_at = NOW()
+          WHERE id = $1
+        `, [referral.id])
+      }
+    }
+    
+    // 3. Send refund email to customer
+    await sendRefundEmail(order)
+    
+    console.log('Refund processing completed for order:', order.id)
+    
+  } catch (error) {
+    console.error('Error processing refund:', error)
+    
+    // Log the error
+    if (ipnLogId) {
+      await query(`
+        UPDATE paypal_ipn_logs 
+        SET error_message = COALESCE(error_message, '') || '; Refund processing error: ' || $1
+        WHERE id = $2
+      `, [error?.message || 'Unknown error', ipnLogId])
+    }
+  }
+}
+
+// Function to send refund email
+async function sendRefundEmail(order: any) {
+  try {
+    const { sendEmail } = await import('@/lib/email')
+    
+    const emailData = {
+      to: order.user_email,
+      subject: 'Order Refund Confirmation - UOKing',
+      template: 'refund-confirmation',
+      data: {
+        firstName: order.first_name || 'Customer',
+        lastName: order.last_name || '',
+        orderNumber: order.order_number,
+        orderId: order.id,
+        refundAmount: order.total_amount,
+        refundDate: new Date().toLocaleDateString()
+      }
+    }
+    
+    await sendEmail(emailData)
+    console.log('Refund email sent to:', order.user_email)
+    
+  } catch (error) {
+    console.error('Error sending refund email:', error)
   }
 } 
