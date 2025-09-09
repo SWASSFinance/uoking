@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ShoppingCart, Star, Shield, CreditCard, MessageCircle, Truck, CheckCircle } from 'lucide-react'
+import { ShoppingCart, Star, Shield, CreditCard, MessageCircle, Truck, CheckCircle, Crown } from 'lucide-react'
 
 import { notFound, useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -193,9 +193,17 @@ export default function ProductPage() {
                       <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                     )}
                     {salePrice && (
-                      <Badge variant="destructive">
-                        {product.is_deal_of_the_day ? 'Deal of the Day' : 'Sale'}
-                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="destructive">
+                          {product.is_deal_of_the_day ? 'Deal of the Day' : 'Sale'}
+                        </Badge>
+                        {product.is_premium_user && (
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center">
+                            <Crown className="h-3 w-3 mr-1" />
+                            Premium
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
