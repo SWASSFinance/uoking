@@ -8,6 +8,8 @@ import { ProductImage } from '@/components/ui/product-image'
 import { Clock, Tag, ShoppingCart, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { useApiCache } from '@/hooks/use-api-cache'
+import { useCart } from '@/contexts/cart-context'
+import { useToast } from '@/hooks/use-toast'
 
 interface DealOfTheDayProps {
   className?: string
@@ -34,6 +36,8 @@ interface DealResponse {
 
 export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
   const [timeRemaining, setTimeRemaining] = useState('')
+  const { addItem } = useCart()
+  const { toast } = useToast()
   
   const { data: dealData, loading } = useApiCache<DealResponse>({
     cacheKey: 'deal-of-the-day',
@@ -68,6 +72,24 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
     const seconds = Math.floor((diff % (1000 * 60)) / 1000)
     
     setTimeRemaining(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+  }
+
+  const handleAddToCart = () => {
+    if (!deal) return
+    
+    addItem({
+      id: deal.id,
+      name: deal.name,
+      price: deal.sale_price, // Use the deal price
+      image_url: deal.image_url || '',
+      category: 'Deal of the Day'
+    })
+    
+    toast({
+      title: "Added to Cart",
+      description: `${deal.name} has been added to your cart at the deal price!`,
+      variant: "default",
+    })
   }
 
   if (loading) {
@@ -152,12 +174,20 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
 
             {/* Action Buttons */}
             <div className="space-y-2">
-              <Link href={`/product/${deal.slug}`}>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  View Deal
+                  Add to Cart
                 </Button>
-              </Link>
+                <Link href={`/product/${deal.slug}`}>
+                  <Button variant="outline" className="flex-1">
+                    View Details
+                  </Button>
+                </Link>
+              </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                 This deal expires at midnight! Don't miss out!
               </p>

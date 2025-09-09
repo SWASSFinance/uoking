@@ -243,6 +243,91 @@ export async function getProductBySlug(slug: string) {
       `, [product.id]);
       
       product.categories = categoriesResult.rows;
+
+      // Check if this product is today's deal of the day
+      const today = new Date().toISOString().split('T')[0];
+      const dealResult = await query(`
+        SELECT d.discount_percentage
+        FROM deal_of_the_day d
+        WHERE d.product_id = $1 
+          AND d.start_date = $2 
+          AND d.is_active = true
+        LIMIT 1
+      `, [product.id, today]);
+
+      if (dealResult.rows && dealResult.rows.length > 0) {
+        // This product is today's deal of the day
+        const dealDiscount = parseFloat(dealResult.rows[0].discount_percentage);
+        const originalPrice = parseFloat(product.price);
+        const salePrice = originalPrice * (1 - dealDiscount / 100);
+        
+        // Update product with deal pricing
+        product.sale_price = salePrice.toFixed(2);
+        product.is_deal_of_the_day = true;
+        product.deal_discount_percentage = dealDiscount;
+      } else {
+        // Check if it's a default deal (featured product with default discount)
+        const settingsResult = await query(`
+          SELECT setting_value FROM site_settings 
+          WHERE setting_key = 'enable_deal_of_the_day'
+        `);
+        
+        const isDealEnabled = settingsResult.rows?.[0]?.setting_value === 'true';
+        
+        if (isDealEnabled && product.featured) {
+          // Check if there's no specific deal for today, use default discount
+          const todayDealResult = await query(`
+            SELECT id FROM deal_of_the_day 
+            WHERE start_date = $1 AND is_active = true
+            LIMIT 1
+          `, [today]);
+
+          if (!todayDealResult.rows || todayDealResult.rows.length === 0) {
+            // No specific deal today, check if this featured product should get default discount
+            const today = new Date();
+            const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+            
+            const countResult = await query(`
+              SELECT COUNT(*) as count FROM products 
+              WHERE status = 'active' AND featured = true
+            `);
+            
+            const totalFeatured = parseInt(countResult.rows[0].count);
+            const offset = dayOfYear % totalFeatured;
+            
+            // Get the product that should be today's default deal
+            const defaultDealResult = await query(`
+              SELECT p.id
+              FROM products p
+              WHERE p.status = 'active' 
+                AND p.featured = true
+              ORDER BY p.id
+              LIMIT 1
+              OFFSET $1
+            `, [offset]);
+
+            if (defaultDealResult.rows && defaultDealResult.rows.length > 0 && 
+                defaultDealResult.rows[0].id === product.id) {
+              // This is today's default deal product
+              const premiumSettingsResult = await query(`
+                SELECT setting_value FROM premium_settings 
+                WHERE setting_key = 'deal_of_day_regular_discount'
+              `);
+              
+              const defaultDiscount = premiumSettingsResult.rows?.[0]?.setting_value 
+                ? parseFloat(premiumSettingsResult.rows[0].setting_value) 
+                : 15;
+              
+              const originalPrice = parseFloat(product.price);
+              const salePrice = originalPrice * (1 - defaultDiscount / 100);
+              
+              product.sale_price = salePrice.toFixed(2);
+              product.is_deal_of_the_day = true;
+              product.deal_discount_percentage = defaultDiscount;
+            }
+          }
+        }
+      }
     }
     
     return product;

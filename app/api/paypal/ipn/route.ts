@@ -605,7 +605,7 @@ async function handleRefund(order: any, ipnLogId: string | null) {
     
     console.log('Refund processing completed for order:', order.id)
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error processing refund:', error)
     
     // Log the error
@@ -624,21 +624,18 @@ async function sendRefundEmail(order: any) {
   try {
     const { sendEmail } = await import('@/lib/email')
     
-    const emailData = {
-      to: order.user_email,
-      subject: 'Order Refund Confirmation - UOKing',
-      template: 'refund-confirmation',
-      data: {
-        firstName: order.first_name || 'Customer',
-        lastName: order.last_name || '',
-        orderNumber: order.order_number,
-        orderId: order.id,
-        refundAmount: order.total_amount,
-        refundDate: new Date().toLocaleDateString()
-      }
-    }
-    
-    await sendEmail(emailData)
+    await sendEmail(order.user_email, 'orderConfirmation', {
+      firstName: order.first_name || 'Customer',
+      lastName: order.last_name || '',
+      orderNumber: order.order_number,
+      orderId: order.id,
+      refundAmount: order.total_amount,
+      refundDate: new Date().toLocaleDateString()
+    }, {
+      from: 'UO King <noreply@uoking.com>',
+      replyTo: 'support@uoking.com',
+      subject: `Order Refund Confirmation - UO King (Order #${order.id})`
+    })
     console.log('Refund email sent to:', order.user_email)
     
   } catch (error) {

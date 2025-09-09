@@ -60,17 +60,20 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     if (!product) return
     
+    // Use deal price if available, otherwise use regular price
+    const itemPrice = product.sale_price ? parseFloat(product.sale_price) : parseFloat(product.price)
+    
     addItem({
       id: String(product.id),
       name: product.name,
-      price: parseFloat(product.sale_price || product.price),
+      price: itemPrice,
       image_url: product.image_url || '',
       category: product.category_name || ''
     })
     
     toast({
       title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
+      description: `${product.name} has been added to your cart${product.is_deal_of_the_day ? ' at the deal price!' : '.'}`,
       variant: "default",
     })
   }
@@ -190,7 +193,9 @@ export default function ProductPage() {
                       <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                     )}
                     {salePrice && (
-                      <Badge variant="destructive">Sale</Badge>
+                      <Badge variant="destructive">
+                        {product.is_deal_of_the_day ? 'Deal of the Day' : 'Sale'}
+                      </Badge>
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
