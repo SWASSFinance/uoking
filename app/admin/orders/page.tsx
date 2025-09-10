@@ -1,5 +1,7 @@
 "use client"
 
+console.log('🔥 ORDERS ADMIN PAGE SCRIPT LOADED')
+
 import { useState, useEffect } from "react"
 import { AdminHeader } from "@/components/admin-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
