@@ -80,13 +80,13 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <Header />
         <main className="py-16 px-4">
           <div className="container mx-auto">
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading product...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading product...</p>
             </div>
           </div>
         </main>
@@ -109,24 +109,24 @@ export default function ProductPage() {
   const reviewCount = parseInt(product.review_count || '0');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Breadcrumb */}
           <div className="mb-8">
-            <nav className="text-sm text-gray-600">
-              <Link href="/" className="hover:text-amber-600">Home</Link>
+            <nav className="text-sm text-gray-600 dark:text-gray-300">
+              <Link href="/" className="hover:text-amber-600 dark:hover:text-amber-400">Home</Link>
               <span className="mx-2">/</span>
               {product.category_slug && (
                 <>
-                  <Link href={`/UO/${product.category_slug}`} className="hover:text-amber-600">
+                  <Link href={`/UO/${product.category_slug}`} className="hover:text-amber-600 dark:hover:text-amber-400">
                     {product.category_name}
                   </Link>
                   <span className="mx-2">/</span>
                 </>
               )}
-              <span className="text-gray-900">{product.name}</span>
+              <span className="text-gray-900 dark:text-white">{product.name}</span>
             </nav>
           </div>
 
@@ -142,19 +142,19 @@ export default function ProductPage() {
                 
                 {/* Features */}
                 <div className="mt-6 space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                  <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <span>Free Transfer To All Shards</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                  <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <span>Debit Card Accepted</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                  <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <span>Credit Card Accepted</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                  <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <span>Live Chat Support</span>
                   </div>
@@ -165,8 +165,8 @@ export default function ProductPage() {
             {/* Product Details - 75% */}
             <div className="lg:col-span-3 space-y-6">
               {/* Product Header */}
-              <div className="bg-white/90 backdrop-blur-sm border-amber-200 rounded-lg p-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600 rounded-lg p-6">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{product.name}</h1>
                 
                 {/* Rating */}
                 {reviewCount > 0 && (
@@ -179,7 +179,7 @@ export default function ProductPage() {
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
                       {avgRating.toFixed(1)} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
                     </span>
                   </div>
@@ -188,9 +188,9 @@ export default function ProductPage() {
                 {/* Price and Availability */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-4">
-                    <span className="text-2xl font-bold text-amber-600">${price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">${price.toFixed(2)}</span>
                     {originalPrice && (
-                      <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+                      <span className="text-lg text-gray-500 dark:text-gray-400 line-through">${originalPrice.toFixed(2)}</span>
                     )}
                     {salePrice && (
                       <div className="flex items-center space-x-2">
@@ -208,7 +208,7 @@ export default function ProductPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Shield className="h-5 w-5 text-green-500" />
-                    <span className="text-green-600 font-medium">In Stock</span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">In Stock</span>
                   </div>
                 </div>
 
@@ -225,7 +225,7 @@ export default function ProductPage() {
                 </div>
 
                 {/* Trust Indicators */}
-                <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 mb-4">
+                <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-300 mb-4">
                   <div className="flex items-center space-x-1">
                     <Shield className="h-4 w-4" />
                     <span>Secure Payment</span>
@@ -242,32 +242,32 @@ export default function ProductPage() {
 
                 {/* Short Description */}
                 {product.short_description && (
-                  <pre className="whitespace-pre-wrap font-sans text-gray-700">{product.short_description}</pre>
+                  <pre className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-300">{product.short_description}</pre>
                 )}
               </div>
 
               {/* Game Info */}
-              <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
                 <CardHeader>
-                  <CardTitle className="text-lg">Game Information</CardTitle>
+                  <CardTitle className="text-lg dark:text-white">Game Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {product.spawn_location && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Spawn Location:</span>
-                      <span className="font-medium">{product.spawn_location}</span>
+                      <span className="text-gray-600 dark:text-gray-300">Spawn Location:</span>
+                      <span className="font-medium dark:text-white">{product.spawn_location}</span>
                     </div>
                   )}
                   {product.drop_rate && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Drop Rate:</span>
-                      <span className="font-medium">{product.drop_rate}</span>
+                      <span className="text-gray-600 dark:text-gray-300">Drop Rate:</span>
+                      <span className="font-medium dark:text-white">{product.drop_rate}</span>
                     </div>
                   )}
                   {product.class_names && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Recommended Class:</span>
-                      <span className="font-medium">{product.class_names}</span>
+                      <span className="text-gray-600 dark:text-gray-300">Recommended Class:</span>
+                      <span className="font-medium dark:text-white">{product.class_names}</span>
                     </div>
                   )}
                 </CardContent>
@@ -289,13 +289,13 @@ export default function ProductPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 {/* Product Description */}
-                <Card className="bg-white/90 backdrop-blur-sm border-amber-200 mb-8">
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600 mb-8">
                   <CardHeader>
-                    <CardTitle>Product Description</CardTitle>
+                    <CardTitle className="dark:text-white">Product Description</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-gray max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed">{product.description}</pre>
+                      <pre className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-300 leading-relaxed">{product.description}</pre>
                     </div>
                   </CardContent>
                 </Card>
@@ -319,9 +319,9 @@ export default function ProductPage() {
 
               {/* Sidebar */}
               <div className="space-y-6">
-                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
                   <CardHeader>
-                    <CardTitle>Need Help?</CardTitle>
+                    <CardTitle className="dark:text-white">Need Help?</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -329,30 +329,30 @@ export default function ProductPage() {
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Visit Live Chat
                       </Button>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         <p>Our support team is available 24/7 to help with your order.</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/90 backdrop-blur-sm border-amber-200">
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
                   <CardHeader>
-                    <CardTitle>Delivery Information</CardTitle>
+                    <CardTitle className="dark:text-white">Delivery Information</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 text-sm">
                       <div className="flex items-center space-x-2">
-                        <Truck className="h-4 w-4 text-amber-600" />
-                        <span>Usually delivered within 24 hours</span>
+                        <Truck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <span className="dark:text-gray-300">Usually delivered within 24 hours</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Shield className="h-4 w-4 text-amber-600" />
-                        <span>100% secure delivery guarantee</span>
+                        <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <span className="dark:text-gray-300">100% secure delivery guarantee</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <MessageCircle className="h-4 w-4 text-amber-600" />
-                        <span>SMS notification when ready</span>
+                        <MessageCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <span className="dark:text-gray-300">SMS notification when ready</span>
                       </div>
                     </div>
                   </CardContent>
