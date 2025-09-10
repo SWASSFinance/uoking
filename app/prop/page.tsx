@@ -144,7 +144,7 @@ const propertyTypes = [
 
 export default function PropPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto">
@@ -162,10 +162,10 @@ export default function PropPage() {
             <div className="flex justify-center mb-4">
               <Star className="h-16 w-16 text-amber-600" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Item Properties
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Discover the powerful properties that can enhance your equipment. 
               From combat bonuses to magical enhancements, find the perfect properties for your build.
             </p>
@@ -176,7 +176,7 @@ export default function PropPage() {
             {propertyTypes.map((property) => {
               const IconComponent = property.icon
               return (
-                <Card key={property.name} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
+                <Card key={property.name} className="group hover:shadow-lg transition-all duration-300 border-amber-200 dark:border-gray-600 bg-white dark:bg-gray-800">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className={`p-3 rounded-full ${property.color} text-white`}>
@@ -186,17 +186,17 @@ export default function PropPage() {
                         {property.category}
                       </Badge>
                     </div>
-                    <CardTitle className="text-lg font-bold text-gray-900">
+                    <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
                       {property.name}
                     </CardTitle>
-                    <p className="text-gray-600 text-sm">{property.description}</p>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{property.description}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900 text-sm">Benefits:</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Benefits:</h4>
                       <ul className="space-y-1">
                         {property.features.map((feature) => (
-                          <li key={feature} className="text-xs text-gray-600 flex items-center">
+                          <li key={feature} className="text-xs text-gray-600 dark:text-gray-300 flex items-center">
                             <Star className="h-3 w-3 text-amber-500 mr-2" />
                             {feature}
                           </li>

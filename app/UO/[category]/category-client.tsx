@@ -60,26 +60,26 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-          <Link href="/" className="hover:text-amber-600 transition-colors">
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 mb-6">
+          <Link href="/" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
             Home
           </Link>
           <span>/</span>
-          <Link href="/store" className="hover:text-amber-600 transition-colors">
+          <Link href="/store" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
             Store
           </Link>
           <span>/</span>
-          <span className="text-amber-600 font-medium">{category.name}</span>
+          <span className="text-amber-600 dark:text-amber-400 font-medium">{category.name}</span>
         </nav>
 
 
 
         {/* Category Header */}
         <div className="mb-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200 dark:border-gray-600">
             {category.image_url && (
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 -mt-4">
@@ -91,11 +91,11 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
                   />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {category.name} Items</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 mt-6">Ultima Online {category.name} Items</h1>
                   {category.description && (
                     <div className="prose prose-amber max-w-none">
                       <div 
-                        className="text-gray-600 leading-relaxed"
+                        className="text-gray-600 dark:text-gray-300 leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: category.description.split('\n\n')[0] }}
                       />
                     </div>
@@ -106,7 +106,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
             
             {!category.image_url && (
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{category.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">{category.name}</h1>
                 {category.description && (
                   <div className="prose prose-amber max-w-none">
                     <div 
@@ -123,10 +123,10 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
         {/* Products Section */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
               {category.name} Products
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {products.length} {products.length === 1 ? 'item' : 'items'} available
             </p>
           </div>
@@ -141,10 +141,10 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
               <div className="mb-4">
                 <Grid className="h-16 w-16 text-gray-400 mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
                 No Products Available
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 We don't have any products in this category yet, but we're always adding new items!
               </p>
               <Button asChild>
@@ -159,8 +159,8 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
         {/* Category Description (Full) */}
         {category.description && category.description.includes('\n\n') && (
           <div className="mt-12">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200 dark:border-gray-600">
+              <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
                 About {category.name}
               </h3>
               <div className="prose prose-amber max-w-none">
@@ -177,7 +177,7 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
 
         {/* Category Reviews Section */}
         <div className="mt-12">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200 dark:border-gray-600">
             <CategoryReviews 
               categoryId={category.slug} 
               initialReviews={[]}

@@ -47,7 +47,7 @@ export default async function ClassPage() {
   const dbClasses = await getClasses()
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto">
@@ -65,10 +65,10 @@ export default async function ClassPage() {
             <div className="flex justify-center mb-4">
               <Sword className="h-16 w-16 text-amber-600" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Character Classes
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Choose your path in Ultima Online. Each class offers unique abilities, 
               skills, and playstyles to match your preferences.
             </p>
@@ -82,7 +82,7 @@ export default async function ClassPage() {
               const difficultyText = getDifficultyText(classData.difficulty_level)
               
               return (
-                <Card key={classData.id} className="group hover:shadow-lg transition-all duration-300 border-amber-200">
+                <Card key={classData.id} className="group hover:shadow-lg transition-all duration-300 border-amber-200 dark:border-gray-600 bg-white dark:bg-gray-800">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className={`p-3 rounded-full ${classColor} text-white`}>
@@ -92,17 +92,17 @@ export default async function ClassPage() {
                         {difficultyText}
                       </Badge>
                     </div>
-                    <CardTitle className="text-xl font-bold text-gray-900">
+                    <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
                       {classData.name}
                     </CardTitle>
-                    <p className="text-gray-600">{classData.description}</p>
+                    <p className="text-gray-600 dark:text-gray-300">{classData.description}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900">Skills:</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Skills:</h4>
                       <ul className="space-y-1">
                         {classData.skills?.map((skill: string) => (
-                          <li key={skill} className="text-sm text-gray-600 flex items-center">
+                          <li key={skill} className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
                             <Star className="h-3 w-3 text-amber-500 mr-2" />
                             {skill}
                           </li>
