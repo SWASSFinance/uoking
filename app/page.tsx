@@ -8,7 +8,7 @@ import { DealOfTheDay } from "@/components/deal-of-the-day"
 import { SlotSection } from "@/components/slot-section"
 import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
-import { PremiumBenefitsAd } from "@/components/premium-benefits-ad"
+import { PremiumBenefitsAdWrapper } from "@/components/premium-benefits-ad-wrapper"
 import { getActiveBanners } from "@/lib/db"
 import Link from "next/link"
 
@@ -53,7 +53,7 @@ export default async function HomePage() {
       {/* Premium Benefits Advertisement */}
       <section className="py-8 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <PremiumBenefitsAd variant="banner" />
+          <PremiumBenefitsAdWrapper variant="banner" />
         </div>
       </section>
 
