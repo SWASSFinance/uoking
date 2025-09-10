@@ -1,7 +1,5 @@
 "use client"
 
-console.log('🔥 ORDERS ADMIN PAGE SCRIPT LOADED')
-
 import { useState, useEffect } from "react"
 import { AdminHeader } from "@/components/admin-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -39,13 +37,6 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 
-// Extend Window interface for debugging
-declare global {
-  interface Window {
-    debugInfo?: string[]
-    lastOrderData?: any
-  }
-}
 
 interface OrderItem {
   id: string
@@ -91,21 +82,6 @@ interface Order {
 }
 
 export default function OrdersAdminPage() {
-  console.log('🚀 OrdersAdminPage component mounted/rendered')
-  console.log('🌍 Environment:', process.env.NODE_ENV)
-  console.log('🌍 User Agent:', typeof window !== 'undefined' ? window.navigator.userAgent : 'Server-side')
-  
-  // Alternative debugging methods
-  if (typeof window !== 'undefined') {
-    window.debugInfo = window.debugInfo || []
-    window.debugInfo.push('OrdersAdminPage component mounted')
-    
-    // Try alert as backup (remove after testing)
-    // alert('OrdersAdminPage loaded')
-    
-    // Try document title as debug indicator
-    document.title = 'Orders Admin - DEBUG LOADED'
-  }
   
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -132,101 +108,56 @@ export default function OrdersAdminPage() {
   }, [])
 
   const fetchOrders = async () => {
-    console.log('📋 fetchOrders called')
     try {
-      console.log('📡 Fetching orders from /api/admin/orders')
       const response = await fetch('/api/admin/orders')
-      console.log('📡 Orders API response status:', response.status)
       if (response.ok) {
         const data = await response.json()
-        console.log('📋 Orders received:', data.length, 'orders')
         setOrders(data)
-      } else {
-        console.error('❌ Orders API failed:', response.status, response.statusText)
       }
     } catch (error) {
-      console.error('❌ Error fetching orders:', error)
+      console.error('Error fetching orders:', error)
     } finally {
       setLoading(false)
-      console.log('📋 fetchOrders completed')
     }
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
-    console.log('🔽 Toggle order expansion called for:', orderId)
     const newExpanded = new Set(expandedOrders)
     
     if (newExpanded.has(orderId)) {
-      console.log('📤 Collapsing order:', orderId)
       newExpanded.delete(orderId)
       setExpandedOrders(newExpanded)
     } else {
-      console.log('📥 Expanding order:', orderId)
       newExpanded.add(orderId)
       setExpandedOrders(newExpanded)
       
       // Load order details if not already loaded
       if (!orderDetails[orderId]) {
-        console.log('📋 Order details not cached, loading for:', orderId)
         await loadOrderDetails(orderId)
-      } else {
-        console.log('📋 Order details already cached for:', orderId)
       }
     }
   }
 
   const loadOrderDetails = async (orderId: string) => {
-    console.log('🔄 Starting to load order details for:', orderId)
     const newLoading = new Set(loadingOrders)
     newLoading.add(orderId)
     setLoadingOrders(newLoading)
     
     try {
-      console.log('📡 Making API call to:', `/api/admin/orders/${orderId}`)
       const response = await fetch(`/api/admin/orders/${orderId}`)
-      console.log('📡 API Response status:', response.status, response.statusText)
-      
       if (response.ok) {
         const data = await response.json()
-        console.log('📦 Order details received:', {
-          orderId,
-          subtotal: data.order?.subtotal,
-          total_amount: data.order?.total_amount,
-          discount_amount: data.order?.discount_amount,
-          cashback_used: data.order?.cashback_used,
-          subtotal_type: typeof data.order?.subtotal,
-          total_amount_type: typeof data.order?.total_amount
-        })
-        console.log('📦 Full order data:', data.order)
-        
-        // Alternative debugging - add to window object
-        if (typeof window !== 'undefined') {
-          window.debugInfo = window.debugInfo || []
-          window.debugInfo.push(`Order details received for ${orderId}: subtotal=${data.order?.subtotal}, total=${data.order?.total_amount}`)
-          window.lastOrderData = data.order
-        }
-        
         setOrderDetails(prev => ({
           ...prev,
           [orderId]: data.order
         }))
-      } else {
-        console.error('❌ API call failed:', response.status, response.statusText)
-        const errorText = await response.text()
-        console.error('❌ Error response body:', errorText)
       }
     } catch (error) {
-      console.error('❌ Error loading order details:', error)
-      console.error('❌ Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        name: error instanceof Error ? error.name : 'Unknown error type'
-      })
+      console.error('Error loading order details:', error)
     } finally {
       const newLoading = new Set(loadingOrders)
       newLoading.delete(orderId)
       setLoadingOrders(newLoading)
-      console.log('✅ Finished loading order details for:', orderId)
     }
   }
 
@@ -409,29 +340,6 @@ export default function OrdersAdminPage() {
   return (
     <div className="min-h-screen bg-white text-black">
       <AdminHeader />
-      {/* Debug Panel - Remove after fixing */}
-      {process.env.NODE_ENV === 'production' && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mx-4 mt-4">
-          <strong>DEBUG INFO:</strong>
-          <div>Orders loaded: {orders.length}</div>
-          <div>Expanded orders: {expandedOrders.size}</div>
-          <div>Order details cached: {Object.keys(orderDetails).length}</div>
-          <div>Loading orders: {loadingOrders.size}</div>
-          {Object.keys(orderDetails).length > 0 && (
-            <div className="mt-2 text-xs">
-              <strong>Cached Order IDs:</strong> {Object.keys(orderDetails).join(', ')}
-              <br />
-              <strong>First Order Data Sample:</strong>
-              <br />
-              {(() => {
-                const firstOrderId = Object.keys(orderDetails)[0]
-                const firstOrder = orderDetails[firstOrderId]
-                return `ID: ${firstOrderId}, Subtotal: ${firstOrder?.subtotal}, Total: ${firstOrder?.total_amount}, Name: ${firstOrder?.first_name} ${firstOrder?.last_name}`
-              })()}
-            </div>
-          )}
-        </div>
-      )}
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Header */}
@@ -530,18 +438,7 @@ export default function OrdersAdminPage() {
                   {/* Order Header */}
                   <div 
                     className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
-                    onClick={() => {
-                      console.log('🖱️ CLICK EVENT TRIGGERED for order:', order.id)
-                      console.log('🖱️ Current environment:', process.env.NODE_ENV)
-                      console.log('🖱️ Window location:', window.location.href)
-                      
-                      // Temporary alert for production debugging - REMOVE AFTER TESTING
-                      if (process.env.NODE_ENV === 'production') {
-                        alert(`Click detected for order: ${order.id}`)
-                      }
-                      
-                      toggleOrderExpansion(order.id)
-                    }}
+                    onClick={() => toggleOrderExpansion(order.id)}
                   >
                     {/* Mobile Layout */}
                     <div className="block sm:hidden">
@@ -680,11 +577,6 @@ export default function OrdersAdminPage() {
                                 <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
                                   <User className="h-4 w-4 mr-2" />
                                   Customer Info
-                                  {process.env.NODE_ENV === 'production' && (
-                                    <span className="ml-2 text-xs text-red-600">
-                                      [DEBUG: {orderDetails[order.id]?.first_name || 'NO_FIRST'} {orderDetails[order.id]?.last_name || 'NO_LAST'}]
-                                    </span>
-                                  )}
                                 </h5>
                                 <div className="space-y-1 text-sm">
                                   <div>
@@ -840,11 +732,6 @@ export default function OrdersAdminPage() {
                                 <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
                                   <DollarSign className="h-4 w-4 mr-2" />
                                   Summary
-                                  {process.env.NODE_ENV === 'production' && (
-                                    <span className="ml-2 text-xs text-red-600">
-                                      [DEBUG: subtotal={orderDetails[order.id]?.subtotal || 'UNDEFINED'} total={orderDetails[order.id]?.total_amount || 'UNDEFINED'}]
-                                    </span>
-                                  )}
                                 </h5>
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
@@ -981,7 +868,7 @@ export default function OrdersAdminPage() {
                                   </div>
                                   <div>
                                     <span className="text-gray-600 text-sm">Admin Notes:</span>
-                                    <p className="font-medium mt-1 text-sm">{orderDetails[order.id].admin_notes || 'No notes'}</p>
+                                    <p className="font-medium mt-1 text-sm text-gray-900">{orderDetails[order.id].admin_notes || 'No notes'}</p>
                                   </div>
                                 </div>
                                                                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:justify-between sm:items-center">
