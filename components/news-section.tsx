@@ -80,7 +80,7 @@ export function NewsSection() {
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pt-4 pb-4">
+                <AccordionContent className="px-4 pt-3 pb-3">
                   <div className="text-gray-700 dark:text-gray-300">
                     <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
                       {newsPost.message}
