@@ -29,7 +29,7 @@ export function NewsSection() {
 
   if (loading) {
     return (
-      <section className="py-16 bg-white/80 backdrop-blur-sm">
+      <section className="py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -44,11 +44,11 @@ export function NewsSection() {
   }
 
   return (
-    <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 backdrop-blur-sm">
+    <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 dark:from-gray-800/90 dark:to-gray-700/90 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Latest News</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Latest News</h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Stay updated with the latest announcements, events, and updates from UO King
           </p>
         </div>
@@ -59,7 +59,7 @@ export function NewsSection() {
               <AccordionItem 
                 key={newsPost.id} 
                 value={`item-${index}`}
-                className="border border-orange-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white/70"
+                className="border border-orange-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white/70 dark:bg-gray-800/70"
               >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600">
                   <div className="flex items-center justify-between w-full text-left">
@@ -81,7 +81,7 @@ export function NewsSection() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pt-4 pb-4">
-                  <div className="text-gray-700">
+                  <div className="text-gray-700 dark:text-gray-300">
                     <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
                       {newsPost.message}
                     </pre>

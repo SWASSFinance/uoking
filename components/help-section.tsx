@@ -7,14 +7,14 @@ import { Mail, Clock, Crown, Star, Shield, Zap } from "lucide-react"
 
 export function HelpSection() {
   return (
-    <section className="py-16 px-4 bg-gradient-to-b from-amber-50 to-orange-100">
+    <section className="py-16 px-4 bg-gradient-to-b from-amber-50 to-orange-100 dark:from-gray-800 dark:to-gray-700">
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <Crown className="h-8 w-8 text-amber-600 mr-3" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Can't Find Something?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Can't Find Something?</h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             If you don't see the item you are looking for then just ask live chat. There is a good chance we carry whatever you are looking for.
           </p>
         </div> 
@@ -22,38 +22,38 @@ export function HelpSection() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           
 
-          <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-200 dark:border-gray-600">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
                 <Mail className="h-12 w-12 text-amber-600" />
               </div>
-              <CardTitle className="text-xl">Email Support</CardTitle>
+              <CardTitle className="text-xl dark:text-white">Email Support</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Send us an email and we'll get back to you within hours
               </p>
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">Discord: mr.brc</p>
-                <p className="text-sm text-gray-600">Email: sales@uoking.com</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Discord: mr.brc</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Email: sales@uoking.com</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border border-amber-200">
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-200 dark:border-gray-600">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
                 <Clock className="h-12 w-12 text-amber-600" />
               </div>
-              <CardTitle className="text-xl">Business Hours</CardTitle>
+              <CardTitle className="text-xl dark:text-white">Business Hours</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 We're here to help you with your Ultima Online needs
               </p>
               <div className="space-y-2">
-                <p className="text-lg font-bold text-amber-600">9AM - 1AM ET</p>
-                <p className="text-sm text-gray-600">7 days a week</p>
+                <p className="text-lg font-bold text-amber-600 dark:text-amber-400">9AM - 1AM ET</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">7 days a week</p>
               </div>
             </CardContent>
           </Card>
@@ -65,32 +65,32 @@ export function HelpSection() {
             <div className="flex justify-center mb-3">
               <Shield className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Secure Transactions</h3>
-            <p className="text-sm text-gray-600">100% secure payment processing</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Secure Transactions</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">100% secure payment processing</p>
           </div>
           
           <div className="text-center">
             <div className="flex justify-center mb-3">
               <Zap className="h-8 w-8 text-blue-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Fast Delivery</h3>
-            <p className="text-sm text-gray-600">Average delivery under 5 minutes</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Fast Delivery</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Average delivery under 5 minutes</p>
           </div>
           
           <div className="text-center">
             <div className="flex justify-center mb-3">
               <Star className="h-8 w-8 text-yellow-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Trusted Seller</h3>
-            <p className="text-sm text-gray-600">10,000+ happy customers</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Trusted Seller</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">10,000+ happy customers</p>
           </div>
           
           <div className="text-center">
             <div className="flex justify-center mb-3">
               <Crown className="h-8 w-8 text-amber-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Premium Quality</h3>
-            <p className="text-sm text-gray-600">Only the best UO items</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Premium Quality</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Only the best UO items</p>
           </div>
         </div>
 

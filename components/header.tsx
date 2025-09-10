@@ -250,7 +250,7 @@ export function Header() {
   return (
     <>
       <ServerStatusBar />
-      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -275,14 +275,14 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Class
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
               {activeDropdown === 'class' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                 >
                   {classesLoading ? (
                     <div className="px-4 py-2 text-sm text-gray-500">Loading classes...</div>
@@ -293,7 +293,7 @@ export function Header() {
                         <Link
                           key={cls.id}
                           href={`/Class/${cls.name}`}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 transition-colors"
                         >
                           {cls.name}
                         </Link>
@@ -311,14 +311,14 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Prop
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
               {activeDropdown === 'prop' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                 >
                   {propItems.map((item) => (
                     <Link
@@ -340,14 +340,14 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Slot
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
               {activeDropdown === 'slot' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                 >
                   {slotItems.map((item) => (
                     <Link
@@ -369,14 +369,14 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Store
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
               {activeDropdown === 'store' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-[750px] bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-[750px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                 >
                   <div className="grid grid-cols-4 gap-1 p-3">
                     {categoriesLoading ? (
@@ -388,7 +388,7 @@ export function Header() {
                         <Link
                           key={category.id}
                           href={`/UO/${categoryToUrl(category.name)}`}
-                          className="block px-2 py-1 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 rounded transition-colors"
+                          className="block px-2 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded transition-colors"
                         >
                           {category.name}
                         </Link>
@@ -403,11 +403,11 @@ export function Header() {
               )}
             </div>
 
-            <Link href="/UO/Gold" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
+            <Link href="/UO/Gold" className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
               Gold
             </Link>
 
-            <Link href="/UO/Custom-Suits" className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors">
+            <Link href="/UO/Custom-Suits" className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
               Suits
             </Link>
 
@@ -418,14 +418,14 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Scrolls
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
               {activeDropdown === 'scrolls' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                 >
                   {scrollItems.map((item) => (
                     <Link
@@ -447,14 +447,14 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 rounded-md hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center"
+                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Tools
                 <ChevronDown className="ml-1 h-3 w-3" />
               </button>
               {activeDropdown === 'tools' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                 >
                   {toolItems.map((item) => (
                     <Link
@@ -486,9 +486,9 @@ export function Header() {
               variant="ghost" 
               size="icon" 
               onClick={() => setIsSearchModalOpen(true)}
-              className="hidden sm:flex hover:bg-gray-100"
+              className="hidden sm:flex hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              <Search className="h-5 w-5 text-gray-700" />
+              <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </Button>
 
             {/* Auth Buttons / User Info */}
@@ -652,11 +652,11 @@ export function Header() {
                   <nav className="flex flex-col space-y-6">
                     {/* Main Categories */}
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Shop by Category</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Shop by Category</h3>
                       
                       {/* Store Section */}
                       <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Store Categories</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Store Categories</h4>
                         {categoriesLoading ? (
                           <div className="px-2 text-sm text-gray-500">Loading...</div>
                         ) : (
@@ -688,11 +688,11 @@ export function Header() {
 
                     {/* Character Builds */}
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Character Builds</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Character Builds</h3>
                       
                       {/* Class Section */}
                       <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Class</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Class</h4>
                         {classesLoading ? (
                           <div className="px-2 text-sm text-gray-500">Loading classes...</div>
                         ) : (
@@ -710,7 +710,7 @@ export function Header() {
 
                       {/* Slot Section */}
                       <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Equipment Slots</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Equipment Slots</h4>
                         <div className="grid grid-cols-2 gap-2">
                           {slotItems.map((item) => (
                             <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
@@ -725,11 +725,11 @@ export function Header() {
 
                     {/* Item Properties */}
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Item Properties</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Item Properties</h3>
                       
                       {/* Prop Section */}
                       <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Properties</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Properties</h4>
                         <div className="grid grid-cols-2 gap-2">
                           {propItems.map((item) => (
                             <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
@@ -744,11 +744,11 @@ export function Header() {
 
                     {/* Scrolls & Tools */}
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 px-2 border-b border-gray-200 pb-2">Scrolls & Tools</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Scrolls & Tools</h3>
                       
                       {/* Scrolls Section */}
                       <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Scrolls</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Scrolls</h4>
                         <div className="grid grid-cols-2 gap-2">
                           {scrollItems.map((item) => (
                             <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
@@ -762,7 +762,7 @@ export function Header() {
 
                       {/* Tools Section */}
                       <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Tools</h4>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Tools</h4>
                         <div className="grid grid-cols-2 gap-2">
                           {toolItems.map((item) => (
                             <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>

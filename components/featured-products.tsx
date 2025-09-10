@@ -56,22 +56,22 @@ export function FeaturedProducts() {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <Crown className="h-8 w-8 text-amber-600 mr-3" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Products</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Featured Products</h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Discover our most popular and highest-rated Ultima Online items</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Discover our most popular and highest-rated Ultima Online items</p>
         </div>
 
         {products.length > 0 ? (
           <ProductsGrid products={products} />
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600">No featured products available at the moment.</p>
+            <p className="text-gray-600 dark:text-gray-300">No featured products available at the moment.</p>
           </div>
         )}
 
         <div className="text-center mt-12">
           <Link href="/store">
-            <Button variant="outline" size="lg" className="px-8 bg-white/90 backdrop-blur-sm border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white">
+            <Button variant="outline" size="lg" className="px-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-amber-600 dark:border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-600 dark:hover:bg-amber-500 hover:text-white">
               View All Products
             </Button>
           </Link>
