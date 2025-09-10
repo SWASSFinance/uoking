@@ -54,17 +54,17 @@ export function NewsSection() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <Accordion type="single" collapsible value={expandedItem} onValueChange={setExpandedItem} className="space-y-4">
+          <Accordion type="single" collapsible value={expandedItem} onValueChange={setExpandedItem} className="space-y-1">
             {news.map((newsPost, index) => (
               <AccordionItem 
                 key={newsPost.id} 
                 value={`item-${index}`}
                 className="border border-orange-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white/70 dark:bg-gray-800/70"
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600">
+                <AccordionTrigger className="px-3 py-2 hover:no-underline bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600">
                   <div className="flex items-center justify-between w-full text-left">
                                          <div className="flex-1">
-                       <h3 className="text-lg font-semibold text-white">
+                       <h3 className="text-base font-semibold text-white">
                          {newsPost.title}
                        </h3>
                      </div>
