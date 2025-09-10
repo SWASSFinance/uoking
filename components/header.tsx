@@ -175,7 +175,7 @@ export function Header() {
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
       setActiveDropdown(null)
-    }, 150)
+    }, 300)
     setDropdownTimeout(timeout)
   }
 
@@ -282,7 +282,9 @@ export function Header() {
               </button>
               {activeDropdown === 'class' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('class')}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {classesLoading ? (
                     <div className="px-4 py-2 text-sm text-gray-500">Loading classes...</div>
@@ -318,13 +320,15 @@ export function Header() {
               </button>
               {activeDropdown === 'prop' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('prop')}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {propItems.map((item) => (
                     <Link
                       key={item}
                       href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 transition-colors"
                     >
                       {item}
                     </Link>
@@ -347,13 +351,15 @@ export function Header() {
               </button>
               {activeDropdown === 'slot' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('slot')}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {slotItems.map((item) => (
                     <Link
                       key={item}
                       href={`/UO/${slotToCategoryUrl(item)}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 transition-colors"
                     >
                       {item}
                     </Link>
@@ -376,7 +382,9 @@ export function Header() {
               </button>
               {activeDropdown === 'store' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-[750px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-[750px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('store')}
+                  onMouseLeave={handleMouseLeave}
                 >
                   <div className="grid grid-cols-4 gap-1 p-3">
                     {categoriesLoading ? (
@@ -425,13 +433,15 @@ export function Header() {
               </button>
               {activeDropdown === 'scrolls' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('scrolls')}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {scrollItems.map((item) => (
                     <Link
                       key={item}
                       href={`/UO/${scrollToUrl(item)}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 transition-colors"
                     >
                       {item}
                     </Link>
@@ -454,7 +464,9 @@ export function Header() {
               </button>
               {activeDropdown === 'tools' && (
                 <div 
-                  className="absolute left-0 top-full mt-1 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  onMouseEnter={() => handleMouseEnter('tools')}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {toolItems.map((item) => (
                     <Link
@@ -466,7 +478,7 @@ export function Header() {
                            item === 'EM Event List' ? '/em-events' : 
                            item === 'IDOC' ? '/IDOC' :
                            `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 transition-colors"
                     >
                       {item}
                     </Link>
