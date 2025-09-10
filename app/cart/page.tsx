@@ -399,13 +399,13 @@ export default function CartPage() {
                 Looks like you haven't added any items to your cart yet. Start shopping to see items here!
               </p>
               <div className="space-x-4">
-                <Button asChild className="bg-amber-600 hover:bg-amber-700">
+                <Button asChild className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600">
                   <Link href="/store">
                     <Package className="h-4 w-4 mr-2" />
                     Browse Products
                   </Link>
                 </Button>
-                <Button variant="outline" onClick={() => router.back()}>
+                <Button variant="outline" onClick={() => router.back()} className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Continue Shopping
                 </Button>
@@ -425,7 +425,7 @@ export default function CartPage() {
         <div className="container mx-auto max-w-6xl">
           {/* Continue Shopping Button */}
           <div className="mb-6">
-            <Button variant="outline" onClick={() => router.back()} className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+            <Button variant="outline" onClick={() => router.back()} className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Continue Shopping
             </Button>
@@ -440,7 +440,7 @@ export default function CartPage() {
                   {cart.itemCount} item{cart.itemCount !== 1 ? 's' : ''} in your cart
                 </p>
               </div>
-              <Button variant="outline" onClick={handleClearCart} className="text-red-600 border-red-200 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20">
+              <Button variant="outline" onClick={handleClearCart} className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-300">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clear Cart
               </Button>
