@@ -61,14 +61,14 @@ export function SlotSection() {
   }
 
   return (
-    <section className="py-12 bg-white/80 backdrop-blur-sm">
+    <section className="py-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Shield className="h-6 w-6 text-amber-600 mr-2" />
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Equipment Slots</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Equipment Slots</h2>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Browse equipment by specific body slots to find the perfect gear for your character
           </p>
         </div>
@@ -78,12 +78,12 @@ export function SlotSection() {
             <Link
               key={slot}
               href={`/UO/${slotToCategoryUrl(slot)}`}
-              className="group block p-3 bg-white/90 backdrop-blur-sm rounded-lg border border-gray-200 hover:border-amber-500 hover:shadow-md transition-all duration-300 text-center"
+              className="group block p-3 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-600 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-md transition-all duration-300 text-center"
             >
               <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
                 {getSlotEmoji(slot)}
               </div>
-              <h3 className="text-sm font-medium text-gray-900 group-hover:text-amber-600 transition-colors duration-300">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300">
                 {slot}
               </h3>
             </Link>
