@@ -39,6 +39,14 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 
+// Extend Window interface for debugging
+declare global {
+  interface Window {
+    debugInfo?: string[]
+    lastOrderData?: any
+  }
+}
+
 interface OrderItem {
   id: string
   product_id?: string
@@ -86,6 +94,18 @@ export default function OrdersAdminPage() {
   console.log('🚀 OrdersAdminPage component mounted/rendered')
   console.log('🌍 Environment:', process.env.NODE_ENV)
   console.log('🌍 User Agent:', typeof window !== 'undefined' ? window.navigator.userAgent : 'Server-side')
+  
+  // Alternative debugging methods
+  if (typeof window !== 'undefined') {
+    window.debugInfo = window.debugInfo || []
+    window.debugInfo.push('OrdersAdminPage component mounted')
+    
+    // Try alert as backup (remove after testing)
+    // alert('OrdersAdminPage loaded')
+    
+    // Try document title as debug indicator
+    document.title = 'Orders Admin - DEBUG LOADED'
+  }
   
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -178,6 +198,14 @@ export default function OrdersAdminPage() {
           total_amount_type: typeof data.order?.total_amount
         })
         console.log('📦 Full order data:', data.order)
+        
+        // Alternative debugging - add to window object
+        if (typeof window !== 'undefined') {
+          window.debugInfo = window.debugInfo || []
+          window.debugInfo.push(`Order details received for ${orderId}: subtotal=${data.order?.subtotal}, total=${data.order?.total_amount}`)
+          window.lastOrderData = data.order
+        }
+        
         setOrderDetails(prev => ({
           ...prev,
           [orderId]: data.order
@@ -381,6 +409,16 @@ export default function OrdersAdminPage() {
   return (
     <div className="min-h-screen bg-white text-black">
       <AdminHeader />
+      {/* Debug Panel - Remove after fixing */}
+      {process.env.NODE_ENV === 'production' && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mx-4 mt-4">
+          <strong>DEBUG INFO:</strong>
+          <div>Orders loaded: {orders.length}</div>
+          <div>Expanded orders: {expandedOrders.size}</div>
+          <div>Order details cached: {Object.keys(orderDetails).length}</div>
+          <div>Loading orders: {loadingOrders.size}</div>
+        </div>
+      )}
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Header */}
@@ -483,6 +521,12 @@ export default function OrdersAdminPage() {
                       console.log('🖱️ CLICK EVENT TRIGGERED for order:', order.id)
                       console.log('🖱️ Current environment:', process.env.NODE_ENV)
                       console.log('🖱️ Window location:', window.location.href)
+                      
+                      // Temporary alert for production debugging - REMOVE AFTER TESTING
+                      if (process.env.NODE_ENV === 'production') {
+                        alert(`Click detected for order: ${order.id}`)
+                      }
+                      
                       toggleOrderExpansion(order.id)
                     }}
                   >
