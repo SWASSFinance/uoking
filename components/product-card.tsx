@@ -95,7 +95,7 @@ export function ProductCard({
             )}
           </div>
           
-          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors text-sm">
+          <h3 className="font-semibold text-gray-800 dark:text-amber-400 mb-2 line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-white transition-colors text-sm">
             {product.name}
           </h3>
           

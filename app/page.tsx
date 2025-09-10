@@ -10,6 +10,7 @@ import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 import { PremiumBenefitsAd } from "@/components/premium-benefits-ad"
 import { getActiveBanners } from "@/lib/db"
+import Link from "next/link"
 
 export default async function HomePage() {
   // Fetch active homepage banners
@@ -79,7 +80,7 @@ export default async function HomePage() {
                   { name: "Thief", slug: "thief", color: "gray" },
                   { name: "Crafter", slug: "crafter", color: "amber" }
                 ].map((classData) => (
-                  <a
+                  <Link
                     key={classData.slug}
                     href={`/Class/${classData.name}`}
                     className="block p-4 bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-600 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-center group"
@@ -95,7 +96,7 @@ export default async function HomePage() {
                     <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300">
                       {classData.name}
                     </h3>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
