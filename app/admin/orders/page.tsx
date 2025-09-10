@@ -177,9 +177,9 @@ export default function OrdersAdminPage() {
     } catch (error) {
       console.error('❌ Error loading order details:', error)
       console.error('❌ Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        name: error instanceof Error ? error.name : 'Unknown error type'
       })
     } finally {
       const newLoading = new Set(loadingOrders)

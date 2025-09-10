@@ -131,13 +131,22 @@ export async function GET(
 
     const orderItems = itemsResult.rows || []
 
-    console.log('✅ Successfully returning order data')
-    return NextResponse.json({
+    const responseData = {
       order: {
         ...order,
         items: orderItems
       }
+    }
+    
+    console.log('✅ ORDER DETAILS API COMPLETED SUCCESSFULLY')
+    console.log('📤 Returning order data with financial fields:', {
+      subtotal: responseData.order.subtotal,
+      total_amount: responseData.order.total_amount,
+      discount_amount: responseData.order.discount_amount,
+      cashback_used: responseData.order.cashback_used
     })
+    
+    return NextResponse.json(responseData)
 
   } catch (error) {
     console.error('=== CRITICAL ERROR IN ORDER DETAILS API ===')
