@@ -81,6 +81,10 @@ interface Order {
 }
 
 export default function OrdersAdminPage() {
+  console.log('🚀 OrdersAdminPage component mounted/rendered')
+  console.log('🌍 Environment:', process.env.NODE_ENV)
+  console.log('🌍 User Agent:', typeof window !== 'undefined' ? window.navigator.userAgent : 'Server-side')
+  
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -106,16 +110,23 @@ export default function OrdersAdminPage() {
   }, [])
 
   const fetchOrders = async () => {
+    console.log('📋 fetchOrders called')
     try {
+      console.log('📡 Fetching orders from /api/admin/orders')
       const response = await fetch('/api/admin/orders')
+      console.log('📡 Orders API response status:', response.status)
       if (response.ok) {
         const data = await response.json()
+        console.log('📋 Orders received:', data.length, 'orders')
         setOrders(data)
+      } else {
+        console.error('❌ Orders API failed:', response.status, response.statusText)
       }
     } catch (error) {
-      console.error('Error fetching orders:', error)
+      console.error('❌ Error fetching orders:', error)
     } finally {
       setLoading(false)
+      console.log('📋 fetchOrders completed')
     }
   }
 
@@ -466,7 +477,12 @@ export default function OrdersAdminPage() {
                   {/* Order Header */}
                   <div 
                     className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" 
-                    onClick={() => toggleOrderExpansion(order.id)}
+                    onClick={() => {
+                      console.log('🖱️ CLICK EVENT TRIGGERED for order:', order.id)
+                      console.log('🖱️ Current environment:', process.env.NODE_ENV)
+                      console.log('🖱️ Window location:', window.location.href)
+                      toggleOrderExpansion(order.id)
+                    }}
                   >
                     {/* Mobile Layout */}
                     <div className="block sm:hidden">
