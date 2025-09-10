@@ -59,11 +59,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title and message are required' }, { status: 400 });
     }
 
+    // Generate a unique ID (using timestamp + random to ensure uniqueness)
+    const id = `news_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     const result = await query(`
-      INSERT INTO news (title, message, posted_by, date_posted, is_active)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO news (id, title, message, posted_by, date_posted, is_active)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id, title, message, posted_by, date_posted, is_active, created_at, updated_at
-    `, [title, message, 'admin', date_posted || new Date().toISOString().split('T')[0], is_active]);
+    `, [id, title, message, 'admin', date_posted, is_active]);
 
     return NextResponse.json(result.rows[0], { status: 201 });
 
