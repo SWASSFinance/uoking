@@ -1289,13 +1289,15 @@ export async function getAllOrders() {
         o.*,
         u.email as user_email,
         u.username,
+        u.first_name,
+        u.last_name,
         g.name as gift_name,
         COUNT(oi.id) as item_count
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       LEFT JOIN gifts g ON o.gift_id = g.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      GROUP BY o.id, u.email, u.username, g.name
+      GROUP BY o.id, u.email, u.username, u.first_name, u.last_name, g.name
       ORDER BY o.created_at DESC
     `)
     return result.rows
