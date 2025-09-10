@@ -319,13 +319,13 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           {/* No Items Found */}
           {products.length === 0 && (
             <div className="text-center mb-12">
-              <Card className="border-amber-200 max-w-md mx-auto">
+              <Card className="border-amber-200 dark:border-gray-600 max-w-md mx-auto">
                 <CardContent className="p-8">
                   <div className="flex justify-center mb-4">
                     <Target className="h-12 w-12 text-gray-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Items Found</h3>
-                  <p className="text-gray-600 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Items Found</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
                     We couldn't find any items with the {propertyName} property. 
                     Try browsing our general store for similar items.
                   </p>
@@ -340,14 +340,14 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           )}
 
           {/* Tips Section */}
-          <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-amber-200">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+          <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-amber-200 dark:border-gray-600">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
               Tips for Maximizing {propertyName}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900">Equipment Strategy</h3>
-                <ul className="space-y-2 text-gray-600">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Equipment Strategy</h3>
+                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li className="flex items-start">
                     <Star className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
                     Focus on items that complement your build
@@ -363,8 +363,8 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 </ul>
               </div>
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900">Build Optimization</h3>
-                <ul className="space-y-2 text-gray-600">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Build Optimization</h3>
+                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li className="flex items-start">
                     <Star className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
                     Combine with complementary properties

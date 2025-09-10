@@ -120,7 +120,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
   const savingsPercentage = Math.round((savings / deal.price) * 100)
 
   return (
-    <Card className={`border-2 border-orange-200 dark:border-orange-400 bg-gradient-to-r from-orange-50/95 to-amber-50/95 dark:from-orange-900/80 dark:to-amber-900/80 backdrop-blur-md shadow-2xl ${className}`}>
+    <Card className={`border-2 border-orange-200 dark:border-purple-400 bg-gradient-to-r from-orange-50/95 to-amber-50/95 dark:from-purple-900/80 dark:to-pink-900/80 backdrop-blur-md shadow-2xl ${className}`}>
       
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -149,7 +149,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
           {/* Product Details */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 pt-4">
                 {deal.name} 
               </h3>  
               <div className="text-gray-600 dark:text-gray-300 text-sm mb-4">
@@ -160,14 +160,14 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
             {/* Pricing */}
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                <span className="text-2xl font-bold text-amber-600 dark:text-purple-400">
                   ${deal.sale_price.toFixed(2)}
                 </span>
                 <span className="text-lg text-gray-500 dark:text-gray-400 line-through">
                   ${deal.price.toFixed(2)}
                 </span>
               </div>
-              <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+              <p className="text-sm text-amber-600 dark:text-purple-400 font-medium">
                 You save ${savings.toFixed(2)} ({savingsPercentage}% off!)
               </p>
             </div>
@@ -177,7 +177,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
               <div className="flex space-x-2">
                 <Button 
                   onClick={handleAddToCart}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white"
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Add to Cart
