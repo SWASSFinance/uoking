@@ -211,7 +211,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto">
@@ -227,7 +227,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
           {/* Property Header */}
           <div className="mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200 dark:border-gray-600">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 -mt-4">
                   <div className={`w-full h-full rounded-lg bg-gradient-to-r ${currentProperty?.color || 'from-amber-500 to-amber-600'} flex items-center justify-center`}>
@@ -235,9 +235,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 mt-6">Ultima Online {propertyName} Items</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 mt-6">Ultima Online {propertyName} Items</h1>
                   <div className="prose prose-amber max-w-none">
-                    <div className="text-gray-600 leading-relaxed">
+                    <div className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {currentProperty?.description || `Items with ${propertyName} property`}
                     </div>
                   </div>
@@ -247,19 +247,19 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </div>
 
           {/* Property Details - Compact Version */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200 dark:border-gray-600">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* What is Property */}
               <div className="space-y-3">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
                   <Star className="h-5 w-5 text-amber-500 mr-2" />
                   What is {propertyName}?
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   {propertyName} is a property that enhances your character's abilities in Ultima Online. 
                   It's one of the most sought-after properties for optimizing your build.
                 </p>
-                <div className="text-xs text-gray-500 space-y-1">
+                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                   <div className="flex items-center">
                     <Star className="h-3 w-3 text-amber-400 mr-1" />
                     Enhances performance
@@ -277,20 +277,20 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
               {/* How to Get Property */}
               <div className="space-y-3">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
                   <Target className="h-5 w-5 text-blue-500 mr-2" />
                   How to Get {propertyName}
                 </h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <Target className="h-4 w-4 text-blue-400 mr-2" />
                     Find items with {propertyName}
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <Zap className="h-4 w-4 text-purple-400 mr-2" />
                     Use enhancement materials
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <Sword className="h-4 w-4 text-green-400 mr-2" />
                     Craft items with {propertyName}
                   </div>
@@ -302,10 +302,10 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           {/* Products Section */}
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
                 {propertyName} Products
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 {products.length} {products.length === 1 ? 'item' : 'items'} available
               </p>
             </div>
