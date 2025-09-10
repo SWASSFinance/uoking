@@ -175,7 +175,7 @@ export function Header() {
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
       setActiveDropdown(null)
-    }, 300)
+    }, 0)
     setDropdownTimeout(timeout)
   }
 
