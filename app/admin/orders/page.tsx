@@ -689,15 +689,15 @@ export default function OrdersAdminPage() {
                                 <div className="space-y-1 text-sm">
                                   <div>
                                     <span className="text-gray-600">Name:</span>
-                                    <p className="font-medium">{orderDetails[order.id].first_name} {orderDetails[order.id].last_name}</p>
+                                    <p className="font-medium text-gray-900">{orderDetails[order.id].first_name} {orderDetails[order.id].last_name}</p>
                                   </div>
                                   <div>
                                     <span className="text-gray-600">Email:</span>
-                                    <p className="font-medium">{orderDetails[order.id].user_email}</p>
+                                    <p className="font-medium text-gray-900">{orderDetails[order.id].user_email}</p>
                                   </div>
                                   <div>
                                     <span className="text-gray-600">Username:</span>
-                                    <p className="font-medium">{orderDetails[order.id].username}</p>
+                                    <p className="font-medium text-gray-900">{orderDetails[order.id].username}</p>
                                   </div>
                                 </div>
                               </div>
@@ -849,7 +849,7 @@ export default function OrdersAdminPage() {
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Subtotal</span>
-                                    <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal || '0').toFixed(2)}</span>
+                                    <span className="font-medium text-gray-900">${parseFloat(orderDetails[order.id].subtotal || '0').toFixed(2)}</span>
                                   </div>
                                   {parseFloat(orderDetails[order.id].discount_amount || '0') > 0 && (
                                     <div className="flex justify-between">
@@ -864,8 +864,8 @@ export default function OrdersAdminPage() {
                                     </div>
                                   )}
                                   <div className="border-t pt-1 flex justify-between font-semibold">
-                                    <span>Total</span>
-                                    <span>${parseFloat(orderDetails[order.id].total_amount || '0').toFixed(2)}</span>
+                                    <span className="text-gray-900">Total</span>
+                                    <span className="text-gray-900">${parseFloat(orderDetails[order.id].total_amount || '0').toFixed(2)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -880,12 +880,12 @@ export default function OrdersAdminPage() {
                                   {orderDetails[order.id].coupon_code && (
                                     <div>
                                       <span className="text-gray-600">Coupon:</span>
-                                      <p className="font-medium">{orderDetails[order.id].coupon_code}</p>
+                                      <p className="font-medium text-gray-900">{orderDetails[order.id].coupon_code}</p>
                                     </div>
                                   )}
                                   <div>
                                     <span className="text-gray-600">Date:</span>
-                                    <p className="font-medium">{new Date(orderDetails[order.id].created_at).toLocaleDateString()}</p>
+                                    <p className="font-medium text-gray-900">{new Date(orderDetails[order.id].created_at).toLocaleDateString()}</p>
                                   </div>
                                 </div>
                               </div>
