@@ -165,31 +165,31 @@ export default async function ClassPage({ params }: ClassPageProps) {
   const classColor = classColors[classData.slug] || classColors.default
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
       <Header />
       
       <main className="py-16 px-4">
         <div className="container mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <Link href="/" className="hover:text-amber-600 transition-colors">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 mb-6">
+            <Link href="/" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
               Home
             </Link>
             <span>/</span>
-            <Link href="/class" className="hover:text-amber-600 transition-colors">
+            <Link href="/class" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
               Classes
             </Link>
             <span>/</span>
-            <span className="text-amber-600 font-medium">{classData.name}</span>
+            <span className="text-amber-600 dark:text-amber-400 font-medium">{classData.name}</span>
           </nav>
 
           {/* Class Header */}
           <div className="mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-amber-200 dark:border-gray-600">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 -mt-4">
                   {classData.image_url ? (
-                    <div className="w-full h-full rounded-lg overflow-hidden bg-gray-100 shadow-lg relative">
+                    <div className="w-full h-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-lg relative">
                       <ProductImage
                         src={classData.image_url}
                         alt={classData.name}
@@ -205,13 +205,13 @@ export default async function ClassPage({ params }: ClassPageProps) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-4 mt-6">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">UO {classData.name} Items</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">UO {classData.name} Items</h1>
                     {classData.difficulty_level <= 2 && (
                       <Badge className="bg-amber-500 text-white">Popular Class</Badge>
                     )}
                   </div>
                   <div className="prose prose-amber max-w-none">
-                    <div className="text-gray-600 leading-relaxed">
+                    <div className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {classData.description}
                     </div>
                   </div>
@@ -223,10 +223,10 @@ export default async function ClassPage({ params }: ClassPageProps) {
           {/* Products Section */}
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
                 {classData.name} Products
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 {products.length} {products.length === 1 ? 'item' : 'items'} available
               </p>
             </div>
@@ -241,12 +241,12 @@ export default async function ClassPage({ params }: ClassPageProps) {
           {classData.primary_stats && classData.primary_stats.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               {classData.primary_stats.map((stat, index) => (
-                <Card key={index} className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <Card key={index} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-200 dark:border-gray-600">
                   <CardContent className="p-6 text-center">
                     <div className="flex justify-center mb-3">
                       <Star className="h-6 w-6 text-amber-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-900">{stat}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{stat}</h3>
                   </CardContent>
                 </Card>
               ))}
@@ -255,7 +255,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
 
           {/* Latest Items */}
           <div className="mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Latest Items</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">Latest Items</h2>
             <ProductsGrid products={products.slice(0, 12)} />
             
             {/* View All Products Button */}
