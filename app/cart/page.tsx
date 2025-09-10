@@ -388,14 +388,14 @@ export default function CartPage() {
 
   if (cart.items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <Header />
         <main className="py-16 px-4">
           <div className="container mx-auto max-w-4xl">
             <div className="text-center py-12">
-              <ShoppingCart className="h-24 w-24 text-gray-400 mx-auto mb-6" />
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              <ShoppingCart className="h-24 w-24 text-gray-400 dark:text-gray-600 mx-auto mb-6" />
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Your Cart is Empty</h1>
+              <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
                 Looks like you haven't added any items to your cart yet. Start shopping to see items here!
               </p>
               <div className="space-x-4">
@@ -419,13 +419,13 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
           {/* Continue Shopping Button */}
           <div className="mb-6">
-            <Button variant="outline" onClick={() => router.back()}>
+            <Button variant="outline" onClick={() => router.back()} className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Continue Shopping
             </Button>
@@ -435,12 +435,12 @@ export default function CartPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
-                <p className="text-gray-600">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Shopping Cart</h1>
+                <p className="text-gray-600 dark:text-gray-300">
                   {cart.itemCount} item{cart.itemCount !== 1 ? 's' : ''} in your cart
                 </p>
               </div>
-              <Button variant="outline" onClick={handleClearCart} className="text-red-600 border-red-200">
+              <Button variant="outline" onClick={handleClearCart} className="text-red-600 border-red-200 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clear Cart
               </Button>
@@ -451,14 +451,14 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {cart.items.map((item) => (
-                <Card key={item.id} className="bg-white/80 backdrop-blur-sm border border-amber-200">
+                <Card key={item.id} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-200 dark:border-gray-600">
                   <CardContent className="p-4 sm:p-6">
                     {/* Mobile Layout */}
                     <div className="block sm:hidden space-y-4">
                       {/* Top Row: Image and Details */}
                       <div className="flex items-start space-x-3">
                         {/* Item Image */}
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                           {item.image_url ? (
                             <Image
                               src={item.image_url}
@@ -469,16 +469,16 @@ export default function CartPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <Package className="h-6 w-6 text-gray-400" />
+                              <Package className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                             </div>
                           )}
                         </div>
 
                         {/* Item Details */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm leading-tight">{item.name}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{item.name}</h3>
                           {item.category && (
-                            <Badge variant="secondary" className="mt-1 text-xs">
+                            <Badge variant="secondary" className="mt-1 text-xs dark:bg-gray-600 dark:text-gray-200">
                               {item.category}
                             </Badge>
                           )}
@@ -489,7 +489,7 @@ export default function CartPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleRemoveItem(item.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 p-1"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -530,10 +530,10 @@ export default function CartPage() {
 
                         {/* Item Total */}
                         <div className="text-right">
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-lg font-bold text-gray-900 dark:text-white">
                             ${(item.price * item.quantity).toFixed(2)}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             ${item.price.toFixed(2)} each
                           </p>
                         </div>
@@ -543,7 +543,7 @@ export default function CartPage() {
                     {/* Desktop Layout */}
                     <div className="hidden sm:flex items-center space-x-4">
                       {/* Item Image */}
-                      <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                         {item.image_url ? (
                           <Image
                             src={item.image_url}
@@ -554,20 +554,20 @@ export default function CartPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-8 w-8 text-gray-400" />
+                            <Package className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                           </div>
                         )}
                       </div>
 
                       {/* Item Details */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{item.name}</h3>
                         {item.category && (
-                          <Badge variant="secondary" className="mt-1">
+                          <Badge variant="secondary" className="mt-1 dark:bg-gray-600 dark:text-gray-200">
                             {item.category}
                           </Badge>
                         )}
-                        <p className="text-lg font-bold text-amber-600 mt-2">
+                        <p className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-2">
                           ${item.price.toFixed(2)}
                         </p>
                       </div>
@@ -603,10 +603,10 @@ export default function CartPage() {
 
                       {/* Item Total */}
                       <div className="text-right">
-                        <p className="text-lg font-bold text-gray-900">
+                        <p className="text-lg font-bold text-gray-900 dark:text-white">
                           ${(item.price * item.quantity).toFixed(2)}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           ${item.price.toFixed(2)} each
                         </p>
                       </div>
@@ -616,7 +616,7 @@ export default function CartPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleRemoveItem(item.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -628,9 +628,9 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="bg-white/80 backdrop-blur-sm border border-amber-200 sticky top-24">
+              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-200 dark:border-gray-600 sticky top-24">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900">Order Summary</CardTitle>
+                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Coupon Section */}
@@ -660,11 +660,11 @@ export default function CartPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
-                            <Tag className="h-4 w-4 text-green-600" />
-                            <span className="text-sm font-medium text-green-800">
+                            <Tag className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <span className="text-sm font-medium text-green-800 dark:text-green-200">
                               {appliedCoupon.code}
                             </span>
                           </div>
@@ -672,12 +672,12 @@ export default function CartPage() {
                             onClick={handleRemoveCoupon}
                             size="sm"
                             variant="ghost"
-                            className="text-green-600 hover:text-green-700"
+                            className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
                           >
                             <X className="h-3 w-3" />
                           </Button>
                         </div>
-                        <p className="text-xs text-green-600 mt-1">
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                           {appliedCoupon.description}
                         </p>
                       </div>
@@ -689,10 +689,10 @@ export default function CartPage() {
                     <div className="space-y-3 border-t pt-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <DollarSign className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium text-gray-700">Cashback Balance</span>
+                          <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Cashback Balance</span>
                         </div>
-                        <span className="text-sm font-bold text-green-600">
+                        <span className="text-sm font-bold text-green-600 dark:text-green-400">
                           {isLoadingBalance ? (
                             <LoadingSpinner size="sm" />
                           ) : (
@@ -726,7 +726,7 @@ export default function CartPage() {
                               Max
                             </Button>
                           </div>
-                          <div className="flex justify-between text-xs text-gray-500">
+                          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                             <span>Use cashback</span>
                             <span>Max: ${Math.min(cashbackBalance, cart.total).toFixed(2)}</span>
                           </div>
@@ -738,19 +738,19 @@ export default function CartPage() {
                   {/* Shard Selection Section */}
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-center space-x-2">
-                      <Package className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium text-gray-700">Delivery Information</span>
+                      <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Information</span>
                     </div>
                     
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Select Shard *
                         </label>
                         <select
                           value={selectedShard}
                           onChange={(e) => setSelectedShard(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                           required
                           disabled={isLoadingShards}
                         >
@@ -768,32 +768,32 @@ export default function CartPage() {
                       {/* Gift Selection Section */}
                       {availableGifts.length > 0 && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Choose Your Gift
                           </label>
                           <div className="space-y-2">
                             {isLoadingGifts ? (
-                              <div className="text-sm text-gray-500">Loading gifts...</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">Loading gifts...</div>
                             ) : (
                               availableGifts.map((gift) => (
-                                <label key={gift.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <label key={gift.id} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                                   <input
                                     type="radio"
                                     name="gift"
                                     value={gift.id}
                                     checked={selectedGift === gift.id}
                                     onChange={(e) => setSelectedGift(e.target.value)}
-                                    className="text-amber-600 focus:ring-amber-500"
+                                    className="text-amber-600 focus:ring-amber-500 dark:bg-gray-600"
                                   />
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-2">
-                                      <Gift className="h-4 w-4 text-amber-600" />
-                                      <span className="font-medium text-gray-900">{gift.name}</span>
+                                      <Gift className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                      <span className="font-medium text-gray-900 dark:text-white">{gift.name}</span>
                                     </div>
                                     {gift.description && (
-                                      <p className="text-sm text-gray-600 mt-1">{gift.description}</p>
+                                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{gift.description}</p>
                                     )}
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                       Available for orders ${(parseFloat(gift.price_threshold) || 0).toFixed(2)}+
                                     </p>
                                   </div>
@@ -810,17 +810,17 @@ export default function CartPage() {
                   {/* Summary Details */}
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal ({cart.itemCount} items)</span>
-                      <span className="font-medium">${cart.total.toFixed(2)}</span>
+                      <span className="text-gray-600 dark:text-gray-300">Subtotal ({cart.itemCount} items)</span>
+                      <span className="font-medium dark:text-white">${cart.total.toFixed(2)}</span>
                     </div>
                     
                     {isPremiumUser && premiumDiscount > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 flex items-center">
-                          <Crown className="h-3 w-3 mr-1 text-purple-600" />
+                        <span className="text-gray-600 dark:text-gray-300 flex items-center">
+                          <Crown className="h-3 w-3 mr-1 text-purple-600 dark:text-purple-400" />
                           Premium Discount
                         </span>
-                        <span className="font-medium text-purple-600">
+                        <span className="font-medium text-purple-600 dark:text-purple-400">
                           -${premiumDiscount.toFixed(2)}
                         </span>
                       </div>
@@ -828,8 +828,8 @@ export default function CartPage() {
 
                     {appliedCoupon && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Discount ({appliedCoupon.code})</span>
-                        <span className="font-medium text-green-600">
+                        <span className="text-gray-600 dark:text-gray-300">Discount ({appliedCoupon.code})</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">
                           -${appliedCoupon.discount_amount.toFixed(2)}
                         </span>
                       </div>
@@ -837,8 +837,8 @@ export default function CartPage() {
 
                     {cashbackToUse > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Cashback Applied</span>
-                        <span className="font-medium text-green-600">
+                        <span className="text-gray-600 dark:text-gray-300">Cashback Applied</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">
                           -${cashbackToUse.toFixed(2)}
                         </span>
                       </div>
@@ -847,8 +847,8 @@ export default function CartPage() {
 
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span className="text-amber-600">
+                      <span className="dark:text-white">Total</span>
+                      <span className="text-amber-600 dark:text-amber-400">
                         ${(cart.total - premiumDiscount - (appliedCoupon?.discount_amount || 0) - cashbackToUse).toFixed(2)}
                       </span>
                     </div>
@@ -882,7 +882,7 @@ export default function CartPage() {
                   </Button>
 
                   {/* Security Notice */}
-                  <div className="text-center text-sm text-gray-500">
+                  <div className="text-center text-sm text-gray-500 dark:text-gray-400">
                     <Shield className="h-4 w-4 inline mr-1" />
                     Secure checkout powered by UOKing
                   </div>
@@ -895,19 +895,19 @@ export default function CartPage() {
               <div className="mt-6 space-y-3">
 
                 
-                <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                  <Shield className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <div>
-                    <p className="font-medium text-blue-800">Secure Payment</p>
-                    <p className="text-sm text-blue-600">100% secure checkout</p>
+                    <p className="font-medium text-blue-800 dark:text-blue-200">Secure Payment</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">100% secure checkout</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-3 p-3 bg-amber-50 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-amber-600" />
+                <div className="flex items-center space-x-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                  <DollarSign className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   <div>
-                    <p className="font-medium text-amber-800">Cashback Rewards</p>
-                    <p className="text-sm text-amber-600">Earn rewards on every purchase</p>
+                    <p className="font-medium text-amber-800 dark:text-amber-200">Cashback Rewards</p>
+                    <p className="text-sm text-amber-600 dark:text-amber-400">Earn rewards on every purchase</p>
                   </div>
                 </div>
               </div>
