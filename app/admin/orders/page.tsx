@@ -417,6 +417,19 @@ export default function OrdersAdminPage() {
           <div>Expanded orders: {expandedOrders.size}</div>
           <div>Order details cached: {Object.keys(orderDetails).length}</div>
           <div>Loading orders: {loadingOrders.size}</div>
+          {Object.keys(orderDetails).length > 0 && (
+            <div className="mt-2 text-xs">
+              <strong>Cached Order IDs:</strong> {Object.keys(orderDetails).join(', ')}
+              <br />
+              <strong>First Order Data Sample:</strong>
+              <br />
+              {(() => {
+                const firstOrderId = Object.keys(orderDetails)[0]
+                const firstOrder = orderDetails[firstOrderId]
+                return `ID: ${firstOrderId}, Subtotal: ${firstOrder?.subtotal}, Total: ${firstOrder?.total_amount}, Name: ${firstOrder?.first_name} ${firstOrder?.last_name}`
+              })()}
+            </div>
+          )}
         </div>
       )}
       <main className="py-16 px-4">
@@ -667,6 +680,11 @@ export default function OrdersAdminPage() {
                                 <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
                                   <User className="h-4 w-4 mr-2" />
                                   Customer Info
+                                  {process.env.NODE_ENV === 'production' && (
+                                    <span className="ml-2 text-xs text-red-600">
+                                      [DEBUG: {orderDetails[order.id]?.first_name || 'NO_FIRST'} {orderDetails[order.id]?.last_name || 'NO_LAST'}]
+                                    </span>
+                                  )}
                                 </h5>
                                 <div className="space-y-1 text-sm">
                                   <div>
@@ -822,6 +840,11 @@ export default function OrdersAdminPage() {
                                 <h5 className="font-semibold text-gray-900 mb-2 flex items-center text-sm">
                                   <DollarSign className="h-4 w-4 mr-2" />
                                   Summary
+                                  {process.env.NODE_ENV === 'production' && (
+                                    <span className="ml-2 text-xs text-red-600">
+                                      [DEBUG: subtotal={orderDetails[order.id]?.subtotal || 'UNDEFINED'} total={orderDetails[order.id]?.total_amount || 'UNDEFINED'}]
+                                    </span>
+                                  )}
                                 </h5>
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
