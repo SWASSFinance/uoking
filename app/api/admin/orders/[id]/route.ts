@@ -8,6 +8,8 @@ export async function GET(
 ) {
   try {
     console.log('=== STARTING ORDER DETAILS API ===')
+    console.log('🌐 Request URL:', request.url)
+    console.log('🌐 Request method:', request.method)
     
     // Step 1: Extract params
     let orderId: string
@@ -92,6 +94,14 @@ export async function GET(
 
     const order = orderResult.rows[0]
     console.log('✅ Order found:', order.id, 'Status:', order.status)
+    console.log('💰 Order financial data:', {
+      subtotal: order.subtotal,
+      total_amount: order.total_amount,
+      discount_amount: order.discount_amount,
+      cashback_used: order.cashback_used,
+      subtotal_type: typeof order.subtotal,
+      total_amount_type: typeof order.total_amount
+    })
 
     // Step 5: Get order items with categories
     let itemsResult: any

@@ -120,42 +120,72 @@ export default function OrdersAdminPage() {
   }
 
   const toggleOrderExpansion = async (orderId: string) => {
+    console.log('🔽 Toggle order expansion called for:', orderId)
     const newExpanded = new Set(expandedOrders)
     
     if (newExpanded.has(orderId)) {
+      console.log('📤 Collapsing order:', orderId)
       newExpanded.delete(orderId)
       setExpandedOrders(newExpanded)
     } else {
+      console.log('📥 Expanding order:', orderId)
       newExpanded.add(orderId)
       setExpandedOrders(newExpanded)
       
       // Load order details if not already loaded
       if (!orderDetails[orderId]) {
+        console.log('📋 Order details not cached, loading for:', orderId)
         await loadOrderDetails(orderId)
+      } else {
+        console.log('📋 Order details already cached for:', orderId)
       }
     }
   }
 
   const loadOrderDetails = async (orderId: string) => {
+    console.log('🔄 Starting to load order details for:', orderId)
     const newLoading = new Set(loadingOrders)
     newLoading.add(orderId)
     setLoadingOrders(newLoading)
     
     try {
+      console.log('📡 Making API call to:', `/api/admin/orders/${orderId}`)
       const response = await fetch(`/api/admin/orders/${orderId}`)
+      console.log('📡 API Response status:', response.status, response.statusText)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('📦 Order details received:', {
+          orderId,
+          subtotal: data.order?.subtotal,
+          total_amount: data.order?.total_amount,
+          discount_amount: data.order?.discount_amount,
+          cashback_used: data.order?.cashback_used,
+          subtotal_type: typeof data.order?.subtotal,
+          total_amount_type: typeof data.order?.total_amount
+        })
+        console.log('📦 Full order data:', data.order)
         setOrderDetails(prev => ({
           ...prev,
           [orderId]: data.order
         }))
+      } else {
+        console.error('❌ API call failed:', response.status, response.statusText)
+        const errorText = await response.text()
+        console.error('❌ Error response body:', errorText)
       }
     } catch (error) {
-      console.error('Error loading order details:', error)
+      console.error('❌ Error loading order details:', error)
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
     } finally {
       const newLoading = new Set(loadingOrders)
       newLoading.delete(orderId)
       setLoadingOrders(newLoading)
+      console.log('✅ Finished loading order details for:', orderId)
     }
   }
 
@@ -734,7 +764,7 @@ export default function OrdersAdminPage() {
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Subtotal</span>
-                                    <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal).toFixed(2)}</span>
+                                    <span className="font-medium">${parseFloat(orderDetails[order.id].subtotal || '0').toFixed(2)}</span>
                                   </div>
                                   {parseFloat(orderDetails[order.id].discount_amount || '0') > 0 && (
                                     <div className="flex justify-between">
@@ -750,7 +780,7 @@ export default function OrdersAdminPage() {
                                   )}
                                   <div className="border-t pt-1 flex justify-between font-semibold">
                                     <span>Total</span>
-                                    <span>${parseFloat(orderDetails[order.id].total_amount).toFixed(2)}</span>
+                                    <span>${parseFloat(orderDetails[order.id].total_amount || '0').toFixed(2)}</span>
                                   </div>
                                 </div>
                               </div>
