@@ -128,9 +128,7 @@ export default async function HomePage() {
           <NewsSection />
 
           {/* Help Section */}
-          <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 backdrop-blur-sm">
-            <HelpSection />
-          </section>
+          <HelpSection />
         </main>
         <Footer />
       </div>
