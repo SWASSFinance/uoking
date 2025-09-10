@@ -267,7 +267,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-4">
                         {/* Class Dropdown */}
             <div 
               className="relative"
@@ -275,7 +275,7 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
+                className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Class
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -313,7 +313,7 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
+                className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Prop
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -344,7 +344,7 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
+                className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Slot
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -375,7 +375,7 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
+                className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Store
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -411,11 +411,11 @@ export function Header() {
               )}
             </div>
 
-            <Link href="/UO/Gold" className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
+            <Link href="/UO/Gold" className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
               Gold
             </Link>
 
-            <Link href="/UO/Custom-Suits" className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
+            <Link href="/UO/Custom-Suits" className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors">
               Suits
             </Link>
 
@@ -426,7 +426,7 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
+                className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Scrolls
                 <ChevronDown className="ml-1 h-3 w-3" />
@@ -457,7 +457,7 @@ export function Header() {
               onMouseLeave={handleMouseLeave}
             >
               <button 
-                className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
+                className="px-2 py-2 text-sm font-medium text-gray-800 dark:text-white rounded-md hover:bg-amber-50 dark:hover:bg-gray-800 hover:text-amber-800 dark:hover:text-amber-400 transition-colors flex items-center"
               >
                 Tools
                 <ChevronDown className="ml-1 h-3 w-3" />
