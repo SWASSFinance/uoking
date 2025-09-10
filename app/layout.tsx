@@ -65,7 +65,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#d97706" />
       </head>
-      <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 min-h-screen font-sans" suppressHydrationWarning>
+      <body className="antialiased bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen font-sans" suppressHydrationWarning>
         <GoogleMapsLoader>
           <Providers>
             <ErrorBoundary>
