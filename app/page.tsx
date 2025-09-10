@@ -122,9 +122,7 @@ export default async function HomePage() {
       <main>
 
           {/* Featured Products */}
-          <section className="py-16 bg-white/80 backdrop-blur-sm">
-            <FeaturedProducts />
-          </section>
+          <FeaturedProducts />
 
           {/* News Section */}
           <NewsSection />
