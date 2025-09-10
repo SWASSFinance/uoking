@@ -66,10 +66,10 @@ export function ProductCard({
   }
 
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 bg-white/90 backdrop-blur-sm flex flex-col ${className}`}>
+    <Card className={`group hover:shadow-lg transition-all duration-300 hover:scale-105 border-amber-200 dark:border-gray-600 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm flex flex-col ${className}`}>
       <CardContent className="p-3 flex flex-col flex-1">
         <Link href={`/product/${product.slug}`} className="flex-1 flex flex-col">
-          <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden group">
+          <div className="aspect-square relative mb-3 bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden group">
             <ProductImage
               src={product.image_url}
               alt={product.name}
@@ -95,13 +95,13 @@ export function ProductCard({
             )}
           </div>
           
-          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors text-sm">
+          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors text-sm">
             {product.name}
           </h3>
           
           <div className="min-h-[2.5rem] mb-3 flex-1">
             {product.short_description && (
-              <pre className="text-xs text-gray-600 line-clamp-2 whitespace-pre-wrap font-sans">
+              <pre className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 whitespace-pre-wrap font-sans">
                 {product.short_description}
               </pre>
             )}
@@ -111,15 +111,15 @@ export function ProductCard({
             <div className="flex flex-col">
               {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-amber-600">
+                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
                     ${parseFloat(product.sale_price).toFixed(2)}
                   </span>
-                  <span className="text-xs text-gray-500 line-through">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 line-through">
                     ${parseFloat(product.price).toFixed(2)}
                   </span>
                 </div>
               ) : (
-                <span className="text-sm font-bold text-amber-600">
+                <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
                   ${parseFloat(product.price).toFixed(2)}
                 </span>
               )}
@@ -128,7 +128,7 @@ export function ProductCard({
             {product.avg_rating > 0 && (
               <div className="flex items-center space-x-1">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                <span className="text-xs font-medium">
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                   {typeof product.avg_rating === 'string' ? parseFloat(product.avg_rating).toFixed(1) : product.avg_rating.toFixed(1)}
                 </span>
               </div>
