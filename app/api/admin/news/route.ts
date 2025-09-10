@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       INSERT INTO news (title, message, posted_by, date_posted, is_active)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING id, title, message, posted_by, date_posted, is_active, created_at, updated_at
-    `, [title, message, session.user.email || 'admin', date_posted || new Date().toISOString().split('T')[0], is_active]);
+    `, [title, message, 'admin', date_posted || new Date().toISOString().split('T')[0], is_active]);
 
     return NextResponse.json(result.rows[0], { status: 201 });
 
