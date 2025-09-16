@@ -86,8 +86,8 @@ export default function OrdersAdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("processing")
-  const [filterPaymentStatus, setFilterPaymentStatus] = useState("completed")
+  const [filterStatus, setFilterStatus] = useState("pending")
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState("pending")
   const [filterGift, setFilterGift] = useState("all")
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
   const [loadingOrders, setLoadingOrders] = useState<Set<string>>(new Set())
@@ -227,6 +227,42 @@ export default function OrdersAdminPage() {
       }
     } catch (error) {
       console.error('Error deleting order:', error)
+    }
+  }
+
+  const handleApprovePayment = async (orderId: string) => {
+    if (!confirm('Are you sure you want to approve this payment? This will mark the order as paid and begin processing.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payment_status: 'completed',
+          status: 'processing'
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Update the order in the list
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { ...order, ...data.order } : order
+        ))
+        // Update order details if loaded
+        if (orderDetails[orderId]) {
+          setOrderDetails(prev => ({
+            ...prev,
+            [orderId]: { ...prev[orderId], ...data.order }
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error approving payment:', error)
     }
   }
 
@@ -567,7 +603,20 @@ export default function OrdersAdminPage() {
                                   </div>
                                                                      <div>
                                      <span className="text-blue-700 font-medium">Payment:</span>
-                                     <p className="font-medium text-blue-900">{orderDetails[order.id].payment_method}</p>
+                                     <div className="flex items-center space-x-2">
+                                       <p className="font-medium text-blue-900">
+                                         {orderDetails[order.id].payment_method === 'manual_payment' 
+                                           ? 'Manual Payment' 
+                                           : orderDetails[order.id].payment_method}
+                                       </p>
+                                       {orderDetails[order.id].payment_method === 'manual_payment' && 
+                                        orderDetails[order.id].payment_status === 'pending' && (
+                                         <Badge className="bg-orange-100 text-orange-800 text-xs">
+                                           <MessageSquare className="h-3 w-3 mr-1" />
+                                           Awaiting
+                                         </Badge>
+                                       )}
+                                     </div>
                                    </div>
                                 </div>
                               </div>
@@ -871,25 +920,38 @@ export default function OrdersAdminPage() {
                                     <p className="font-medium mt-1 text-sm text-gray-900">{orderDetails[order.id].admin_notes || 'No notes'}</p>
                                   </div>
                                 </div>
-                                                                 <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:justify-between sm:items-center">
-                                   <Button 
-                                     onClick={() => handleEditOrder(orderDetails[order.id])}
-                                     className="bg-blue-600 hover:bg-blue-700 h-10 sm:h-8 w-full sm:w-auto"
-                                     size="sm"
-                                   >
-                                     <Edit className="h-4 w-4 mr-1" />
-                                     Edit Order
-                                   </Button>
-                                   <Button 
-                                     onClick={() => handleDeleteOrder(order.id)}
-                                     variant="destructive"
-                                     size="sm"
-                                     className="h-10 sm:h-8 w-full sm:w-auto"
-                                   >
-                                     <Trash2 className="h-4 w-4 mr-1" />
-                                     Delete Order
-                                   </Button>
-                                 </div>
+                                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                  {/* Show Approve Payment button for pending manual payments */}
+                                  {orderDetails[order.id].payment_status === 'pending' && 
+                                   orderDetails[order.id].payment_method === 'manual_payment' && (
+                                    <Button 
+                                      onClick={() => handleApprovePayment(order.id)}
+                                      className="bg-green-600 hover:bg-green-700 h-10 sm:h-8 w-full sm:w-auto"
+                                      size="sm"
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Approve Payment
+                                    </Button>
+                                  )}
+                                  
+                                  <Button 
+                                    onClick={() => handleEditOrder(orderDetails[order.id])}
+                                    className="bg-blue-600 hover:bg-blue-700 h-10 sm:h-8 w-full sm:w-auto"
+                                    size="sm"
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit Order
+                                  </Button>
+                                  <Button 
+                                    onClick={() => handleDeleteOrder(order.id)}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="h-10 sm:h-8 w-full sm:w-auto"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Delete Order
+                                  </Button>
+                                </div>
                               </div>
                             )}
                           </div>

@@ -27,7 +27,8 @@ import {
   Tag,
   X,
   Gift,
-  Crown
+  Crown,
+  MessageSquare
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -53,6 +54,7 @@ export default function CartPage() {
   const [isLoadingGifts, setIsLoadingGifts] = useState(false)
   const [isPremiumUser, setIsPremiumUser] = useState(false)
   const [premiumDiscount, setPremiumDiscount] = useState(0)
+  const [paymentMethod, setPaymentMethod] = useState('credit_card')
 
   // Fetch cashback balance and premium status when user is authenticated
   useEffect(() => {
@@ -292,8 +294,12 @@ export default function CartPage() {
 
     setIsCheckingOut(true)
     try {
-      // Create PayPal form checkout
-      const response = await fetch('/api/paypal/simple-checkout', {
+      // Choose API endpoint based on payment method
+      const apiEndpoint = paymentMethod === 'manual_payment' 
+        ? '/api/orders/create-pending' 
+        : '/api/paypal/simple-checkout'
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -303,14 +309,27 @@ export default function CartPage() {
           cashbackToUse,
           selectedShard,
           couponCode: appliedCoupon?.code || null,
-          giftId: selectedGift || null
+          giftId: selectedGift || null,
+          paymentMethod: paymentMethod
         }),
       })
 
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Check if this is a cashback-only order
+        // Handle manual payment method
+        if (paymentMethod === 'manual_payment') {
+          toast({
+            title: "Order Created!",
+            description: "Your order has been created and is pending payment. You'll be redirected to payment instructions.",
+            variant: "default",
+          })
+          clearCart()
+          router.push(`/payment-pending/${data.orderId}`)
+          return
+        }
+
+        // Handle credit card/PayPal payment method
         const finalTotal = cart.total - (appliedCoupon?.discount_amount || 0) - cashbackToUse
         if (finalTotal <= 0.01) {
           // This is a cashback-only order, complete it directly
@@ -735,6 +754,56 @@ export default function CartPage() {
                     </div>
                   )}
 
+                  {/* Payment Method Selection */}
+                  <div className="space-y-3 border-t pt-4">
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="credit_card"
+                          checked={paymentMethod === 'credit_card'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="text-amber-600 focus:ring-amber-500 dark:bg-gray-600"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <span className="font-medium text-gray-900 dark:text-white">Credit Card / PayPal</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            Pay instantly with credit card or PayPal (current system)
+                          </p>
+                        </div>
+                      </label>
+                      
+                      <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="manual_payment"
+                          checked={paymentMethod === 'manual_payment'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="text-amber-600 focus:ring-amber-500 dark:bg-gray-600"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <span className="font-medium text-gray-900 dark:text-white">Venmo / Zelle / CashApp</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            Pay via live chat - order will be held pending payment confirmation
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
                   {/* Shard Selection Section */}
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-center space-x-2">
@@ -870,11 +939,15 @@ export default function CartPage() {
                       <>
                         {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) ? (
                           <DollarSign className="h-5 w-5 mr-2" />
+                        ) : paymentMethod === 'manual_payment' ? (
+                          <MessageSquare className="h-5 w-5 mr-2" />
                         ) : (
                           <CreditCard className="h-5 w-5 mr-2" />
                         )}
                         {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) 
                           ? "Complete Order"
+                          : paymentMethod === 'manual_payment'
+                          ? "Create Order & Chat"
                           : "Proceed to Checkout"
                         }
                       </>
