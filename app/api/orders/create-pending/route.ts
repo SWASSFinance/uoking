@@ -140,18 +140,19 @@ export async function POST(request: NextRequest) {
       INSERT INTO orders (
         order_number, user_id, status, payment_status, delivery_status,
         subtotal, discount_amount, premium_discount, cashback_used, total_amount,
-        currency, payment_method, delivery_shard, coupon_code, gift_id,
+        currency, payment_method, delivery_shard, delivery_character, 
+        customer_notes, admin_notes, coupon_code, gift_id,
         created_at, updated_at
       ) VALUES (
         $1, $2, 'pending', 'pending', 'pending',
         $3, $4, $5, $6, $7,
-        'USD', $8, $9, $10, $11,
+        'USD', $8, $9, $10, $11, $12, $13, $14,
         NOW(), NOW()
       ) RETURNING id
     `, [
       orderNumber, userId, subtotal.toFixed(2), discount.toFixed(2), 
       premiumDiscount.toFixed(2), cashbackToUse.toFixed(2), finalTotal.toFixed(2),
-      'manual_payment', selectedShard, couponCode || null, giftId || null
+      'manual_payment', selectedShard, '', '', '', couponCode || null, giftId || null
     ])
 
     const orderId = orderResult.rows[0].id
@@ -160,13 +161,11 @@ export async function POST(request: NextRequest) {
     for (const item of cartItems) {
       await query(`
         INSERT INTO order_items (
-          order_id, product_id, product_name, product_slug, product_image,
-          quantity, unit_price, total_price, category, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+          order_id, product_id, product_name, quantity, unit_price, total_price, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
       `, [
-        orderId, item.id, item.name, item.slug || null, item.image_url || null,
-        item.quantity, item.price.toFixed(2), (item.price * item.quantity).toFixed(2),
-        item.category || null
+        orderId, item.id, item.name, item.quantity, 
+        item.price.toFixed(2), (item.price * item.quantity).toFixed(2)
       ])
     }
 
