@@ -58,10 +58,10 @@ const UO_SKILLS = [
   // Gathering Skills
  
   // Taming Skills
-  { name: 'Animal Lore', category: 'Taming', maxPoints: 120 },
-  { name: 'Animal Taming', category: 'Taming', maxPoints: 120 },
-  { name: 'Herding', category: 'Taming', maxPoints: 100 },
-  { name: 'Veterinary', category: 'Taming', maxPoints: 120 },
+  { name: 'Animal Lore', category: 'Tamer', maxPoints: 120 },
+  { name: 'Animal Taming', category: 'Tamer', maxPoints: 120 },
+  { name: 'Herding', category: 'Tamer', maxPoints: 100 },
+  { name: 'Veterinary', category: 'Tamer', maxPoints: 120 },
   
   // Stealth Skills
   { name: 'Detecting Hidden', category: 'Thief', maxPoints: 100 },
