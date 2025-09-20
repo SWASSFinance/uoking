@@ -408,13 +408,13 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
   const applyMageTemplate = (characterId: string) => {
     const mageSkills = {
-      'Magery': 100,
-      'Evaluate Intelligence': 100,
-      'Meditation': 100,
-      'Resist Spells': 100,
-      'Inscribe': 100,
-      'Wrestling': 100,
-      'Anatomy': 20
+      'Magery': 120,
+      'Evaluate Intelligence': 120,
+      'Meditation': 120,
+      'Resist Spells': 120,
+      'Parrying': 120,
+      'Wrestling': 120,
+     
     };
     
     setCharacters(prev => prev.map(char => {
@@ -771,7 +771,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         onClick={() => applyMageTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
-                        Mage
+                        Wrestle Mage
                       </Button>
                       <Button
                         size="sm"
