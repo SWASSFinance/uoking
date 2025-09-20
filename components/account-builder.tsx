@@ -64,14 +64,14 @@ const UO_SKILLS = [
   { name: 'Veterinary', category: 'Taming', maxPoints: 120 },
   
   // Stealth Skills
-  { name: 'Detecting Hidden', category: 'Stealth', maxPoints: 100 },
-  { name: 'Hiding', category: 'Stealth', maxPoints: 100 },
-  { name: 'Lockpicking', category: 'Stealth', maxPoints: 100 },
-  { name: 'Poisoning', category: 'Stealth', maxPoints: 100 },
-  { name: 'Remove Trap', category: 'Stealth', maxPoints: 100 },
-  { name: 'Snooping', category: 'Stealth', maxPoints: 100 },
-  { name: 'Stealing', category: 'Stealth', maxPoints: 120 },
-  { name: 'Stealth', category: 'Stealth', maxPoints: 120 },
+  { name: 'Detecting Hidden', category: 'Thief', maxPoints: 100 },
+  { name: 'Hiding', category: 'Thief', maxPoints: 100 },
+  { name: 'Lockpicking', category: 'Thief', maxPoints: 100 },
+  { name: 'Poisoning', category: 'Thief', maxPoints: 100 },
+  { name: 'Remove Trap', category: 'Thief', maxPoints: 100 },
+  { name: 'Snooping', category: 'Thief', maxPoints: 100 },
+  { name: 'Stealing', category: 'Thief', maxPoints: 120 },
+  { name: 'Stealth', category: 'Thief', maxPoints: 120 },
   
   // Bard Skills
   { name: 'Discordance', category: 'Bard', maxPoints: 120 },
