@@ -454,6 +454,77 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
     }));
   };
 
+  const applyTamerMageTemplate = (characterId: string) => {
+    const tamerMageSkills = {
+      'Animal Taming': 120,
+      'Animal Lore': 120,
+      'Veterinary': 120,
+      'Magery': 120,
+      'Meditation': 120,
+      'Evaluate Intelligence': 120
+    };
+    
+    setCharacters(prev => prev.map(char => {
+      if (char.id === characterId) {
+        const totalSkillPoints = Object.values(tamerMageSkills).reduce((sum, val) => sum + val, 0);
+        return {
+          ...char,
+          skills: tamerMageSkills,
+          totalSkillPoints
+        };
+      }
+      return char;
+    }));
+  };
+
+  const applyCraftingMuleTemplate = (characterId: string) => {
+    const craftingMuleSkills = {
+      'Blacksmithy': 120,
+      'Tailoring': 120,
+      'Carpentry': 100,
+      'Tinkering': 100,
+      'Arms Lore': 80,
+      'Imbuing': 120,
+      'Magery': 90
+    };
+    
+    setCharacters(prev => prev.map(char => {
+      if (char.id === characterId) {
+        const totalSkillPoints = Object.values(craftingMuleSkills).reduce((sum, val) => sum + val, 0);
+        return {
+          ...char,
+          skills: craftingMuleSkills,
+          totalSkillPoints
+        };
+      }
+      return char;
+    }));
+  };
+
+  const applyTreasureHunterTemplate = (characterId: string) => {
+    const treasureHunterSkills = {
+      'Magery': 120,
+      'Mysticism': 120,
+      'Focus': 120,
+      'Cartography': 100,
+      'Lockpicking': 100,
+      'Remove Trap': 100,
+      'Meditation': 60
+    };
+    
+    setCharacters(prev => prev.map(char => {
+      if (char.id === characterId) {
+        const totalSkillPoints = Object.values(treasureHunterSkills).reduce((sum, val) => sum + val, 0);
+        return {
+          ...char,
+          skills: treasureHunterSkills,
+          totalSkillPoints
+        };
+      }
+      return char;
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border-amber-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -672,10 +743,10 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => applyWarriorTemplate(char.id)}
+                        onClick={() => applyDragoonTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
-                        Dragoon Healer Swords
+                        Dragoon Healer
                       </Button>
                       <Button
                         size="sm"
@@ -688,10 +759,34 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => applyDragoonTemplate(char.id)}
+                        onClick={() => applyMageTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
                         Mage
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyTamerMageTemplate(char.id)}
+                        className="text-xs h-7 px-2"
+                      >
+                        Tamer Mage
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyCraftingMuleTemplate(char.id)}
+                        className="text-xs h-7 px-2"
+                      >
+                        Crafting Mule
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyTreasureHunterTemplate(char.id)}
+                        className="text-xs h-7 px-2"
+                      >
+                        Treasure Hunter
                       </Button>
                       <Button
                         size="sm"
