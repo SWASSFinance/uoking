@@ -551,21 +551,21 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                      {/* Left Column - Character Info (33%) */}
                      <div className="space-y-3">
-                       <div>
-                         <Label htmlFor={`name-${char.id}`} className="text-sm">Name</Label>
+                       <div className="flex items-center gap-2">
+                         <Label htmlFor={`name-${char.id}`} className="text-sm w-16 flex-shrink-0">Name</Label>
                          <Input
                            id={`name-${char.id}`}
                            value={char.name}
                            onChange={(e) => updateCharacterName(char.id, e.target.value)}
                            placeholder="Character name"
-                           className="h-8"
+                           className="h-8 flex-1"
                          />
                        </div>
                        
-                       <div>
-                         <Label htmlFor={`gender-${char.id}`} className="text-sm">Gender</Label>
+                       <div className="flex items-center gap-2">
+                         <Label htmlFor={`gender-${char.id}`} className="text-sm w-16 flex-shrink-0">Gender</Label>
                          <Select value={char.gender} onValueChange={(value: 'Male' | 'Female') => updateCharacterGender(char.id, value)}>
-                           <SelectTrigger className="h-8">
+                           <SelectTrigger className="h-8 flex-1">
                              <SelectValue />
                            </SelectTrigger>
                            <SelectContent>
@@ -575,10 +575,10 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                          </Select>
                        </div>
                        
-                       <div>
-                         <Label htmlFor={`race-${char.id}`} className="text-sm">Race</Label>
+                       <div className="flex items-center gap-2">
+                         <Label htmlFor={`race-${char.id}`} className="text-sm w-16 flex-shrink-0">Race</Label>
                          <Select value={char.race} onValueChange={(value: 'Human' | 'Elf' | 'Gargoyle') => updateCharacterRace(char.id, value)}>
-                           <SelectTrigger className="h-8">
+                           <SelectTrigger className="h-8 flex-1">
                              <SelectValue />
                            </SelectTrigger>
                            <SelectContent>
@@ -589,9 +589,9 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                          </Select>
                        </div>
                        
-                       <div>
-                         <Label className="text-sm">Skills Used</Label>
-                         <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                       <div className="flex items-center gap-2">
+                         <Label className="text-sm w-16 flex-shrink-0">Skills</Label>
+                         <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 flex-1">
                            <Badge variant={char.totalSkillPoints > 720 ? "destructive" : "default"} className="text-xs">
                              {char.totalSkillPoints}/720
                            </Badge>
