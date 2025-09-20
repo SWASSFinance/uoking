@@ -528,6 +528,15 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
   return (
     <div className="space-y-6">
+      {/* Notice Card */}
+      <Card className="border-blue-200 dark:border-blue-600 bg-blue-50/80 dark:bg-blue-900/20 backdrop-blur-sm">
+        <CardContent className="p-3">
+          <p className="text-sm text-blue-800 dark:text-blue-200 text-center">
+            ℹ️ Customer will provide login/pw to desired account after purchase.
+          </p>
+        </CardContent>
+      </Card>
+
       <Card className="border-amber-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
