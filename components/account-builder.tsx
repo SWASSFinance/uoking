@@ -311,13 +311,13 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
   // Quick template functions
   const applyWarriorTemplate = (characterId: string) => {
     const warriorSkills = {
-      'Swordsmanship': 100,
+      'Swordsmanship': 120,
       'Tactics': 100,
       'Anatomy': 100,
-      'Healing': 100,
+      'Necromancy': 100,
       'Parrying': 100,
       'Resist Spells': 100,
-      'Magery': 20
+      'Chivalry': 60
     };
     
     setCharacters(prev => prev.map(char => {
@@ -383,9 +383,9 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="border-amber-200">
+      <Card className="border-amber-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-800">
+          <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
             <User className="h-5 w-5" />
             Custom Account Builder
           </CardTitle>
@@ -427,22 +427,22 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
             
             <div>
               <Label className="text-sm">Total Price</Label>
-              <div className="h-9 flex items-center px-3 border rounded-md bg-amber-50 border-amber-200">
-                <span className="font-bold text-amber-800">${calculateTotalPrice()}</span>
+              <div className="h-9 flex items-center px-3 border rounded-md bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-600">
+                <span className="font-bold text-amber-800 dark:text-amber-400">${calculateTotalPrice()}</span>
               </div>
             </div>
           </div>
 
           {/* Skill Points Summary */}
-          <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
+          <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-600">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Skill Points:</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Skill Points:</span>
               <Badge variant={getTotalSkillPoints() > getMaxSkillPoints() ? "destructive" : "default"} className="text-xs">
                 {getTotalSkillPoints()} / {getMaxSkillPoints()}
               </Badge>
             </div>
             {getTotalSkillPoints() > getMaxSkillPoints() && (
-              <p className="text-xs text-red-600 mt-1">
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                 Exceeded maximum. Please reduce skills to continue.
               </p>
             )}
@@ -450,7 +450,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
           {/* Character Configuration */}
           <div>
-            <h3 className="text-base font-semibold mb-3">Character Configuration</h3>
+            <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-200">Character Configuration</h3>
             
             {/* Character Tabs */}
             <Tabs value={activeCharacter} onValueChange={setActiveCharacter}>
@@ -506,7 +506,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                     
                     <div>
                       <Label className="text-sm">Skills Used</Label>
-                      <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50">
+                      <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                         <Badge variant={char.totalSkillPoints > 720 ? "destructive" : "default"} className="text-xs">
                           {char.totalSkillPoints}/720
                         </Badge>
@@ -517,7 +517,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                   {/* Skills Configuration */}
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-sm font-medium">Skills</h4>
+                      <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">Skills</h4>
                     </div>
                     
                     {/* Quick Templates */}
@@ -528,7 +528,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         onClick={() => applyWarriorTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
-                        Warrior
+                        Samp Melee Swords
                       </Button>
                       <Button
                         size="sm"
@@ -570,8 +570,8 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         <TabsContent key={category} value={category} className="space-y-1">
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                             {UO_SKILLS.filter(skill => skill.category === category).map(skill => (
-                              <div key={skill.name} className="flex items-center justify-between p-1.5 border rounded text-xs">
-                                <span className="font-medium truncate flex-1 mr-2">{skill.name}</span>
+                              <div key={skill.name} className="flex items-center justify-between p-1.5 border border-gray-200 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-800">
+                                <span className="font-medium truncate flex-1 mr-2 text-gray-800 dark:text-gray-200">{skill.name}</span>
                                 <div className="flex items-center gap-1">
                                   <Button
                                     size="sm"
@@ -616,7 +616,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
           {/* Pricing Options */}
           <div>
-            <h3 className="text-base font-semibold mb-3">Additional Options</h3>
+            <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-200">Additional Options</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Suit Options */}
@@ -682,15 +682,15 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
           <Separator />
 
           {/* Price Summary & Add to Cart */}
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-600">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-bold text-amber-800">Total</h3>
-              <div className="text-xl font-bold text-amber-800">
+              <h3 className="text-lg font-bold text-amber-800 dark:text-amber-400">Total</h3>
+              <div className="text-xl font-bold text-amber-800 dark:text-amber-400">
                 ${calculateTotalPrice()}
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 mb-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-300 mb-3">
               <div className="flex justify-between">
                 <span>Base ({numCharacters} chars):</span>
                 <span>${(() => {
