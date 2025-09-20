@@ -17,47 +17,50 @@ import { useToast } from '@/hooks/use-toast';
 // UO Skills data
 const UO_SKILLS = [
   // Combat Skills
-  { name: 'Anatomy', category: 'Combat', maxPoints: 100 },
-  { name: 'Archery', category: 'Combat', maxPoints: 100 },
-  { name: 'Fencing', category: 'Combat', maxPoints: 100 },
-  { name: 'Healing', category: 'Combat', maxPoints: 100 },
-  { name: 'Mace Fighting', category: 'Combat', maxPoints: 100 },
-  { name: 'Parrying', category: 'Combat', maxPoints: 100 },
-  { name: 'Swordsmanship', category: 'Combat', maxPoints: 100 },
-  { name: 'Tactics', category: 'Combat', maxPoints: 100 },
-  { name: 'Wrestling', category: 'Combat', maxPoints: 100 },
+  { name: 'Anatomy', category: 'Combat', maxPoints: 120 },
+  { name: 'Archery', category: 'Combat', maxPoints: 120 },
+  { name: 'Fencing', category: 'Combat', maxPoints: 120 },
+  { name: 'Healing', category: 'Combat', maxPoints: 120 },
+  { name: 'Mace Fighting', category: 'Combat', maxPoints: 120 },
+  { name: 'Parrying', category: 'Combat', maxPoints: 120 },
+  { name: 'Swordsmanship', category: 'Combat', maxPoints: 120 },
+  { name: 'Tactics', category: 'Combat', maxPoints: 120 },
+  { name: 'Wrestling', category: 'Combat', maxPoints: 120 },
   
   // Magic Skills
-  { name: 'Evaluate Intelligence', category: 'Magic', maxPoints: 100 },
-  { name: 'Magery', category: 'Magic', maxPoints: 100 },
-  { name: 'Meditation', category: 'Magic', maxPoints: 100 },
-  { name: 'Resist Spells', category: 'Magic', maxPoints: 100 },
-  { name: 'Necromancy', category: 'Magic', maxPoints: 100 },
-  { name: 'Spirit Speak', category: 'Magic', maxPoints: 100 },
-  { name: 'Mysticism', category: 'Magic', maxPoints: 100 },
-  { name: 'Focus', category: 'Magic', maxPoints: 100 },
+  { name: 'Evaluate Intelligence', category: 'Magic', maxPoints: 120 },
+  { name: 'Magery', category: 'Magic', maxPoints: 120 },
+  { name: 'Meditation', category: 'Magic', maxPoints: 120 },
+  { name: 'Resist Spells', category: 'Magic', maxPoints: 120 },
+  { name: 'Necromancy', category: 'Magic', maxPoints: 120 },
+  { name: 'Spirit Speak', category: 'Magic', maxPoints: 120 },
+  { name: 'Mysticism', category: 'Magic', maxPoints: 120 },
+  { name: 'Focus', category: 'Magic', maxPoints: 120 },
+  { name: 'Imbuing', category: 'Magic', maxPoints: 120 },
+  { name: 'Bushido', category: 'Magic', maxPoints: 120 },
+  { name: 'Ninjitsu', category: 'Magic', maxPoints: 120 },
   
   // Crafting Skills
   { name: 'Alchemy', category: 'Crafting', maxPoints: 100 },
-  { name: 'Blacksmithy', category: 'Crafting', maxPoints: 100 },
+  { name: 'Blacksmithy', category: 'Crafting', maxPoints: 120 },
   { name: 'Bowcraft/Fletching', category: 'Crafting', maxPoints: 100 },
   { name: 'Carpentry', category: 'Crafting', maxPoints: 100 },
   { name: 'Cartography', category: 'Crafting', maxPoints: 100 },
   { name: 'Cooking', category: 'Crafting', maxPoints: 100 },
   { name: 'Inscribe', category: 'Crafting', maxPoints: 100 },
-  { name: 'Tailoring', category: 'Crafting', maxPoints: 100 },
+  { name: 'Tailoring', category: 'Crafting', maxPoints: 120 },
   { name: 'Tinkering', category: 'Crafting', maxPoints: 100 },
   
   // Gathering Skills
-  { name: 'Fishing', category: 'Gathering', maxPoints: 100 },
+  { name: 'Fishing', category: 'Gathering', maxPoints: 120 },
   { name: 'Lumberjacking', category: 'Gathering', maxPoints: 100 },
   { name: 'Mining', category: 'Gathering', maxPoints: 100 },
   
   // Taming Skills
-  { name: 'Animal Lore', category: 'Taming', maxPoints: 100 },
-  { name: 'Animal Taming', category: 'Taming', maxPoints: 100 },
+  { name: 'Animal Lore', category: 'Taming', maxPoints: 120 },
+  { name: 'Animal Taming', category: 'Taming', maxPoints: 120 },
   { name: 'Herding', category: 'Taming', maxPoints: 100 },
-  { name: 'Veterinary', category: 'Taming', maxPoints: 100 },
+  { name: 'Veterinary', category: 'Taming', maxPoints: 120 },
   
   // Stealth Skills
   { name: 'Detecting Hidden', category: 'Stealth', maxPoints: 100 },
@@ -66,21 +69,17 @@ const UO_SKILLS = [
   { name: 'Poisoning', category: 'Stealth', maxPoints: 100 },
   { name: 'Remove Trap', category: 'Stealth', maxPoints: 100 },
   { name: 'Snooping', category: 'Stealth', maxPoints: 100 },
-  { name: 'Stealing', category: 'Stealth', maxPoints: 100 },
-  { name: 'Stealth', category: 'Stealth', maxPoints: 100 },
+  { name: 'Stealing', category: 'Stealth', maxPoints: 120 },
+  { name: 'Stealth', category: 'Stealth', maxPoints: 120 },
   
   // Bard Skills
-  { name: 'Discordance', category: 'Bard', maxPoints: 100 },
-  { name: 'Musicianship', category: 'Bard', maxPoints: 100 },
-  { name: 'Peacemaking', category: 'Bard', maxPoints: 100 },
-  { name: 'Provocation', category: 'Bard', maxPoints: 100 },
+  { name: 'Discordance', category: 'Bard', maxPoints: 120 },
+  { name: 'Musicianship', category: 'Bard', maxPoints: 120 },
+  { name: 'Peacemaking', category: 'Bard', maxPoints: 120 },
+  { name: 'Provocation', category: 'Bard', maxPoints: 120 },
   
   // Paladin Skills
-  { name: 'Chivalry', category: 'Paladin', maxPoints: 100 },
-  
-  // Samurai/Ninja Skills
-  { name: 'Bushido', category: 'Samurai', maxPoints: 100 },
-  { name: 'Ninjitsu', category: 'Ninja', maxPoints: 100 },
+  { name: 'Chivalry', category: 'Paladin', maxPoints: 120 },
   
   // Other Skills
   { name: 'Arms Lore', category: 'Other', maxPoints: 100 },
@@ -192,7 +191,18 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
   };
 
   const calculateTotalPrice = () => {
-    let basePrice = numCharacters * 50; // Base price per character
+    // Base pricing matches your existing products: $109.99, $169.99, $249.99, $299.99, $349.99
+    const basePrices = {
+      1: 109.99,
+      2: 169.99,
+      3: 249.99,
+      4: 299.99,
+      5: 349.99,
+      6: 399.99,
+      7: 449.99
+    };
+    
+    let basePrice = basePrices[numCharacters as keyof typeof basePrices] || (numCharacters * 60);
     
     // Suit pricing
     const suitPrices = {
@@ -218,7 +228,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
       basePrice += 50;
     }
     
-    return basePrice;
+    return Math.round(basePrice * 100) / 100; // Round to 2 decimal places
   };
 
   const getTotalSkillPoints = () => {
@@ -372,17 +382,17 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Basic Configuration */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="numCharacters">Number of Characters</Label>
+              <Label htmlFor="numCharacters" className="text-sm">Characters</Label>
               <Select value={numCharacters.toString()} onValueChange={(value) => setNumCharacters(parseInt(value))}>
-                <SelectTrigger>
+                <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {[1, 2, 3, 4, 5, 6, 7].map(num => (
                     <SelectItem key={num} value={num.toString()}>
-                      {num} Character{num > 1 ? 's' : ''}
+                      {num} Char{num > 1 ? 's' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -390,10 +400,10 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
             </div>
             
             <div>
-              <Label htmlFor="shard">Shard</Label>
+              <Label htmlFor="shard" className="text-sm">Shard</Label>
               <Select value={selectedShard} onValueChange={setSelectedShard}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a shard" />
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select shard" />
                 </SelectTrigger>
                 <SelectContent>
                   {SHARDS.map(shard => (
@@ -404,55 +414,63 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                 </SelectContent>
               </Select>
             </div>
+            
+            <div>
+              <Label className="text-sm">Total Price</Label>
+              <div className="h-9 flex items-center px-3 border rounded-md bg-amber-50 border-amber-200">
+                <span className="font-bold text-amber-800">${calculateTotalPrice()}</span>
+              </div>
+            </div>
           </div>
 
           {/* Skill Points Summary */}
-          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+          <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
             <div className="flex justify-between items-center">
-              <span className="font-medium">Total Skill Points Used:</span>
-              <Badge variant={getTotalSkillPoints() > getMaxSkillPoints() ? "destructive" : "default"}>
+              <span className="text-sm font-medium">Skill Points:</span>
+              <Badge variant={getTotalSkillPoints() > getMaxSkillPoints() ? "destructive" : "default"} className="text-xs">
                 {getTotalSkillPoints()} / {getMaxSkillPoints()}
               </Badge>
             </div>
             {getTotalSkillPoints() > getMaxSkillPoints() && (
-              <p className="text-sm text-red-600 mt-2">
-                You have exceeded the maximum skill points. Please reduce skills to continue.
+              <p className="text-xs text-red-600 mt-1">
+                Exceeded maximum. Please reduce skills to continue.
               </p>
             )}
           </div>
 
           {/* Character Configuration */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Character Configuration</h3>
+            <h3 className="text-base font-semibold mb-3">Character Configuration</h3>
             
             {/* Character Tabs */}
             <Tabs value={activeCharacter} onValueChange={setActiveCharacter}>
-              <TabsList className="grid w-full grid-cols-7 mb-4" style={{ gridTemplateColumns: `repeat(${Math.min(numCharacters, 7)}, 1fr)` }}>
+              <TabsList className="grid w-full mb-3 h-8" style={{ gridTemplateColumns: `repeat(${Math.min(numCharacters, 7)}, 1fr)` }}>
                 {characters.map(char => (
-                  <TabsTrigger key={char.id} value={char.id}>
-                    Char {char.id}
+                  <TabsTrigger key={char.id} value={char.id} className="text-xs h-7">
+                    #{char.id}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
               {characters.map(char => (
-                <TabsContent key={char.id} value={char.id} className="space-y-4">
+                <TabsContent key={char.id} value={char.id} className="space-y-3">
                   {/* Character Basic Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <Label htmlFor={`name-${char.id}`}>Character Name</Label>
+                      <Label htmlFor={`name-${char.id}`} className="text-sm">Name</Label>
                       <Input
                         id={`name-${char.id}`}
                         value={char.name}
                         onChange={(e) => updateCharacterName(char.id, e.target.value)}
-                        placeholder="Enter character name"
+                        placeholder="Character name"
+                        className="h-8"
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor={`gender-${char.id}`}>Gender</Label>
+                      <Label htmlFor={`gender-${char.id}`} className="text-sm">Gender</Label>
                       <Select value={char.gender} onValueChange={(value: 'Male' | 'Female') => updateCharacterGender(char.id, value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-8">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -461,77 +479,84 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         </SelectContent>
                       </Select>
                     </div>
+                    
+                    <div>
+                      <Label className="text-sm">Skills Used</Label>
+                      <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50">
+                        <Badge variant={char.totalSkillPoints > 720 ? "destructive" : "default"} className="text-xs">
+                          {char.totalSkillPoints}/720
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Skills Configuration */}
                   <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium">Skills Configuration</h4>
-                      <Badge variant={char.totalSkillPoints > 720 ? "destructive" : "default"}>
-                        {char.totalSkillPoints} / 720 points
-                      </Badge>
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-sm font-medium">Skills</h4>
                     </div>
                     
                     {/* Quick Templates */}
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1 mb-3">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => applyWarriorTemplate(char.id)}
-                        className="text-xs"
+                        className="text-xs h-7 px-2"
                       >
-                        Warrior Template
+                        Warrior
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => applyMageTemplate(char.id)}
-                        className="text-xs"
+                        className="text-xs h-7 px-2"
                       >
-                        Mage Template
+                        Mage
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => applyCrafterTemplate(char.id)}
-                        className="text-xs"
+                        className="text-xs h-7 px-2"
                       >
-                        Crafter Template
+                        Crafter
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setCharacters(prev => prev.map(c => c.id === char.id ? { ...c, skills: {}, totalSkillPoints: 0 } : c))}
-                        className="text-xs text-red-600"
+                        className="text-xs h-7 px-2 text-red-600"
                       >
-                        Clear All
+                        Clear
                       </Button>
                     </div>
                     
                     {/* Skills by Category */}
                     <Tabs defaultValue={skillCategories[0]} className="w-full">
-                      <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+                      <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 h-8">
                         {skillCategories.map(category => (
-                          <TabsTrigger key={category} value={category} className="text-xs">
-                            {category}
+                          <TabsTrigger key={category} value={category} className="text-xs h-7">
+                            {category.slice(0, 6)}
                           </TabsTrigger>
                         ))}
                       </TabsList>
                       
                       {skillCategories.map(category => (
-                        <TabsContent key={category} value={category} className="space-y-2">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                        <TabsContent key={category} value={category} className="space-y-1">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                             {UO_SKILLS.filter(skill => skill.category === category).map(skill => (
-                              <div key={skill.name} className="flex items-center justify-between p-2 border rounded">
-                                <span className="text-sm font-medium">{skill.name}</span>
-                                <div className="flex items-center gap-2">
+                              <div key={skill.name} className="flex items-center justify-between p-1.5 border rounded text-xs">
+                                <span className="font-medium truncate flex-1 mr-2">{skill.name}</span>
+                                <div className="flex items-center gap-1">
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => updateCharacterSkill(char.id, skill.name, Math.max(0, (char.skills[skill.name] || 0) - 10))}
                                     disabled={!char.skills[skill.name]}
+                                    className="h-6 w-6 p-0"
                                   >
-                                    <Minus className="h-3 w-3" />
+                                    <Minus className="h-2 w-2" />
                                   </Button>
                                   <Input
                                     type="number"
@@ -539,15 +564,16 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                                     max="100"
                                     value={char.skills[skill.name] || 0}
                                     onChange={(e) => updateCharacterSkill(char.id, skill.name, parseInt(e.target.value) || 0)}
-                                    className="w-16 text-center"
+                                    className="w-12 h-6 text-center text-xs"
                                   />
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => updateCharacterSkill(char.id, skill.name, Math.min(100, (char.skills[skill.name] || 0) + 10))}
                                     disabled={char.totalSkillPoints >= 720 && !char.skills[skill.name]}
+                                    className="h-6 w-6 p-0"
                                   >
-                                    <Plus className="h-3 w-3" />
+                                    <Plus className="h-2 w-2" />
                                   </Button>
                                 </div>
                               </div>
@@ -566,65 +592,65 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
           {/* Pricing Options */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Additional Options</h3>
+            <h3 className="text-base font-semibold mb-3">Additional Options</h3>
             
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Suit Options */}
               <div>
-                <Label className="flex items-center gap-2 mb-2">
-                  <Shield className="h-4 w-4" />
-                  Suit Tier (per character)
+                <Label className="flex items-center gap-2 mb-2 text-sm">
+                  <Shield className="h-3 w-3" />
+                  Suit Tier (per char)
                 </Label>
                 <Select value={suitTier} onValueChange={(value: any) => setSuitTier(value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No Suit - $0</SelectItem>
-                    <SelectItem value="basic">Basic Suit - $25</SelectItem>
-                    <SelectItem value="premium">Premium Suit - $50</SelectItem>
-                    <SelectItem value="legendary">Legendary Suit - $100</SelectItem>
+                    <SelectItem value="none">None - $0</SelectItem>
+                    <SelectItem value="basic">Basic - $25</SelectItem>
+                    <SelectItem value="premium">Premium - $50</SelectItem>
+                    <SelectItem value="legendary">Legendary - $100</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Mount Option */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="mount"
-                  checked={addMount}
-                  onCheckedChange={(checked) => setAddMount(checked === true)}
-                />
-                <Label htmlFor="mount" className="flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  Add Mount (+$5 per character)
-                </Label>
-              </div>
+              {/* Checkboxes */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="mount"
+                    checked={addMount}
+                    onCheckedChange={(checked) => setAddMount(checked === true)}
+                  />
+                  <Label htmlFor="mount" className="flex items-center gap-1 text-sm">
+                    <Zap className="h-3 w-3" />
+                    Mount (+$5/char)
+                  </Label>
+                </div>
 
-              {/* Books Option */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="books"
-                  checked={addBooks}
-                  onCheckedChange={(checked) => setAddBooks(checked === true)}
-                />
-                <Label htmlFor="books" className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Add Spell Books & Rune Books (+$3 per character)
-                </Label>
-              </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="books"
+                    checked={addBooks}
+                    onCheckedChange={(checked) => setAddBooks(checked === true)}
+                  />
+                  <Label htmlFor="books" className="flex items-center gap-1 text-sm">
+                    <BookOpen className="h-3 w-3" />
+                    Books (+$3/char)
+                  </Label>
+                </div>
 
-              {/* House Option */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="house"
-                  checked={addHouse}
-                  onCheckedChange={(checked) => setAddHouse(checked === true)}
-                />
-                <Label htmlFor="house" className="flex items-center gap-2">
-                  <Home className="h-4 w-4" />
-                  Include House (+$50)
-                </Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="house"
+                    checked={addHouse}
+                    onCheckedChange={(checked) => setAddHouse(checked === true)}
+                  />
+                  <Label htmlFor="house" className="flex items-center gap-1 text-sm">
+                    <Home className="h-3 w-3" />
+                    House (+$50)
+                  </Label>
+                </div>
               </div>
             </div>
           </div>
@@ -632,51 +658,54 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
           <Separator />
 
           {/* Price Summary & Add to Cart */}
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-lg border border-amber-200">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-amber-800">Total Price</h3>
-              <div className="text-2xl font-bold text-amber-800">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-bold text-amber-800">Total</h3>
+              <div className="text-xl font-bold text-amber-800">
                 ${calculateTotalPrice()}
               </div>
             </div>
             
-            <div className="space-y-2 text-sm text-gray-600 mb-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 mb-3">
               <div className="flex justify-between">
-                <span>Base ({numCharacters} characters):</span>
-                <span>${numCharacters * 50}</span>
+                <span>Base ({numCharacters} chars):</span>
+                <span>${(() => {
+                  const basePrices = { 1: 109.99, 2: 169.99, 3: 249.99, 4: 299.99, 5: 349.99, 6: 399.99, 7: 449.99 };
+                  return (basePrices as any)[numCharacters] || (numCharacters * 60);
+                })()}</span>
               </div>
               {suitTier !== 'none' && (
                 <div className="flex justify-between">
                   <span>Suits ({suitTier}):</span>
-                  <span>${({ basic: 25, premium: 50, legendary: 100 }[suitTier] || 0) * numCharacters}</span>
+                  <span>+${({ basic: 25, premium: 50, legendary: 100 }[suitTier] || 0) * numCharacters}</span>
                 </div>
               )}
               {addMount && (
                 <div className="flex justify-between">
                   <span>Mounts:</span>
-                  <span>${5 * numCharacters}</span>
+                  <span>+${5 * numCharacters}</span>
                 </div>
               )}
               {addBooks && (
                 <div className="flex justify-between">
                   <span>Books:</span>
-                  <span>${3 * numCharacters}</span>
+                  <span>+${3 * numCharacters}</span>
                 </div>
               )}
               {addHouse && (
                 <div className="flex justify-between">
                   <span>House:</span>
-                  <span>$50</span>
+                  <span>+$50</span>
                 </div>
               )}
             </div>
             
             <Button 
               onClick={handleAddToCart}
-              className="w-full bg-amber-600 hover:bg-amber-700"
+              className="w-full bg-amber-600 hover:bg-amber-700 h-9"
               disabled={getTotalSkillPoints() > getMaxSkillPoints() || !selectedShard}
             >
-              Add Custom Account to Cart
+              Add to Cart - ${calculateTotalPrice()}
             </Button>
           </div>
         </CardContent>
