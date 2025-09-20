@@ -158,11 +158,13 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
     setCharacters(prev => prev.map(char => {
       if (char.id === characterId) {
         const newSkills = { ...char.skills };
+        const skill = UO_SKILLS.find(s => s.name === skillName);
+        const maxPoints = skill?.maxPoints || 100;
         
         if (points === 0) {
           delete newSkills[skillName];
         } else {
-          newSkills[skillName] = Math.min(points, 100);
+          newSkills[skillName] = Math.min(points, maxPoints);
         }
         
         const totalSkillPoints = Object.values(newSkills).reduce((sum, val) => sum + val, 0);
@@ -560,15 +562,15 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                                   <Input
                                     type="number"
                                     min="0"
-                                    max="100"
+                                    max={skill.maxPoints}
                                     value={char.skills[skill.name] || 0}
                                     onChange={(e) => updateCharacterSkill(char.id, skill.name, parseInt(e.target.value) || 0)}
-                                    className="w-12 h-6 text-center text-xs"
+                                    className="w-16 h-6 text-center text-xs"
                                   />
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => updateCharacterSkill(char.id, skill.name, Math.min(100, (char.skills[skill.name] || 0) + 10))}
+                                    onClick={() => updateCharacterSkill(char.id, skill.name, Math.min(skill.maxPoints, (char.skills[skill.name] || 0) + 10))}
                                     disabled={char.totalSkillPoints >= 720 && !char.skills[skill.name]}
                                     className="h-6 w-6 p-0"
                                   >
