@@ -142,7 +142,7 @@ const EMAIL_TEMPLATES = {
                         <strong>Characters:</strong> ${details.numCharacters}<br>
                         ${details.options?.addHouse ? '<strong>House:</strong> Included<br>' : ''}
                         <br><strong>Character Configurations:</strong><br>
-                        ${details.characters.map((char, index) => `
+                        ${details.characters.map((char: any, index: number) => `
                           <div style="margin: 5px 0; padding: 5px; background: white; border-radius: 3px;">
                             <strong>#${index + 1}: ${char.name}</strong> (${char.race} ${char.gender})<br>
                             <em>Skills (${char.totalSkillPoints}/720):</em> ${Object.entries(char.skills).map(([skill, points]) => `${skill} ${points}`).join(', ')}<br>

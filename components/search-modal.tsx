@@ -288,7 +288,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                 alt={result.name}
                                 fill
                                 className="object-cover"
-                                sizes="48px"
                               />
                             </div>
                           ) : (

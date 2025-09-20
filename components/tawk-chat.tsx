@@ -6,7 +6,7 @@ export function TawkChat() {
   useEffect(() => {
     // Only run on client side
     if (typeof window !== 'undefined') {
-      var Tawk_API = Tawk_API || {}
+      var Tawk_API: any = (window as any).Tawk_API || {}
       var Tawk_LoadStart = new Date()
       
       const script = document.createElement('script')
