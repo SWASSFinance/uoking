@@ -42,18 +42,18 @@ const UO_SKILLS = [
   { name: 'Ninjitsu', category: 'Magic', maxPoints: 120 },
   
   // Crafting Skills
-  { name: 'Alchemy', category: 'Crafting', maxPoints: 100 },
-  { name: 'Blacksmithy', category: 'Crafting', maxPoints: 120 },
-  { name: 'Bowcraft/Fletching', category: 'Crafting', maxPoints: 100 },
-  { name: 'Carpentry', category: 'Crafting', maxPoints: 100 },
-  { name: 'Cartography', category: 'Crafting', maxPoints: 100 },
-  { name: 'Cooking', category: 'Crafting', maxPoints: 100 },
-  { name: 'Inscribe', category: 'Crafting', maxPoints: 100 },
-  { name: 'Tailoring', category: 'Crafting', maxPoints: 120 },
-  { name: 'Tinkering', category: 'Crafting', maxPoints: 100 },
-  { name: 'Fishing', category: 'Crafting', maxPoints: 120 },
-  { name: 'Lumberjacking', category: 'Crafting', maxPoints: 100 },
-  { name: 'Mining', category: 'Crafting', maxPoints: 100 },
+  { name: 'Alchemy', category: 'Crafter', maxPoints: 100 },
+  { name: 'Blacksmithy', category: 'Crafter', maxPoints: 120 },
+  { name: 'Bowcraft/Fletching', category: 'Crafter', maxPoints: 100 },
+  { name: 'Carpentry', category: 'Crafter', maxPoints: 100 },
+  { name: 'Cartography', category: 'Crafter', maxPoints: 100 },
+  { name: 'Cooking', category: 'Crafter', maxPoints: 100 },
+  { name: 'Inscribe', category: 'Crafter', maxPoints: 100 },
+  { name: 'Tailoring', category: 'Crafter', maxPoints: 120 },
+  { name: 'Tinkering', category: 'Crafter', maxPoints: 100 },
+  { name: 'Fishing', category: 'Crafter', maxPoints: 120 },
+  { name: 'Lumberjacking', category: 'Crafter', maxPoints: 100 },
+  { name: 'Mining', category: 'Crafter', maxPoints: 100 },
   
   // Gathering Skills
  
