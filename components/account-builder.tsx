@@ -430,30 +430,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
     }));
   };
 
-  const applyCrafterTemplate = (characterId: string) => {
-    const crafterSkills = {
-      'Blacksmithy': 100,
-      'Mining': 100,
-      'Tinkering': 100,
-      'Tailoring': 100,
-      'Carpentry': 100,
-      'Lumberjacking': 100,
-      'Magery': 20
-    };
-    
-    setCharacters(prev => prev.map(char => {
-      if (char.id === characterId) {
-        const totalSkillPoints = Object.values(crafterSkills).reduce((sum, val) => sum + val, 0);
-        return {
-          ...char,
-          skills: crafterSkills,
-          totalSkillPoints
-        };
-      }
-      return char;
-    }));
-  };
-
+ 
   const applyTamerMageTemplate = (characterId: string) => {
     const tamerMageSkills = {
       'Animal Taming': 120,
@@ -788,14 +765,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                       >
                         Treasure Hunter
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => applyCrafterTemplate(char.id)}
-                        className="text-xs h-7 px-2"
-                      >
-                        Crafter
-                      </Button>
+                 
                       <Button
                         size="sm"
                         variant="outline"
