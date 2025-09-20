@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useCart } from '@/contexts/cart-context'
 import { ProductsGrid } from '@/components/products-grid'
 import { CategoryReviews } from '@/components/category-reviews'
+import AccountBuilder from '@/components/account-builder'
 
 interface CategoryClientProps {
   category: any
@@ -119,6 +120,13 @@ export default function CategoryClient({ category, products, categoryParam }: Ca
             )}
           </div>
         </div>
+
+        {/* Account Builder for Accounts Category */}
+        {category.name.toLowerCase() === 'accounts' && (
+          <div className="mb-8">
+            <AccountBuilder onAddToCart={handleAddToCart} />
+          </div>
+        )}
 
         {/* Products Section */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
