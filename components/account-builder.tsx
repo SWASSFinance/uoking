@@ -28,6 +28,7 @@ const UO_SKILLS = [
   { name: 'Wrestling', category: 'Combat', maxPoints: 120 },
   
   // Magic Skills
+  { name: 'Chivalry', category: 'Magic', maxPoints: 120 },
   { name: 'Evaluate Intelligence', category: 'Magic', maxPoints: 120 },
   { name: 'Magery', category: 'Magic', maxPoints: 120 },
   { name: 'Meditation', category: 'Magic', maxPoints: 120 },
@@ -50,12 +51,12 @@ const UO_SKILLS = [
   { name: 'Inscribe', category: 'Crafting', maxPoints: 100 },
   { name: 'Tailoring', category: 'Crafting', maxPoints: 120 },
   { name: 'Tinkering', category: 'Crafting', maxPoints: 100 },
+  { name: 'Fishing', category: 'Crafting', maxPoints: 120 },
+  { name: 'Lumberjacking', category: 'Crafting', maxPoints: 100 },
+  { name: 'Mining', category: 'Crafting', maxPoints: 100 },
   
   // Gathering Skills
-  { name: 'Fishing', category: 'Gathering', maxPoints: 120 },
-  { name: 'Lumberjacking', category: 'Gathering', maxPoints: 100 },
-  { name: 'Mining', category: 'Gathering', maxPoints: 100 },
-  
+ 
   // Taming Skills
   { name: 'Animal Lore', category: 'Taming', maxPoints: 120 },
   { name: 'Animal Taming', category: 'Taming', maxPoints: 120 },
@@ -78,9 +79,7 @@ const UO_SKILLS = [
   { name: 'Peacemaking', category: 'Bard', maxPoints: 120 },
   { name: 'Provocation', category: 'Bard', maxPoints: 120 },
   
-  // Paladin Skills
-  { name: 'Chivalry', category: 'Paladin', maxPoints: 120 },
-  
+ 
   // Other Skills
   { name: 'Arms Lore', category: 'Other', maxPoints: 100 },
   { name: 'Begging', category: 'Other', maxPoints: 100 },
