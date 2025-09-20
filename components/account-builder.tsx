@@ -315,8 +315,8 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
       'Anatomy': 100,
       'Healing': 100,
       'Parrying': 100,
-      'Resist Spells': 100,
-      'Bushido': 60
+      'Resist Spells': 110,
+      'Bushido': 90
     };
     
     setCharacters(prev => prev.map(char => {
@@ -335,10 +335,10 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
   const applyWarriorTemplate = (characterId: string) => {
     const warriorSkills = {
       'Swordsmanship': 120,
-      'Tactics': 100,
-      'Anatomy': 100,
+      'Tactics': 110,
+      'Anatomy': 110,
       'Necromancy': 100,
-      'Parrying': 100,
+      'Parrying': 120,
       'Resist Spells': 100,
       'Chivalry': 60
     };
@@ -349,6 +349,28 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
         return {
           ...char,
           skills: warriorSkills,
+          totalSkillPoints
+        };
+      }
+      return char;
+    }));
+  };
+  const applyMysticMageTemplate = (characterId: string) => {
+    const MysticmageSkills = {
+      'Magery': 120,
+      'Evaluate Intelligence': 120,
+      'Meditation': 120,
+      'Mysticism': 120,
+      'Focus': 120,
+      'Resisting Spells': 120,
+    };
+    
+    setCharacters(prev => prev.map(char => {
+      if (char.id === characterId) {
+        const totalSkillPoints = Object.values(MysticmageSkills).reduce((sum, val) => sum + val, 0);
+        return {
+          ...char,
+          skills: MysticmageSkills,
           totalSkillPoints
         };
       }
@@ -560,6 +582,14 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         className="text-xs h-7 px-2"
                       >
                         Dragoon Healer Swords
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyMysticMageTemplate(char.id)}
+                        className="text-xs h-7 px-2"
+                      >
+                       Mystic Mage
                       </Button>
                       <Button
                         size="sm"
