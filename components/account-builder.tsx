@@ -307,7 +307,30 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
 
   const activeChar = characters.find(char => char.id === activeCharacter);
   const skillCategories = [...new Set(UO_SKILLS.map(skill => skill.category))];
-
+  // Quick template functions
+  const applyDragoonTemplate = (characterId: string) => {
+    const DragoonSkills = {
+      'Swordsmanship': 120,
+      'Tactics': 100,
+      'Anatomy': 100,
+      'Healing': 100,
+      'Parrying': 100,
+      'Resist Spells': 100,
+      'Bushido': 60
+    };
+    
+    setCharacters(prev => prev.map(char => {
+      if (char.id === characterId) {
+        const totalSkillPoints = Object.values(DragoonSkills).reduce((sum, val) => sum + val, 0);
+        return {
+          ...char,
+          skills: DragoonSkills,
+          totalSkillPoints
+        };
+      }
+      return char;
+    }));
+  };
   // Quick template functions
   const applyWarriorTemplate = (characterId: string) => {
     const warriorSkills = {
@@ -528,12 +551,20 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         onClick={() => applyWarriorTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
-                        Samp Melee Swords
+                        Samp Swords
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => applyMageTemplate(char.id)}
+                        onClick={() => applyWarriorTemplate(char.id)}
+                        className="text-xs h-7 px-2"
+                      >
+                        Dragoon Healer Swords
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyDragoonTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
                         Mage
