@@ -502,6 +502,30 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
     }));
   };
 
+  const applyArcherTemplate = (characterId: string) => {
+    const archerSkills = {
+      'Archery': 120,
+      'Tactics': 120,
+      'Anatomy': 100,
+      'Healing': 100,
+      'Resist Spells': 120,
+      'Bushido': 100,
+      'Chivalry': 60
+    };
+    
+    setCharacters(prev => prev.map(char => {
+      if (char.id === characterId) {
+        const totalSkillPoints = Object.values(archerSkills).reduce((sum, val) => sum + val, 0);
+        return {
+          ...char,
+          skills: archerSkills,
+          totalSkillPoints
+        };
+      }
+      return char;
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border-amber-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -723,7 +747,15 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         onClick={() => applyDragoonTemplate(char.id)}
                         className="text-xs h-7 px-2"
                       >
-                        Dragoon Healer
+                        Dragoon Healer Swords
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyArcherTemplate(char.id)}
+                        className="text-xs h-7 px-2"
+                      >
+                        Archer
                       </Button>
                       <Button
                         size="sm"
