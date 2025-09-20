@@ -460,7 +460,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
       'Tailoring': 120,
       'Carpentry': 100,
       'Tinkering': 100,
-      'Arms Lore': 80,
+      'Arms Lore': 70,
       'Imbuing': 120,
       'Magery': 90
     };
