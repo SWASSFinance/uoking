@@ -679,7 +679,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                          <div>
                            <Label className="flex items-center gap-2 mb-2 text-sm">
                              <Shield className="h-3 w-3" />
-                             Suit Tier
+                             PVM Suit Tier
                            </Label>
                            <Select value={char.suitTier} onValueChange={(value: any) => updateCharacterSuitTier(char.id, value)}>
                              <SelectTrigger className="h-8">
