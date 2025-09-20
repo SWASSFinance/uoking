@@ -265,9 +265,11 @@ export async function POST(request: NextRequest) {
             product_name, 
             quantity, 
             unit_price, 
-            total_price
-          ) VALUES ($1, $2, $3, $4, $5, $6)
-        `, [orderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity])
+            total_price,
+            custom_details
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [orderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity, 
+            item.details ? JSON.stringify(item.details) : null])
       }
       console.log('All order items inserted successfully')
     }

@@ -136,8 +136,9 @@ export async function POST(request: NextRequest) {
           unit_price,
           total_price,
           product_snapshot,
+          custom_details,
           created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
       `, [
         orderId,
         item.id,
@@ -150,7 +151,8 @@ export async function POST(request: NextRequest) {
           price: item.price,
           image_url: item.image_url,
           category: item.category
-        })
+        }),
+        item.details ? JSON.stringify(item.details) : null
       ])
     }
 

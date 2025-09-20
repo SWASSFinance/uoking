@@ -7,6 +7,7 @@ export interface CartItem {
   quantity: number
   image_url?: string
   category?: string
+  details?: any // For custom items like account builder
 }
 
 export interface Cart {

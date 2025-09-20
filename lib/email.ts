@@ -76,7 +76,7 @@ const EMAIL_TEMPLATES = {
       customerName: string; 
       email: string; 
       total: number; 
-      items: Array<{ name: string; quantity: number; price: number }>;
+      items: Array<{ name: string; quantity: number; price: number; custom_details?: any }>;
       deliveryCharacter?: string;
       shard?: string;
     }) => `Order Confirmation - UO King (Order #${data.orderId})`,
@@ -85,7 +85,7 @@ const EMAIL_TEMPLATES = {
       customerName: string; 
       email: string; 
       total: number; 
-      items: Array<{ name: string; quantity: number; price: number }>;
+      items: Array<{ name: string; quantity: number; price: number; custom_details?: any }>;
       deliveryCharacter?: string;
       shard?: string;
     }) => `
@@ -124,12 +124,43 @@ const EMAIL_TEMPLATES = {
                 ${data.shard ? `<p><strong>Shard:</strong> ${data.shard}</p>` : ''}
                 
                 <h4>Items Ordered:</h4>
-                ${data.items.map(item => `
-                  <div class="item">
-                    <span>${item.name} x${item.quantity}</span>
-                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
-                `).join('')}
+                ${data.items.map(item => {
+                  let itemHtml = `
+                    <div class="item">
+                      <span>${item.name} x${item.quantity}</span>
+                      <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  `;
+                  
+                  // Add account builder details if present
+                  if (item.custom_details && item.custom_details.shard && item.custom_details.characters) {
+                    const details = item.custom_details;
+                    itemHtml += `
+                      <div style="margin-left: 20px; padding: 10px; background: #e3f2fd; border-left: 4px solid #2196f3; margin-top: 5px; font-size: 14px;">
+                        <strong>Custom Account Details:</strong><br>
+                        <strong>Shard:</strong> ${details.shard}<br>
+                        <strong>Characters:</strong> ${details.numCharacters}<br>
+                        ${details.options?.addHouse ? '<strong>House:</strong> Included<br>' : ''}
+                        <br><strong>Character Configurations:</strong><br>
+                        ${details.characters.map((char, index) => `
+                          <div style="margin: 5px 0; padding: 5px; background: white; border-radius: 3px;">
+                            <strong>#${index + 1}: ${char.name}</strong> (${char.race} ${char.gender})<br>
+                            <em>Skills (${char.totalSkillPoints}/720):</em> ${Object.entries(char.skills).map(([skill, points]) => `${skill} ${points}`).join(', ')}<br>
+                            ${char.suitTier !== 'none' || char.addMount || char.addBooks ? 
+                              `<em>Extras:</em> ${[
+                                char.suitTier !== 'none' ? `${char.suitTier} suit` : null,
+                                char.addMount ? 'Mount' : null,
+                                char.addBooks ? 'Books' : null
+                              ].filter(Boolean).join(', ')}<br>` : ''
+                            }
+                          </div>
+                        `).join('')}
+                      </div>
+                    `;
+                  }
+                  
+                  return itemHtml;
+                }).join('')}
                 
                 <div class="total">
                   <strong>Total: $${data.total.toFixed(2)}</strong>
@@ -385,7 +416,7 @@ export async function sendOrderConfirmationEmail(orderData: {
   customerName: string
   email: string
   total: number
-  items: Array<{ name: string; quantity: number; price: number }>
+  items: Array<{ name: string; quantity: number; price: number; custom_details?: any }>
   deliveryCharacter?: string
   shard?: string
 }) {

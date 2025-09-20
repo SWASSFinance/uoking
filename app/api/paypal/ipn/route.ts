@@ -319,7 +319,7 @@ export async function POST(request: NextRequest) {
         
         // Get order items for email
         const orderItemsResult = await query(`
-          SELECT oi.quantity, oi.unit_price as price, oi.product_name as name
+          SELECT oi.quantity, oi.unit_price as price, oi.product_name as name, oi.custom_details
           FROM order_items oi
           WHERE oi.order_id = $1
         `, [custom])
@@ -340,7 +340,8 @@ export async function POST(request: NextRequest) {
           items: orderItemsResult.rows.map(item => ({
             name: item.name,
             quantity: item.quantity,
-            price: parseFloat(item.price)
+            price: parseFloat(item.price),
+            custom_details: item.custom_details ? JSON.parse(item.custom_details) : null
           })),
           deliveryCharacter: order.delivery_character,
           shard: order.delivery_shard

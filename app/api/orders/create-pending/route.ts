@@ -161,11 +161,13 @@ export async function POST(request: NextRequest) {
     for (const item of cartItems) {
       await query(`
         INSERT INTO order_items (
-          order_id, product_id, product_name, quantity, unit_price, total_price, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+          order_id, product_id, product_name, quantity, unit_price, total_price, 
+          custom_details, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
       `, [
         orderId, item.id, item.name, item.quantity, 
-        item.price.toFixed(2), (item.price * item.quantity).toFixed(2)
+        item.price.toFixed(2), (item.price * item.quantity).toFixed(2),
+        item.details ? JSON.stringify(item.details) : null
       ])
     }
 

@@ -93,7 +93,7 @@ export async function GET(
         LEFT JOIN product_categories pc ON p.id = pc.product_id
         LEFT JOIN categories c ON pc.category_id = c.id
         WHERE oi.order_id = $1
-        GROUP BY oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.created_at, p.name, p.slug, p.image_url, p.admin_notes
+        GROUP BY oi.id, oi.order_id, oi.product_id, oi.product_name, oi.quantity, oi.unit_price, oi.total_price, oi.custom_details, oi.created_at, p.name, p.slug, p.image_url, p.admin_notes
         ORDER BY oi.created_at
       `, [orderId])
     } catch (itemsError) {

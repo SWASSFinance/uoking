@@ -49,6 +49,7 @@ interface OrderItem {
   unit_price: string
   total_price: string
   category?: string
+  custom_details?: string
 }
 
 interface Order {
@@ -688,6 +689,55 @@ export default function OrdersAdminPage() {
                                        <p className="text-xs text-gray-600">${parseFloat(item.unit_price).toFixed(2)} each</p>
                                      </div>
                                    </div>
+                                   
+                                   {/* Account Builder Details Section */}
+                                   {item.custom_details && (() => {
+                                     try {
+                                       const customDetails = JSON.parse(item.custom_details)
+                                       if (customDetails.shard && customDetails.characters) {
+                                         return (
+                                           <div className="border-t border-gray-200 pt-2 mt-2">
+                                             <div className="bg-blue-50 p-2 rounded border border-blue-200">
+                                               <p className="text-xs font-semibold text-blue-800 mb-2">Custom Account Details</p>
+                                               <div className="space-y-1 text-xs">
+                                                 <div><span className="font-medium text-blue-700">Shard:</span> {customDetails.shard}</div>
+                                                 <div><span className="font-medium text-blue-700">Characters:</span> {customDetails.numCharacters}</div>
+                                                 {customDetails.options?.addHouse && (
+                                                   <div><span className="font-medium text-blue-700">House:</span> Included</div>
+                                                 )}
+                                                 <div className="mt-2">
+                                                   <span className="font-medium text-blue-700">Character Details:</span>
+                                                   <div className="mt-1 space-y-2">
+                                                     {customDetails.characters.map((char: any, index: number) => (
+                                                       <div key={index} className="bg-white p-2 rounded border border-blue-100">
+                                                         <div className="flex items-center justify-between mb-1">
+                                                           <span className="font-medium text-blue-900">#{index + 1}: {char.name}</span>
+                                                           <span className="text-blue-600 text-xs">{char.race} {char.gender}</span>
+                                                         </div>
+                                                         <div className="text-xs text-blue-700">
+                                                           Skills ({char.totalSkillPoints}/720): {Object.entries(char.skills).map(([skill, points]: [string, any]) => `${skill} ${points}`).join(', ')}
+                                                         </div>
+                                                         {(char.suitTier !== 'none' || char.addMount || char.addBooks) && (
+                                                           <div className="text-xs text-blue-600 mt-1">
+                                                             {char.suitTier !== 'none' && `Suit: ${char.suitTier}`}
+                                                             {char.addMount && ` • Mount`}
+                                                             {char.addBooks && ` • Books`}
+                                                           </div>
+                                                         )}
+                                                       </div>
+                                                     ))}
+                                                   </div>
+                                                 </div>
+                                               </div>
+                                             </div>
+                                           </div>
+                                         )
+                                       }
+                                     } catch (e) {
+                                       return null
+                                     }
+                                     return null
+                                   })()}
                                    
                                    {/* Product Notes Section */}
                                    {item.product_id && (
