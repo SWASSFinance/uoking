@@ -97,14 +97,17 @@ const SHARDS = [
   'Sakura', 'Formosa', 'Baja'
 ];
 
-interface Character {
-  id: string;
-  name: string;
-  gender: 'Male' | 'Female';
-  race: 'Human' | 'Elf' | 'Gargoyle';
-  skills: { [skillName: string]: number };
-  totalSkillPoints: number;
-}
+ interface Character {
+   id: string;
+   name: string;
+   gender: 'Male' | 'Female';
+   race: 'Human' | 'Elf' | 'Gargoyle';
+   skills: { [skillName: string]: number };
+   totalSkillPoints: number;
+   suitTier: 'none' | 'basic' | 'premium' | 'legendary';
+   addMount: boolean;
+   addBooks: boolean;
+ }
 
 interface AccountBuilderProps {
   onAddToCart: (accountConfig: any) => void;
@@ -112,9 +115,9 @@ interface AccountBuilderProps {
 
 export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
   const [numCharacters, setNumCharacters] = useState(1);
-  const [characters, setCharacters] = useState<Character[]>([
-    { id: '1', name: '', gender: 'Male', race: 'Human', skills: {}, totalSkillPoints: 0 }
-  ]);
+   const [characters, setCharacters] = useState<Character[]>([
+     { id: '1', name: '', gender: 'Male', race: 'Human', skills: {}, totalSkillPoints: 0, suitTier: 'none', addMount: false, addBooks: false }
+   ]);
   const [selectedShard, setSelectedShard] = useState('');
   const [activeCharacter, setActiveCharacter] = useState('1');
   
@@ -134,14 +137,17 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
     if (numCharacters > characters.length) {
       // Add new characters
       for (let i = characters.length; i < numCharacters; i++) {
-        newCharacters.push({
-          id: String(i + 1),
-          name: '',
-          gender: 'Male',
-          race: 'Human',
-          skills: {},
-          totalSkillPoints: 0
-        });
+         newCharacters.push({
+           id: String(i + 1),
+           name: '',
+           gender: 'Male',
+           race: 'Human',
+           skills: {},
+           totalSkillPoints: 0,
+           suitTier: 'none',
+           addMount: false,
+           addBooks: false
+         });
       }
     } else if (numCharacters < characters.length) {
       // Remove excess characters
@@ -193,52 +199,74 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
     ));
   };
 
-  const updateCharacterRace = (characterId: string, race: 'Human' | 'Elf' | 'Gargoyle') => {
-    setCharacters(prev => prev.map(char => 
-      char.id === characterId ? { ...char, race } : char
-    ));
-  };
+   const updateCharacterRace = (characterId: string, race: 'Human' | 'Elf' | 'Gargoyle') => {
+     setCharacters(prev => prev.map(char => 
+       char.id === characterId ? { ...char, race } : char
+     ));
+   };
 
-  const calculateTotalPrice = () => {
-    // Base pricing matches your existing products: $109.99, $169.99, $249.99, $299.99, $349.99
-    const basePrices = {
-      1: 109.99,
-      2: 169.99,
-      3: 249.99,
-      4: 299.99,
-      5: 349.99,
-      6: 399.99,
-      7: 449.99
-    };
-    
-    let basePrice = basePrices[numCharacters as keyof typeof basePrices] || (numCharacters * 60);
-    
-    // Suit pricing
-    const suitPrices = {
-      none: 0,
-      basic: 25,
-      premium: 50,
-      legendary: 100
-    };
-    basePrice += suitPrices[suitTier] * numCharacters;
-    
-    // Mount pricing
-    if (addMount) {
-      basePrice += 5 * numCharacters;
-    }
-    
-    // Books pricing
-    if (addBooks) {
-      basePrice += 3 * numCharacters;
-    }
-    
-    // House pricing
-    if (addHouse) {
-      basePrice += 50;
-    }
-    
-    return Math.round(basePrice * 100) / 100; // Round to 2 decimal places
-  };
+   const updateCharacterSuitTier = (characterId: string, suitTier: 'none' | 'basic' | 'premium' | 'legendary') => {
+     setCharacters(prev => prev.map(char => 
+       char.id === characterId ? { ...char, suitTier } : char
+     ));
+   };
+
+   const updateCharacterMount = (characterId: string, addMount: boolean) => {
+     setCharacters(prev => prev.map(char => 
+       char.id === characterId ? { ...char, addMount } : char
+     ));
+   };
+
+   const updateCharacterBooks = (characterId: string, addBooks: boolean) => {
+     setCharacters(prev => prev.map(char => 
+       char.id === characterId ? { ...char, addBooks } : char
+     ));
+   };
+
+   const calculateTotalPrice = () => {
+     // Base pricing matches your existing products: $109.99, $169.99, $249.99, $299.99, $349.99
+     const basePrices = {
+       1: 109.99,
+       2: 169.99,
+       3: 249.99,
+       4: 299.99,
+       5: 349.99,
+       6: 399.99,
+       7: 449.99
+     };
+     
+     let basePrice = basePrices[numCharacters as keyof typeof basePrices] || (numCharacters * 60);
+     
+     // Per-character pricing
+     const suitPrices = {
+       none: 0,
+       basic: 25,
+       premium: 50,
+       legendary: 100
+     };
+     
+     characters.forEach(char => {
+       // Suit pricing per character
+       basePrice += suitPrices[char.suitTier];
+       
+       // Mount pricing per character
+       if (char.addMount) {
+         basePrice += 5;
+       }
+       
+       // Books pricing per character
+       if (char.addBooks) {
+         basePrice += 3;
+       }
+     });
+     
+     // House pricing (global option)
+     if (addHouse) {
+       basePrice += 50;
+     }
+     
+     return Math.round(basePrice * 100) / 100; // Round to 2 decimal places
+   };
 
   const getTotalSkillPoints = () => {
     return characters.reduce((total, char) => total + char.totalSkillPoints, 0);
@@ -278,19 +306,19 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
       details: {
         shard: selectedShard,
         numCharacters,
-        characters: characters.map(char => ({
-          name: char.name,
-          gender: char.gender,
-          race: char.race,
-          skills: char.skills,
-          totalSkillPoints: char.totalSkillPoints
-        })),
-        options: {
-          suitTier,
-          addMount,
-          addBooks,
-          addHouse
-        },
+         characters: characters.map(char => ({
+           name: char.name,
+           gender: char.gender,
+           race: char.race,
+           skills: char.skills,
+           totalSkillPoints: char.totalSkillPoints,
+           suitTier: char.suitTier,
+           addMount: char.addMount,
+           addBooks: char.addBooks
+         })),
+         options: {
+           addHouse
+         },
         totalSkillPoints: getTotalSkillPoints(),
         maxSkillPoints: getMaxSkillPoints()
       }
@@ -436,47 +464,57 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Basic Configuration */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="numCharacters" className="text-sm">Characters</Label>
-              <Select value={numCharacters.toString()} onValueChange={(value) => setNumCharacters(parseInt(value))}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 4, 5, 6, 7].map(num => (
-                    <SelectItem key={num} value={num.toString()}>
-                      {num} Char{num > 1 ? 's' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="shard" className="text-sm">Shard</Label>
-              <Select value={selectedShard} onValueChange={setSelectedShard}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Select shard" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SHARDS.map(shard => (
-                    <SelectItem key={shard} value={shard}>
-                      {shard}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label className="text-sm">Total Price</Label>
-              <div className="h-9 flex items-center px-3 border rounded-md bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-600">
-                <span className="font-bold text-amber-800 dark:text-amber-400">${calculateTotalPrice()}</span>
-              </div>
-            </div>
-          </div>
+           {/* Basic Configuration with Add to Cart */}
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+             <div>
+               <Label htmlFor="numCharacters" className="text-sm">Characters</Label>
+               <Select value={numCharacters.toString()} onValueChange={(value) => setNumCharacters(parseInt(value))}>
+                 <SelectTrigger className="h-9">
+                   <SelectValue />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                     <SelectItem key={num} value={num.toString()}>
+                       {num} Char{num > 1 ? 's' : ''}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+             
+             <div>
+               <Label htmlFor="shard" className="text-sm">Shard</Label>
+               <Select value={selectedShard} onValueChange={setSelectedShard}>
+                 <SelectTrigger className="h-9">
+                   <SelectValue placeholder="Select shard" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {SHARDS.map(shard => (
+                     <SelectItem key={shard} value={shard}>
+                       {shard}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+             
+             <div>
+               <Label className="text-sm">Total Price</Label>
+               <div className="h-9 flex items-center px-3 border rounded-md bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-600">
+                 <span className="font-bold text-amber-800 dark:text-amber-400">${calculateTotalPrice()}</span>
+               </div>
+             </div>
+
+             <div>
+               <Button 
+                 onClick={handleAddToCart}
+                 className="w-full bg-amber-600 hover:bg-amber-700 h-9"
+                 disabled={getTotalSkillPoints() > getMaxSkillPoints() || !selectedShard}
+               >
+                 Add to Cart
+               </Button>
+             </div>
+           </div>
 
           {/* Skill Points Summary */}
           <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-600">
@@ -507,57 +545,113 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                 ))}
               </TabsList>
 
-              {characters.map(char => (
-                <TabsContent key={char.id} value={char.id} className="space-y-3">
-                  {/* Character Basic Info */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <Label htmlFor={`name-${char.id}`} className="text-sm">Name</Label>
-                      <Input
-                        id={`name-${char.id}`}
-                        value={char.name}
-                        onChange={(e) => updateCharacterName(char.id, e.target.value)}
-                        placeholder="Character name"
-                        className="h-8"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor={`gender-${char.id}`} className="text-sm">Gender</Label>
-                      <Select value={char.gender} onValueChange={(value: 'Male' | 'Female') => updateCharacterGender(char.id, value)}>
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor={`race-${char.id}`} className="text-sm">Race</Label>
-                      <Select value={char.race} onValueChange={(value: 'Human' | 'Elf' | 'Gargoyle') => updateCharacterRace(char.id, value)}>
-                        <SelectTrigger className="h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Human">Human</SelectItem>
-                          <SelectItem value="Elf">Elf</SelectItem>
-                          <SelectItem value="Gargoyle">Gargoyle</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm">Skills Used</Label>
-                      <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                        <Badge variant={char.totalSkillPoints > 720 ? "destructive" : "default"} className="text-xs">
-                          {char.totalSkillPoints}/720
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
+               {characters.map(char => (
+                 <TabsContent key={char.id} value={char.id} className="space-y-3">
+                   {/* Character Layout: 33% Left / 67% Right */}
+                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                     {/* Left Column - Character Info (33%) */}
+                     <div className="space-y-3">
+                       <div>
+                         <Label htmlFor={`name-${char.id}`} className="text-sm">Name</Label>
+                         <Input
+                           id={`name-${char.id}`}
+                           value={char.name}
+                           onChange={(e) => updateCharacterName(char.id, e.target.value)}
+                           placeholder="Character name"
+                           className="h-8"
+                         />
+                       </div>
+                       
+                       <div>
+                         <Label htmlFor={`gender-${char.id}`} className="text-sm">Gender</Label>
+                         <Select value={char.gender} onValueChange={(value: 'Male' | 'Female') => updateCharacterGender(char.id, value)}>
+                           <SelectTrigger className="h-8">
+                             <SelectValue />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="Male">Male</SelectItem>
+                             <SelectItem value="Female">Female</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       
+                       <div>
+                         <Label htmlFor={`race-${char.id}`} className="text-sm">Race</Label>
+                         <Select value={char.race} onValueChange={(value: 'Human' | 'Elf' | 'Gargoyle') => updateCharacterRace(char.id, value)}>
+                           <SelectTrigger className="h-8">
+                             <SelectValue />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="Human">Human</SelectItem>
+                             <SelectItem value="Elf">Elf</SelectItem>
+                             <SelectItem value="Gargoyle">Gargoyle</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       
+                       <div>
+                         <Label className="text-sm">Skills Used</Label>
+                         <div className="h-8 flex items-center px-2 border rounded-md bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                           <Badge variant={char.totalSkillPoints > 720 ? "destructive" : "default"} className="text-xs">
+                             {char.totalSkillPoints}/720
+                           </Badge>
+                         </div>
+                       </div>
+                     </div>
+
+                     {/* Right Column - Additional Options (67%) */}
+                     <div className="lg:col-span-2 space-y-3">
+                       <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">Additional Options</h4>
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         {/* Suit Options */}
+                         <div>
+                           <Label className="flex items-center gap-2 mb-2 text-sm">
+                             <Shield className="h-3 w-3" />
+                             Suit Tier
+                           </Label>
+                           <Select value={char.suitTier} onValueChange={(value: any) => updateCharacterSuitTier(char.id, value)}>
+                             <SelectTrigger className="h-8">
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="none">None - $0</SelectItem>
+                               <SelectItem value="basic">Basic - $25</SelectItem>
+                               <SelectItem value="premium">Premium - $50</SelectItem>
+                               <SelectItem value="legendary">Legendary - $100</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
+
+                         {/* Checkboxes */}
+                         <div className="space-y-2">
+                           <div className="flex items-center space-x-2">
+                             <Checkbox
+                               id={`mount-${char.id}`}
+                               checked={char.addMount}
+                               onCheckedChange={(checked) => updateCharacterMount(char.id, checked === true)}
+                             />
+                             <Label htmlFor={`mount-${char.id}`} className="flex items-center gap-1 text-sm">
+                               <Zap className="h-3 w-3" />
+                               Mount (+$5)
+                             </Label>
+                           </div>
+
+                           <div className="flex items-center space-x-2">
+                             <Checkbox
+                               id={`books-${char.id}`}
+                               checked={char.addBooks}
+                               onCheckedChange={(checked) => updateCharacterBooks(char.id, checked === true)}
+                             />
+                             <Label htmlFor={`books-${char.id}`} className="flex items-center gap-1 text-sm">
+                               <BookOpen className="h-3 w-3" />
+                               Books (+$3)
+                             </Label>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
 
                   {/* Skills Configuration */}
                   <div>
@@ -673,126 +767,24 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
             </Tabs>
           </div>
 
-          <Separator />
-
-          {/* Pricing Options */}
-          <div>
-            <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-200">Additional Options</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Suit Options */}
-              <div>
-                <Label className="flex items-center gap-2 mb-2 text-sm">
-                  <Shield className="h-3 w-3" />
-                  Suit Tier (per char)
-                </Label>
-                <Select value={suitTier} onValueChange={(value: any) => setSuitTier(value)}>
-                  <SelectTrigger className="h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None - $0</SelectItem>
-                    <SelectItem value="basic">Basic - $25</SelectItem>
-                    <SelectItem value="premium">Premium - $50</SelectItem>
-                    <SelectItem value="legendary">Legendary - $100</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Checkboxes */}
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="mount"
-                    checked={addMount}
-                    onCheckedChange={(checked) => setAddMount(checked === true)}
-                  />
-                  <Label htmlFor="mount" className="flex items-center gap-1 text-sm">
-                    <Zap className="h-3 w-3" />
-                    Mount (+$5/char)
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="books"
-                    checked={addBooks}
-                    onCheckedChange={(checked) => setAddBooks(checked === true)}
-                  />
-                  <Label htmlFor="books" className="flex items-center gap-1 text-sm">
-                    <BookOpen className="h-3 w-3" />
-                    Books (+$3/char)
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="house"
-                    checked={addHouse}
-                    onCheckedChange={(checked) => setAddHouse(checked === true)}
-                  />
-                  <Label htmlFor="house" className="flex items-center gap-1 text-sm">
-                    <Home className="h-3 w-3" />
-                    House (+$50)
-                  </Label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Price Summary & Add to Cart */}
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-600">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-bold text-amber-800 dark:text-amber-400">Total</h3>
-              <div className="text-xl font-bold text-amber-800 dark:text-amber-400">
-                ${calculateTotalPrice()}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-300 mb-3">
-              <div className="flex justify-between">
-                <span>Base ({numCharacters} chars):</span>
-                <span>${(() => {
-                  const basePrices = { 1: 109.99, 2: 169.99, 3: 249.99, 4: 299.99, 5: 349.99, 6: 399.99, 7: 449.99 };
-                  return (basePrices as any)[numCharacters] || (numCharacters * 60);
-                })()}</span>
-              </div>
-              {suitTier !== 'none' && (
-                <div className="flex justify-between">
-                  <span>Suits ({suitTier}):</span>
-                  <span>+${({ basic: 25, premium: 50, legendary: 100 }[suitTier] || 0) * numCharacters}</span>
-                </div>
-              )}
-              {addMount && (
-                <div className="flex justify-between">
-                  <span>Mounts:</span>
-                  <span>+${5 * numCharacters}</span>
-                </div>
-              )}
-              {addBooks && (
-                <div className="flex justify-between">
-                  <span>Books:</span>
-                  <span>+${3 * numCharacters}</span>
-                </div>
-              )}
-              {addHouse && (
-                <div className="flex justify-between">
-                  <span>House:</span>
-                  <span>+$50</span>
-                </div>
-              )}
-            </div>
-            
-            <Button 
-              onClick={handleAddToCart}
-              className="w-full bg-amber-600 hover:bg-amber-700 h-9"
-              disabled={getTotalSkillPoints() > getMaxSkillPoints() || !selectedShard}
-            >
-              Add to Cart - ${calculateTotalPrice()}
-            </Button>
-          </div>
+           <Separator />
+ 
+           {/* Global Options */}
+           <div>
+             <h3 className="text-base font-semibold mb-3 text-gray-800 dark:text-gray-200">Global Options</h3>
+             
+             <div className="flex items-center space-x-2">
+               <Checkbox
+                 id="house"
+                 checked={addHouse}
+                 onCheckedChange={(checked) => setAddHouse(checked === true)}
+               />
+               <Label htmlFor="house" className="flex items-center gap-1 text-sm">
+                 <Home className="h-3 w-3" />
+                 Include House (+$50)
+               </Label>
+             </div>
+           </div>
         </CardContent>
       </Card>
     </div>
