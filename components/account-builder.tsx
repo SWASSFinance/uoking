@@ -101,6 +101,7 @@ interface Character {
   id: string;
   name: string;
   gender: 'Male' | 'Female';
+  race: 'Human' | 'Elf' | 'Gargoyle';
   skills: { [skillName: string]: number };
   totalSkillPoints: number;
 }
@@ -112,7 +113,7 @@ interface AccountBuilderProps {
 export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
   const [numCharacters, setNumCharacters] = useState(1);
   const [characters, setCharacters] = useState<Character[]>([
-    { id: '1', name: '', gender: 'Male', skills: {}, totalSkillPoints: 0 }
+    { id: '1', name: '', gender: 'Male', race: 'Human', skills: {}, totalSkillPoints: 0 }
   ]);
   const [selectedShard, setSelectedShard] = useState('');
   const [activeCharacter, setActiveCharacter] = useState('1');
@@ -137,6 +138,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
           id: String(i + 1),
           name: '',
           gender: 'Male',
+          race: 'Human',
           skills: {},
           totalSkillPoints: 0
         });
@@ -188,6 +190,12 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
   const updateCharacterGender = (characterId: string, gender: 'Male' | 'Female') => {
     setCharacters(prev => prev.map(char => 
       char.id === characterId ? { ...char, gender } : char
+    ));
+  };
+
+  const updateCharacterRace = (characterId: string, race: 'Human' | 'Elf' | 'Gargoyle') => {
+    setCharacters(prev => prev.map(char => 
+      char.id === characterId ? { ...char, race } : char
     ));
   };
 
@@ -273,6 +281,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
         characters: characters.map(char => ({
           name: char.name,
           gender: char.gender,
+          race: char.race,
           skills: char.skills,
           totalSkillPoints: char.totalSkillPoints
         })),
@@ -456,7 +465,7 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
               {characters.map(char => (
                 <TabsContent key={char.id} value={char.id} className="space-y-3">
                   {/* Character Basic Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label htmlFor={`name-${char.id}`} className="text-sm">Name</Label>
                       <Input
@@ -477,6 +486,20 @@ export default function AccountBuilder({ onAddToCart }: AccountBuilderProps) {
                         <SelectContent>
                           <SelectItem value="Male">Male</SelectItem>
                           <SelectItem value="Female">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor={`race-${char.id}`} className="text-sm">Race</Label>
+                      <Select value={char.race} onValueChange={(value: 'Human' | 'Elf' | 'Gargoyle') => updateCharacterRace(char.id, value)}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Human">Human</SelectItem>
+                          <SelectItem value="Elf">Elf</SelectItem>
+                          <SelectItem value="Gargoyle">Gargoyle</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
