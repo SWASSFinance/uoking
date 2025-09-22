@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
+import { randomUUID } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -159,16 +160,55 @@ export async function POST(request: NextRequest) {
 
     // Insert order items
     for (const item of cartItems) {
-      await query(`
-        INSERT INTO order_items (
-          order_id, product_id, product_name, quantity, unit_price, total_price, 
-          custom_details, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-      `, [
-        orderId, item.id, item.name, item.quantity, 
-        item.price.toFixed(2), (item.price * item.quantity).toFixed(2),
-        item.details ? JSON.stringify(item.details) : null
-      ])
+      console.log(`Inserting item: ${item.name} for order: ${orderId}`)
+      
+      // Check if this is a custom product (non-UUID format)
+      const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+      
+      // Generate a UUID for custom products to satisfy NOT NULL constraint
+      const productId = isCustomProduct ? randomUUID() : item.id
+      
+      try {
+        await query(`
+          INSERT INTO order_items (
+            order_id, product_id, product_name, quantity, unit_price, total_price, 
+            custom_details, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        `, [
+          orderId, 
+          productId,
+          item.name, 
+          item.quantity, 
+          item.price.toFixed(2), 
+          (item.price * item.quantity).toFixed(2),
+          item.details ? JSON.stringify(item.details) : null
+        ])
+      } catch (error) {
+        console.error('Database query error:', {
+          query: `
+          INSERT INTO order_items (
+            order_id, 
+            product_id, 
+            product_name, 
+            quantity, 
+            unit_price, 
+            total_price,
+            custom_details
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `,
+          params: [
+            orderId,
+            productId,
+            item.name,
+            item.quantity,
+            item.price.toFixed(2),
+            (item.price * item.quantity).toFixed(2),
+            item.details ? JSON.stringify(item.details) : null
+          ],
+          error: (error as Error).message
+        })
+        throw error
+      }
     }
 
     // Update coupon usage if coupon was applied

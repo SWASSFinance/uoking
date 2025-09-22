@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
+import { randomUUID } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -118,6 +119,12 @@ export async function POST(request: NextRequest) {
 
     // Insert order items
     for (const item of cartItems) {
+      // Check if this is a custom product (non-UUID format)
+      const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+      
+      // Generate a UUID for custom products to satisfy NOT NULL constraint
+      const productId = isCustomProduct ? randomUUID() : item.id
+      
       await query(`
         INSERT INTO order_items (
           order_id, 
@@ -125,9 +132,18 @@ export async function POST(request: NextRequest) {
           product_name, 
           quantity, 
           unit_price, 
-          total_price
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-      `, [orderId, item.id, item.name, item.quantity, item.price, item.price * item.quantity])
+          total_price,
+          custom_details
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [
+        orderId, 
+        productId,
+        item.name, 
+        item.quantity, 
+        item.price, 
+        item.price * item.quantity,
+        item.details ? JSON.stringify(item.details) : null
+      ])
     }
 
     // Create PayPal order

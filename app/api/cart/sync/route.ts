@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
 import { Cart } from '@/lib/cart'
+import { randomUUID } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -127,6 +128,12 @@ export async function POST(request: NextRequest) {
 
     // Insert cart items
     for (const item of cart.items) {
+      // Check if this is a custom product (non-UUID format)
+      const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+      
+      // Generate a UUID for custom products to satisfy NOT NULL constraint
+      const productId = isCustomProduct ? randomUUID() : item.id
+      
       await query(`
         INSERT INTO order_items (
           order_id,
@@ -141,7 +148,7 @@ export async function POST(request: NextRequest) {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
       `, [
         orderId,
-        item.id,
+        productId,
         item.name,
         item.quantity,
         item.price,

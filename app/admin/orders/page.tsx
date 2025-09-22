@@ -363,8 +363,8 @@ export default function OrdersAdminPage() {
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.username.toLowerCase().includes(searchTerm.toLowerCase())
+      (order.user_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.username || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === "all" || order.status === filterStatus
     const matchesPaymentStatus = filterPaymentStatus === "all" || order.payment_status === filterPaymentStatus
     const matchesGift = filterGift === "all" || 
@@ -674,7 +674,7 @@ export default function OrdersAdminPage() {
                                      <div className="flex-1">
                                        <div className="flex items-center space-x-2">
                                          <Link 
-                                           href={`/product/${item.product_slug || item.product_name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}`}
+                                           href={`/product/${item.product_slug || (item.product_name || '').toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}`}
                                            target="_blank"
                                            className="font-medium text-blue-600 hover:text-blue-800 text-sm cursor-pointer"
                                          >
