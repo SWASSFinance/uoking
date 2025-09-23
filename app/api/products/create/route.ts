@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { v2 as cloudinary } from 'cloudinary'
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+// Configure Cloudinary - uses CLOUDINARY_URL environment variable
+// Format: cloudinary://api_key:api_secret@cloud_name
+if (process.env.CLOUDINARY_URL) {
+  // Cloudinary will auto-configure from CLOUDINARY_URL
+} else {
+  // Fallback to individual environment variables
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -108,7 +114,7 @@ export async function POST(request: NextRequest) {
       name,
       slug,
       description,
-      description.substring(0, 200), // short_description (first 200 chars)
+      description, // short_description (first 200 chars)
       priceNum,
       uploadResult.secure_url,
       'active', // status

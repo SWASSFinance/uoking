@@ -9,7 +9,7 @@ SAVE_HUE_IN_NAME = False # Whether or not you want to include the hue in the ima
 BACKGROUND_IMAGE_PATH = "C:\\UOITEMS\\container.png"  # Path to the background image
 
 # API CONFIG --------------------------------------------------#
-API_URL = "https://your-domain.com/api/products/create"  # Replace with your actual domain
+API_URL = "http://localhost:3000/api/products/create"  # Replace with your actual domain
 UPLOAD_TO_API = True  # Set to False if you just want to save locally
 DEFAULT_PRICE = "10.00"  # Default price for items (you can modify this)
 # END CONFIG --------------------------------------------------#
@@ -171,7 +171,7 @@ def upload_to_api(image_path, item_name, item_description, price):
             print(f"❌ API Error: {response_data.get('error', 'Unknown error')}")
             return False
             
-    except json.JSONDecodeError as e:
+    except ValueError as e:
         print(f"❌ JSON Parse Error - Server returned: '{response[:100]}...'")
         return False
     except Exception as e:
