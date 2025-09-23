@@ -9,7 +9,7 @@ SAVE_HUE_IN_NAME = False # Whether or not you want to include the hue in the ima
 BACKGROUND_IMAGE_PATH = "C:\\UOITEMS\\container.png"  # Path to the background image
 
 # API CONFIG --------------------------------------------------#
-API_URL = "http://localhost:3000/api/products/create"  # Replace with your actual domain
+API_URL = "https://www.uoking.com/api/products/create"  # Replace with your actual domain
 UPLOAD_TO_API = True  # Set to False if you just want to save locally
 DEFAULT_PRICE = "10.00"  # Default price for items (you can modify this)
 # END CONFIG --------------------------------------------------#
@@ -62,9 +62,13 @@ def get_item_properties_description(item):
             'owner',  # Player ownership info
         ]
         
-        # Process each property string
+        # Process each property string (skip index 0 as it's the item name)
         if prop_strings:
-            for prop in prop_strings:
+            for i, prop in enumerate(prop_strings):
+                # Skip property 0 (item name)
+                if i == 0:
+                    continue
+                    
                 if not prop or prop.strip() == "":
                     continue
                     
