@@ -27,7 +27,7 @@ from System.Drawing import Image, Bitmap
 from System.Drawing import Graphics, Imaging
 
 def get_item_properties_description(item):
-    """Extract all item properties and format as HTML list"""
+    """Extract all item properties and format with line breaks"""
     try:
         # Wait for properties to load
         Items.WaitForProps(item, 1000)
@@ -38,11 +38,11 @@ def get_item_properties_description(item):
         
         # Add basic item info first
         if hasattr(item, 'ItemID'):
-            basic_properties.append(f"<li>Item ID: {item.ItemID}</li>")
+            basic_properties.append(f"Item ID: {item.ItemID}")
         if hasattr(item, 'Hue') and item.Hue > 0:
-            basic_properties.append(f"<li>Hue: {item.Hue}</li>")
+            basic_properties.append(f"Hue: {item.Hue}")
         if hasattr(item, 'Amount') and item.Amount > 1:
-            basic_properties.append(f"<li>Quantity: {item.Amount}</li>")
+            basic_properties.append(f"Quantity: {item.Amount}")
         
         # Get all property strings from the item
         prop_strings = Items.GetPropStringList(item)
@@ -92,42 +92,21 @@ def get_item_properties_description(item):
                 if not clean_prop or clean_prop.strip() == "":
                     continue
                 
-                # Format special properties
-                if "insured" in prop_lower:
-                    properties.append(f"<li>Insured: Yes</li>")
-                elif "blessed" in prop_lower:
-                    properties.append(f"<li>Blessed</li>")
-                elif "cursed" in prop_lower:
-                    properties.append(f"<li>Cursed</li>")
-                elif "brittle" in prop_lower:
-                    properties.append(f"<li>Brittle</li>")
-                elif "antique" in prop_lower:
-                    properties.append(f"<li>Antique</li>")
-                elif "prized" in prop_lower:
-                    properties.append(f"<li>Prized</li>")
-                elif "massive" in prop_lower:
-                    properties.append(f"<li>Massive</li>")
-                elif "unwieldy" in prop_lower:
-                    properties.append(f"<li>Unwieldy</li>")
-                elif "inspiring" in prop_lower:
-                    properties.append(f"<li>Inspiring</li>")
-                elif "night sight" in prop_lower:
-                    properties.append(f"<li>Night Sight</li>")
-                else:
-                    # For all other properties, just add them as-is
-                    properties.append(f"<li>{clean_prop}</li>")
+                # Capitalize first letter of each word for all properties
+                formatted_prop = clean_prop.title()
+                properties.append(formatted_prop)
         
         # Combine all properties
         all_properties = basic_properties + properties
         
         if all_properties:
-            return f"<ul>{''.join(all_properties)}</ul>"
+            return '\r\n'.join(all_properties)
         else:
-            return f"<ul><li>UO Item: {item.Name}</li></ul>"
+            return f"UO Item: {item.Name}"
             
     except Exception as e:
         print(f"⚠️  Error getting properties: {str(e)}")
-        return f"<ul><li>UO Item: {item.Name}</li></ul>"
+        return f"UO Item: {item.Name}"
 
 def upload_to_api(image_path, item_name, item_description, price):
     """Upload the item to your API"""

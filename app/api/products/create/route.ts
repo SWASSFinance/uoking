@@ -147,6 +147,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating product:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      cloudinaryConfigured: !!process.env.CLOUDINARY_URL || !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY),
+      hasDatabase: !!process.env.POSTGRES_URL
+    })
     
     // Handle specific database errors
     if (error instanceof Error) {
@@ -154,6 +160,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: 'A product with this name already exists' },
           { status: 409 }
+        )
+      }
+      
+      // Return more specific error in development
+      if (process.env.NODE_ENV === 'development') {
+        return NextResponse.json(
+          { error: `Development error: ${error.message}` },
+          { status: 500 }
         )
       }
     }

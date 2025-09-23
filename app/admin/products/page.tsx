@@ -80,6 +80,7 @@ export default function ProductsAdminPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
 
   // Fetch data on component mount
   useEffect(() => {
@@ -175,7 +176,13 @@ export default function ProductsAdminPage() {
     const matchesClass = filterClass === "all" || (product.class_ids && product.class_ids.includes(filterClass))
     
     return matchesSearch && matchesStatus && matchesCategory && matchesClass
-  }).sort((a, b) => a.name.localeCompare(b.name))
+  }).sort((a, b) => {
+    if (sortOrder === "newest") {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    } else {
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    }
+  })
 
   const ProductForm = ({ product, onSave, onCancel }: { 
     product?: Product | null, 
@@ -603,7 +610,7 @@ export default function ProductsAdminPage() {
           {/* Filters */}
           <Card className="mb-6 border border-gray-200 bg-white">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div>
                   <Label htmlFor="search" className="text-black font-semibold">Search Products</Label>
                   <div className="relative">
@@ -663,6 +670,19 @@ export default function ProductsAdminPage() {
                           {classItem.name}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="sort-order" className="text-black font-semibold">Sort By</Label>
+                  <Select value={sortOrder} onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}>
+                    <SelectTrigger className="border-gray-300 bg-white text-black">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="newest" className="text-black">Newest First</SelectItem>
+                      <SelectItem value="oldest" className="text-black">Oldest First</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -730,6 +750,7 @@ export default function ProductsAdminPage() {
                       <TableHead className="text-black font-semibold">Status</TableHead>
                       <TableHead className="text-black font-semibold">Type</TableHead>
                       <TableHead className="text-black font-semibold">Rank</TableHead>
+                      <TableHead className="text-black font-semibold">Created Date</TableHead>
                       <TableHead className="text-black font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -798,6 +819,17 @@ export default function ProductsAdminPage() {
                         <TableCell>
                           <div className="text-sm text-black">
                             {product.rank || 0}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-black">
+                            {new Date(product.created_at).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </div>
                         </TableCell>
                         <TableCell>
