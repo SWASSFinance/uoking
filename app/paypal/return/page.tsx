@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useToast } from "@/hooks/use-toast"
+import { useCart } from "@/contexts/cart-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,7 @@ export default function PayPalReturnPage() {
   const searchParams = useSearchParams()
   const { data: session } = useSession()
   const { toast } = useToast()
+  const { clearCart } = useCart()
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'cancelled'>('loading')
   const [orderId, setOrderId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
@@ -55,6 +57,9 @@ export default function PayPalReturnPage() {
         if (response.ok && data.success) {
           setStatus('success')
           setOrderId(data.orderId)
+          
+          // Clear the cart after successful payment
+          clearCart()
           
           toast({
             title: "Payment Successful!",

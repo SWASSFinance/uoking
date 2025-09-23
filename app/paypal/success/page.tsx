@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { useCart } from "@/contexts/cart-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ import Link from "next/link"
 export default function PayPalSuccessPage() {
   const searchParams = useSearchParams()
   const { data: session } = useSession()
+  const { clearCart } = useCart()
   const [orderId, setOrderId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -20,7 +22,10 @@ export default function PayPalSuccessPage() {
     if (orderIdParam) {
       setOrderId(orderIdParam)
     }
-  }, [searchParams])
+    
+    // Clear cart when user reaches success page (backup clearing)
+    clearCart()
+  }, [searchParams, clearCart])
 
   if (!session) {
     return (
