@@ -169,7 +169,7 @@ const EMAIL_TEMPLATES = {
               
               <p>We'll notify you once your order is ready for delivery in-game.</p>
               
-              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://uoking.vercel.app'}/account/orders" class="button">View Order Status</a>
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.uoking.com'}/account" class="button">View Order Status</a>
               
               <p>If you have any questions about your order, please contact our support team.</p>
               

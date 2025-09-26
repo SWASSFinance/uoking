@@ -804,34 +804,48 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Shard Selection Section */}
-                  <div className="space-y-3 border-t pt-4">
+                  {/* Shard Selection Section - Enhanced Visibility */}
+                  <div className="space-y-4 border-t pt-4">
                     <div className="flex items-center space-x-2">
-                      <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Information</span>
+                      <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-base font-semibold text-gray-800 dark:text-gray-200">Delivery Information</span>
                     </div>
                     
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Select Shard *
-                        </label>
+                    <div className="space-y-4">
+                      {/* Highlighted Shard Selection */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-600 rounded-lg p-4">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                          <label className="block text-base font-bold text-blue-800 dark:text-blue-200">
+                            Select Your Shard *
+                          </label>
+                          <AlertCircle className="h-4 w-4 text-red-500" />
+                        </div>
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                          ⚠️ <strong>Required:</strong> Choose the shard where you want your items delivered
+                        </p>
                         <select
                           value={selectedShard}
                           onChange={(e) => setSelectedShard(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                          className="w-full px-4 py-3 border-2 border-blue-300 dark:border-blue-500 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-medium bg-white shadow-sm"
                           required
                           disabled={isLoadingShards}
                         >
                           <option value="">
-                            {isLoadingShards ? "Loading shards..." : "Choose your shard..."}
+                            {isLoadingShards ? "Loading shards..." : "🔽 Choose your shard..."}
                           </option>
                           {shards.map((shard) => (
                             <option key={shard.id} value={shard.slug}>
-                              {shard.name}
+                              🎮 {shard.name}
                             </option>
                           ))}
                         </select>
+                        {!selectedShard && (
+                          <p className="text-xs text-red-600 dark:text-red-400 mt-2 flex items-center">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            You must select a shard to continue with checkout
+                          </p>
+                        )}
                       </div>
 
                       {/* Gift Selection Section */}
@@ -926,33 +940,54 @@ export default function CartPage() {
 
 
                   {/* Checkout Button */}
-                  <Button
-                    onClick={handleCheckout}
-                    disabled={isCheckingOut || cart.items.length === 0 || !selectedShard}
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 text-lg font-semibold"
-                  >
-                    {isCheckingOut ? (
-                      <div className="flex items-center justify-center">
-                        <LoadingSpinner size="sm" text="Processing..." />
+                  <div className="space-y-2">
+                    {!selectedShard && (
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-600 rounded-lg p-3">
+                        <div className="flex items-center space-x-2">
+                          <AlertCircle className="h-4 w-4 text-red-500" />
+                          <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                            Please select a shard above to continue with checkout
+                          </p>
+                        </div>
                       </div>
-                    ) : (
-                      <>
-                        {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) ? (
-                          <DollarSign className="h-5 w-5 mr-2" />
-                        ) : paymentMethod === 'manual_payment' ? (
-                          <MessageSquare className="h-5 w-5 mr-2" />
-                        ) : (
-                          <CreditCard className="h-5 w-5 mr-2" />
-                        )}
-                        {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) 
-                          ? "Complete Order"
-                          : paymentMethod === 'manual_payment'
-                          ? "Create Order & Chat"
-                          : "Proceed to Checkout"
-                        }
-                      </>
                     )}
-                  </Button>
+                    <Button
+                      onClick={handleCheckout}
+                      disabled={isCheckingOut || cart.items.length === 0 || !selectedShard}
+                      className={`w-full py-3 text-lg font-semibold ${
+                        !selectedShard 
+                          ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed" 
+                          : "bg-amber-600 hover:bg-amber-700"
+                      } text-white`}
+                    >
+                      {isCheckingOut ? (
+                        <div className="flex items-center justify-center">
+                          <LoadingSpinner size="sm" text="Processing..." />
+                        </div>
+                      ) : !selectedShard ? (
+                        <>
+                          <AlertCircle className="h-5 w-5 mr-2" />
+                          Select Shard to Continue
+                        </>
+                      ) : (
+                        <>
+                          {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) ? (
+                            <DollarSign className="h-5 w-5 mr-2" />
+                          ) : paymentMethod === 'manual_payment' ? (
+                            <MessageSquare className="h-5 w-5 mr-2" />
+                          ) : (
+                            <CreditCard className="h-5 w-5 mr-2" />
+                          )}
+                          {cashbackToUse >= (cart.total - (appliedCoupon?.discount_amount || 0)) 
+                            ? "Complete Order"
+                            : paymentMethod === 'manual_payment'
+                            ? "Create Order & Chat"
+                            : "Proceed to Checkout"
+                          }
+                        </>
+                      )}
+                    </Button>
+                  </div>
 
                   {/* Security Notice */}
                   <div className="text-center text-sm text-gray-500 dark:text-gray-400">
