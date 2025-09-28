@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Mail, MessageCircle, Clock, Shield, CreditCard, Facebook, Twitter, Instagram, MessageSquare } from "lucide-react"
+import { Crown, Mail, MessageCircle, Clock, Shield, CreditCard, Facebook, Twitter, Instagram, MessageSquare, Download, BookOpen, Server, Gamepad2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -11,7 +11,7 @@ export function Footer() {
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-amber-900 to-gray-900 text-white border-t border-amber-700">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           {/* Company Info */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center space-x-2">
@@ -97,6 +97,62 @@ export function Footer() {
                 <span className="text-sm text-gray-300">Bank And Credit Cards Accepted</span>
               </div>
             </div>
+          </div>
+
+          {/* Download & Setup */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-amber-600 flex items-center">
+              <Download className="h-4 w-4 mr-2" />
+              Download & Setup
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/guides/download-uo-client" className="text-gray-300 hover:text-white transition-colors">How to Download UO Client</Link></li>
+              <li><Link href="/guides/uo-enhanced-client-setup" className="text-gray-300 hover:text-white transition-colors">UO Enhanced Client Setup</Link></li>
+              <li><Link href="/guides/uo-3d-client-installation" className="text-gray-300 hover:text-white transition-colors">UO 3D Client Installation</Link></li>
+              <li><Link href="/guides/client-comparison" className="text-gray-300 hover:text-white transition-colors">Client Comparison Guide</Link></li>
+            </ul>
+          </div>
+
+          {/* New Player Guide */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-amber-600 flex items-center">
+              <BookOpen className="h-4 w-4 mr-2" />
+              New Player Guide
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/guides/beginners-guide" className="text-gray-300 hover:text-white transition-colors">Beginner's Guide to UO</Link></li>
+              <li><Link href="/guides/how-to-start-playing" className="text-gray-300 hover:text-white transition-colors">How to Start Playing UO</Link></li>
+              <li><Link href="/guides/first-steps-in-uo" className="text-gray-300 hover:text-white transition-colors">First Steps in UO</Link></li>
+              <li><Link href="/guides/character-creation" className="text-gray-300 hover:text-white transition-colors">Character Creation Guide</Link></li>
+            </ul>
+          </div>
+
+          {/* Server & Shard Selection */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-amber-600 flex items-center">
+              <Server className="h-4 w-4 mr-2" />
+              Server & Shards
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/shards/uo-shard-list" className="text-gray-300 hover:text-white transition-colors">UO Shard List & Recommendations</Link></li>
+              <li><Link href="/shards/which-shard-to-play" className="text-gray-300 hover:text-white transition-colors">Which UO Shard to Play</Link></li>
+              <li><Link href="/shards/server-ping-region-guide" className="text-gray-300 hover:text-white transition-colors">Server Ping & Region Guide</Link></li>
+              <li><Link href="/shards/shard-comparison" className="text-gray-300 hover:text-white transition-colors">Shard Comparison Tool</Link></li>
+            </ul>
+          </div>
+
+          {/* Gameplay & Mechanics */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-amber-600 flex items-center">
+              <Gamepad2 className="h-4 w-4 mr-2" />
+              Gameplay & Mechanics
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/guides/skill-system" className="text-gray-300 hover:text-white transition-colors">Skill System in UO</Link></li>
+              <li><Link href="/guides/combat-mechanics" className="text-gray-300 hover:text-white transition-colors">Combat Mechanics Guide</Link></li>
+              <li><Link href="/guides/crafting-resources" className="text-gray-300 hover:text-white transition-colors">Crafting & Resource Guides</Link></li>
+              <li><Link href="/guides/housing-in-uo" className="text-gray-300 hover:text-white transition-colors">Housing in UO</Link></li>
+            </ul>
           </div>
         </div>
 
