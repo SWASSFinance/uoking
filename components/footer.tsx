@@ -56,7 +56,7 @@ export function Footer() {
               <li><Link href="/UO/Gold" className="text-gray-300 hover:text-white transition-colors">Gold</Link></li>
               <li><Link href="/UO/Suits" className="text-gray-300 hover:text-white transition-colors">Suits</Link></li>
               <li><Link href="/store" className="text-gray-300 hover:text-white transition-colors">Store</Link></li>
-              <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link href="/sell-to-uoking" className="text-gray-300 hover:text-white transition-colors">Sell to UOKing</Link></li>
             </ul>
           </div>
 
