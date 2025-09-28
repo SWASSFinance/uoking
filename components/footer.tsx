@@ -108,8 +108,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/guides/download-uo-client" className="text-gray-300 hover:text-white transition-colors">How to Download UO Client</Link></li>
               <li><Link href="/guides/uo-enhanced-client-setup" className="text-gray-300 hover:text-white transition-colors">UO Enhanced Client Setup</Link></li>
-              <li><Link href="/guides/uo-3d-client-installation" className="text-gray-300 hover:text-white transition-colors">UO 3D Client Installation</Link></li>
-              <li><Link href="/guides/client-comparison" className="text-gray-300 hover:text-white transition-colors">Client Comparison Guide</Link></li>
+           
             </ul>
           </div>
 
@@ -122,7 +121,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/guides/beginners-guide" className="text-gray-300 hover:text-white transition-colors">Beginner's Guide to UO</Link></li>
               <li><Link href="/guides/how-to-start-playing" className="text-gray-300 hover:text-white transition-colors">How to Start Playing UO</Link></li>
-              <li><Link href="/guides/character-creation" className="text-gray-300 hover:text-white transition-colors">Character Creation Guide</Link></li>
+          
             </ul>
           </div>
 
