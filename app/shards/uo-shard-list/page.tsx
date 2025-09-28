@@ -94,7 +94,7 @@ export default function UOShardListPage() {
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
                         <span>Population:</span>
-                        <Badge className="bg-blue-100 text-blue-800">High</Badge>
+                        <Badge className="bg-yellow-100 text-yellow-800">Low</Badge>
                       </div>
                       <div className="flex justify-between">
                         <span>Community:</span>
@@ -113,24 +113,24 @@ export default function UOShardListPage() {
                   <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
                     <h4 className="font-semibold text-purple-900 flex items-center">
                       <span className="text-2xl mr-2">🌊</span>
-                      Pacific
+                      Chesapeake
                     </h4>
-                    <p className="text-sm text-purple-700 mb-3">West coast shard with active roleplay community.</p>
+                    <p className="text-sm text-purple-700 mb-3">East coast shard with dedicated community.</p>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
                         <span>Population:</span>
-                        <Badge className="bg-blue-100 text-blue-800">Medium</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Roleplay:</span>
-                        <Badge className="bg-purple-100 text-purple-800">Very Active</Badge>
+                        <Badge className="bg-yellow-100 text-yellow-800">Low</Badge>
                       </div>
                       <div className="flex justify-between">
                         <span>Community:</span>
-                        <Badge className="bg-green-100 text-green-800">Close-knit</Badge>
+                        <Badge className="bg-green-100 text-green-800">Dedicated</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Region:</span>
+                        <Badge className="bg-blue-100 text-blue-800">East Coast</Badge>
                       </div>
                     </div>
-                    <p className="text-xs text-purple-600 mt-2">Best for: Roleplayers, west coast players, community events</p>
+                    <p className="text-xs text-purple-600 mt-2">Best for: East coast players, dedicated community</p>
                   </div>
                   
                   <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
@@ -142,7 +142,7 @@ export default function UOShardListPage() {
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
                         <span>Population:</span>
-                        <Badge className="bg-blue-100 text-blue-800">Medium</Badge>
+                        <Badge className="bg-yellow-100 text-yellow-800">Low</Badge>
                       </div>
                       <div className="flex justify-between">
                         <span>PvP Activity:</span>
@@ -158,6 +158,29 @@ export default function UOShardListPage() {
                 </div>
                 
                 <div className="space-y-4">
+                  <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg">
+                    <h4 className="font-semibold text-teal-900 flex items-center">
+                      <span className="text-2xl mr-2">🏔️</span>
+                      Lake Superior
+                    </h4>
+                    <p className="text-sm text-teal-700 mb-3">Midwest shard with dedicated community.</p>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span>Population:</span>
+                        <Badge className="bg-yellow-100 text-yellow-800">Low</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Region:</span>
+                        <Badge className="bg-teal-100 text-teal-800">Midwest</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Community:</span>
+                        <Badge className="bg-green-100 text-green-800">Dedicated</Badge>
+                      </div>
+                    </div>
+                    <p className="text-xs text-teal-600 mt-2">Best for: Midwest players, dedicated community</p>
+                  </div>
+                  
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                     <h4 className="font-semibold text-red-900 flex items-center">
                       <span className="text-2xl mr-2">⚔️</span>
@@ -180,142 +203,11 @@ export default function UOShardListPage() {
                     </div>
                     <p className="text-xs text-red-600 mt-2">Best for: Hardcore PvP players, experienced veterans</p>
                   </div>
-                  
-                  <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                    <h4 className="font-semibold text-teal-900 flex items-center">
-                      <span className="text-2xl mr-2">🌊</span>
-                      Origin
-                    </h4>
-                    <p className="text-sm text-teal-700 mb-3">European shard with international community.</p>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span>Population:</span>
-                        <Badge className="bg-blue-100 text-blue-800">Medium</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Region:</span>
-                        <Badge className="bg-teal-100 text-teal-800">Europe</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Community:</span>
-                        <Badge className="bg-green-100 text-green-800">International</Badge>
-                      </div>
-                    </div>
-                    <p className="text-xs text-teal-600 mt-2">Best for: European players, international community</p>
-                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Popular Free Shards */}
-          <Card className="bg-white/80 backdrop-blur-sm border border-amber-200 mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-amber-600">
-                <Star className="h-6 w-6" />
-                <span>Popular Free Shards</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
-                    <h4 className="font-semibold text-purple-900 flex items-center">
-                      <span className="text-2xl mr-2">🏝️</span>
-                      UO Outlands
-                    </h4>
-                    <p className="text-sm text-purple-700 mb-3">Custom map with enhanced PvP and modern features.</p>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span>Population:</span>
-                        <Badge className="bg-green-100 text-green-800">Very High</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Custom Content:</span>
-                        <Badge className="bg-purple-100 text-purple-800">Extensive</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>PvP Focus:</span>
-                        <Badge className="bg-red-100 text-red-800">High</Badge>
-                      </div>
-                    </div>
-                    <p className="text-xs text-purple-600 mt-2">Best for: Enhanced PvP, custom content, active development</p>
-                  </div>
-                  
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg">
-                    <h4 className="font-semibold text-green-900 flex items-center">
-                      <span className="text-2xl mr-2">🌿</span>
-                      UO Renaissance
-                    </h4>
-                    <p className="text-sm text-green-700 mb-3">Classic UO experience with T2A era mechanics.</p>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span>Population:</span>
-                        <Badge className="bg-blue-100 text-blue-800">High</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Era:</span>
-                        <Badge className="bg-green-100 text-green-800">T2A Classic</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Community:</span>
-                        <Badge className="bg-green-100 text-green-800">Mature</Badge>
-                      </div>
-                    </div>
-                    <p className="text-xs text-green-600 mt-2">Best for: Classic UO experience, T2A era, mature community</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                    <h4 className="font-semibold text-amber-900 flex items-center">
-                      <span className="text-2xl mr-2">⚡</span>
-                      UO Forever
-                    </h4>
-                    <p className="text-sm text-amber-700 mb-3">Popular free shard with custom features and events.</p>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span>Population:</span>
-                        <Badge className="bg-green-100 text-green-800">High</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Events:</span>
-                        <Badge className="bg-amber-100 text-amber-800">Regular</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Custom Features:</span>
-                        <Badge className="bg-blue-100 text-blue-800">Many</Badge>
-                      </div>
-                    </div>
-                    <p className="text-xs text-amber-600 mt-2">Best for: Regular events, custom features, active community</p>
-                  </div>
-                  
-                  <div className="p-4 bg-gradient-to-r from-pink-50 to-red-50 border border-pink-200 rounded-lg">
-                    <h4 className="font-semibold text-pink-900 flex items-center">
-                      <span className="text-2xl mr-2">🎭</span>
-                      UO Second Age
-                    </h4>
-                    <p className="text-sm text-pink-700 mb-3">Roleplay-focused shard with custom content.</p>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span>Population:</span>
-                        <Badge className="bg-blue-100 text-blue-800">Medium</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Roleplay:</span>
-                        <Badge className="bg-pink-100 text-pink-800">Required</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Custom Content:</span>
-                        <Badge className="bg-purple-100 text-purple-800">Extensive</Badge>
-                      </div>
-                    </div>
-                    <p className="text-xs text-pink-600 mt-2">Best for: Roleplayers, custom content, immersive experience</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Shard Comparison */}
           <Card className="bg-white/80 backdrop-blur-sm border border-amber-200 mb-8">
@@ -348,30 +240,30 @@ export default function UOShardListPage() {
                     <tr className="border-b border-gray-100">
                       <td className="p-4 font-medium text-gray-900">Catskills</td>
                       <td className="p-4 text-center">Official</td>
-                      <td className="p-4 text-center"><Badge className="bg-blue-100 text-blue-800">High</Badge></td>
+                      <td className="p-4 text-center"><Badge className="bg-yellow-100 text-yellow-800">Low</Badge></td>
                       <td className="p-4 text-center"><Badge className="bg-orange-100 text-orange-800">Moderate</Badge></td>
                       <td className="p-4 text-center">New players</td>
                     </tr>
                     <tr className="border-b border-gray-100">
-                      <td className="p-4 font-medium text-gray-900">UO Outlands</td>
-                      <td className="p-4 text-center">Free</td>
-                      <td className="p-4 text-center"><Badge className="bg-green-100 text-green-800">Very High</Badge></td>
-                      <td className="p-4 text-center"><Badge className="bg-red-100 text-red-800">High</Badge></td>
-                      <td className="p-4 text-center">Enhanced PvP</td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="p-4 font-medium text-gray-900">UO Renaissance</td>
-                      <td className="p-4 text-center">Free</td>
-                      <td className="p-4 text-center"><Badge className="bg-blue-100 text-blue-800">High</Badge></td>
-                      <td className="p-4 text-center"><Badge className="bg-orange-100 text-orange-800">Moderate</Badge></td>
-                      <td className="p-4 text-center">Classic experience</td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="p-4 font-medium text-gray-900">Pacific</td>
+                      <td className="p-4 font-medium text-gray-900">Chesapeake</td>
                       <td className="p-4 text-center">Official</td>
-                      <td className="p-4 text-center"><Badge className="bg-blue-100 text-blue-800">Medium</Badge></td>
-                      <td className="p-4 text-center"><Badge className="bg-green-100 text-green-800">Low</Badge></td>
-                      <td className="p-4 text-center">Roleplayers</td>
+                      <td className="p-4 text-center"><Badge className="bg-yellow-100 text-yellow-800">Low</Badge></td>
+                      <td className="p-4 text-center"><Badge className="bg-orange-100 text-orange-800">Moderate</Badge></td>
+                      <td className="p-4 text-center">East coast players</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="p-4 font-medium text-gray-900">Great Lakes</td>
+                      <td className="p-4 text-center">Official</td>
+                      <td className="p-4 text-center"><Badge className="bg-yellow-100 text-yellow-800">Low</Badge></td>
+                      <td className="p-4 text-center"><Badge className="bg-orange-100 text-orange-800">Moderate</Badge></td>
+                      <td className="p-4 text-center">Balanced gameplay</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="p-4 font-medium text-gray-900">Lake Superior</td>
+                      <td className="p-4 text-center">Official</td>
+                      <td className="p-4 text-center"><Badge className="bg-yellow-100 text-yellow-800">Low</Badge></td>
+                      <td className="p-4 text-center"><Badge className="bg-orange-100 text-orange-800">Moderate</Badge></td>
+                      <td className="p-4 text-center">Midwest players</td>
                     </tr>
                   </tbody>
                 </table>
