@@ -122,7 +122,6 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/guides/beginners-guide" className="text-gray-300 hover:text-white transition-colors">Beginner's Guide to UO</Link></li>
               <li><Link href="/guides/how-to-start-playing" className="text-gray-300 hover:text-white transition-colors">How to Start Playing UO</Link></li>
-              <li><Link href="/guides/first-steps-in-uo" className="text-gray-300 hover:text-white transition-colors">First Steps in UO</Link></li>
               <li><Link href="/guides/character-creation" className="text-gray-300 hover:text-white transition-colors">Character Creation Guide</Link></li>
             </ul>
           </div>
@@ -136,8 +135,6 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/shards/uo-shard-list" className="text-gray-300 hover:text-white transition-colors">UO Shard List & Recommendations</Link></li>
               <li><Link href="/shards/which-shard-to-play" className="text-gray-300 hover:text-white transition-colors">Which UO Shard to Play</Link></li>
-              <li><Link href="/shards/server-ping-region-guide" className="text-gray-300 hover:text-white transition-colors">Server Ping & Region Guide</Link></li>
-              <li><Link href="/shards/shard-comparison" className="text-gray-300 hover:text-white transition-colors">Shard Comparison Tool</Link></li>
             </ul>
           </div>
 
