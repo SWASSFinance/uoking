@@ -11,7 +11,7 @@ export function Footer() {
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-amber-900 to-gray-900 text-white border-t border-amber-700">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {/* Company Info */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center space-x-2">
@@ -53,9 +53,9 @@ export function Footer() {
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600">Quick Links</h3>
             <ul className="space-y-2 text-sm">
-               <li><Link href="/UO/Gold" className="text-gray-300 hover:text-white transition-colors">Gold</Link></li>
-               <li><Link href="/UO/Suits" className="text-gray-300 hover:text-white transition-colors">Suits</Link></li>
-              
+              <li><Link href="/UO/Gold" className="text-gray-300 hover:text-white transition-colors">Gold</Link></li>
+              <li><Link href="/UO/Suits" className="text-gray-300 hover:text-white transition-colors">Suits</Link></li>
+              <li><Link href="/store" className="text-gray-300 hover:text-white transition-colors">Store</Link></li>
               <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -67,8 +67,7 @@ export function Footer() {
               <li><Link href="/class" className="text-gray-300 hover:text-white transition-colors">By Class</Link></li>
               <li><Link href="/slot" className="text-gray-300 hover:text-white transition-colors">By Slot</Link></li>
               <li><Link href="/prop" className="text-gray-300 hover:text-white transition-colors">By Property</Link></li>
-              <li><Link href="/store" className="text-gray-300 hover:text-white transition-colors">Store Items</Link></li>
-
+              <li><Link href="/guides/how-to-farm-gold" className="text-gray-300 hover:text-white transition-colors">Gold Farming Guide</Link></li>
             </ul>
           </div>
 
@@ -99,55 +98,31 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Download & Setup */}
+          {/* Getting Started */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600 flex items-center">
               <Download className="h-4 w-4 mr-2" />
-              Download & Setup
+              Getting Started
             </h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/guides/download-uo-client" className="text-gray-300 hover:text-white transition-colors">How to Download UO Client</Link></li>
-              <li><Link href="/guides/uo-enhanced-client-setup" className="text-gray-300 hover:text-white transition-colors">UO Enhanced Client Setup</Link></li>
-           
+              <li><Link href="/guides/download-uo-client" className="text-gray-300 hover:text-white transition-colors">Download UO Client</Link></li>
+              <li><Link href="/guides/beginners-guide" className="text-gray-300 hover:text-white transition-colors">Beginner's Guide</Link></li>
+              <li><Link href="/guides/how-to-start-playing" className="text-gray-300 hover:text-white transition-colors">How to Start Playing</Link></li>
+              <li><Link href="/shards/which-shard-to-play" className="text-gray-300 hover:text-white transition-colors">Choose a Shard</Link></li>
             </ul>
           </div>
 
-          {/* New Player Guide */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-amber-600 flex items-center">
-              <BookOpen className="h-4 w-4 mr-2" />
-              New Player Guide
-            </h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/guides/beginners-guide" className="text-gray-300 hover:text-white transition-colors">Beginner's Guide to UO</Link></li>
-              <li><Link href="/guides/how-to-start-playing" className="text-gray-300 hover:text-white transition-colors">How to Start Playing UO</Link></li>
-          
-            </ul>
-          </div>
-
-          {/* Server & Shard Selection */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-amber-600 flex items-center">
-              <Server className="h-4 w-4 mr-2" />
-              Server & Shards
-            </h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/shards/uo-shard-list" className="text-gray-300 hover:text-white transition-colors">UO Shard List & Recommendations</Link></li>
-              <li><Link href="/shards/which-shard-to-play" className="text-gray-300 hover:text-white transition-colors">Which UO Shard to Play</Link></li>
-            </ul>
-          </div>
-
-          {/* Gameplay & Mechanics */}
+          {/* Gameplay Guides */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600 flex items-center">
               <Gamepad2 className="h-4 w-4 mr-2" />
-              Gameplay & Mechanics
+              Gameplay Guides
             </h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/guides/skill-system" className="text-gray-300 hover:text-white transition-colors">Skill System in UO</Link></li>
-              <li><Link href="/guides/combat-mechanics" className="text-gray-300 hover:text-white transition-colors">Combat Mechanics Guide</Link></li>
-              <li><Link href="/guides/crafting-resources" className="text-gray-300 hover:text-white transition-colors">Crafting & Resource Guides</Link></li>
-              <li><Link href="/guides/housing-in-uo" className="text-gray-300 hover:text-white transition-colors">Housing in UO</Link></li>
+              <li><Link href="/guides/skill-system" className="text-gray-300 hover:text-white transition-colors">Skill System</Link></li>
+              <li><Link href="/guides/combat-mechanics" className="text-gray-300 hover:text-white transition-colors">Combat Mechanics</Link></li>
+              <li><Link href="/guides/crafting-resources" className="text-gray-300 hover:text-white transition-colors">Crafting & Resources</Link></li>
+              <li><Link href="/guides/housing-in-uo" className="text-gray-300 hover:text-white transition-colors">Housing Guide</Link></li>
             </ul>
           </div>
         </div>
