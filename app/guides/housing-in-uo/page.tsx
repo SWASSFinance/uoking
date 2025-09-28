@@ -220,7 +220,7 @@ export default function HousingInUOPage() {
                   <Badge className="bg-purple-100 text-purple-800">Luxury</Badge>
                 </div>
               </div>
-            </Content>
+            </CardContent>
           </Card>
 
           {/* House Security */}
