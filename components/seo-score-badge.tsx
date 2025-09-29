@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronRight, AlertTriangle, CheckCircle } from "lucide-react"
 
 interface SEOScoreBadgeProps {
   product: {
@@ -18,10 +21,51 @@ interface SEOScoreBadgeProps {
 export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
   const [score, setScore] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [imageIssues, setImageIssues] = useState<string[]>([])
+  const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
     calculateScore()
   }, [product])
+
+  const checkImageAltText = () => {
+    const issues: string[] = []
+    
+    // Check all images in the DOM
+    const images = document.querySelectorAll('img')
+    const nextImages = document.querySelectorAll('[data-nimg]') // Next.js Image components
+    
+    let imagesWithoutAlt = 0
+    let imagesWithGenericAlt = 0
+    let totalImages = 0
+    
+    // Check regular img tags
+    images.forEach((img, index) => {
+      totalImages++
+      const alt = img.getAttribute('alt')
+      if (!alt || alt.trim() === '') {
+        imagesWithoutAlt++
+        issues.push(`Image ${index + 1}: Missing alt text`)
+      } else if (alt.length < 10 || alt === 'image' || alt === 'photo' || alt === 'picture') {
+        imagesWithGenericAlt++
+        issues.push(`Image ${index + 1}: Generic alt text "${alt}"`)
+      }
+    })
+    
+    // Check Next.js Image components (they render as img tags but with data-nimg)
+    nextImages.forEach((img, index) => {
+      const alt = img.getAttribute('alt')
+      if (!alt || alt.trim() === '') {
+        imagesWithoutAlt++
+        issues.push(`Next.js Image ${index + 1}: Missing alt text`)
+      } else if (alt.length < 10 || alt === 'image' || alt === 'photo' || alt === 'picture') {
+        imagesWithGenericAlt++
+        issues.push(`Next.js Image ${index + 1}: Generic alt text "${alt}"`)
+      }
+    })
+    
+    return { issues, imagesWithoutAlt, imagesWithGenericAlt, totalImages }
+  }
 
   const calculateScore = () => {
     setIsLoading(true)
@@ -85,7 +129,20 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     if (product.image_url && product.image_url.includes(product.name.toLowerCase().replace(/\s+/g, '-'))) totalScore += 2
     if (product.image_url && product.image_url.match(/\.(jpg|jpeg|png|webp)$/i)) totalScore += 2
     if (product.image_url && (product.image_url.includes('cdn') || product.image_url.includes('optimized'))) totalScore += 2
-    totalScore += 1 // Consider alt text potential
+    
+    // Check actual alt text in DOM
+    const imageCheck = checkImageAltText()
+    setImageIssues(imageCheck.issues)
+    
+    if (imageCheck.totalImages === 0) {
+      totalScore += 1 // No images to check
+    } else if (imageCheck.imagesWithoutAlt === 0 && imageCheck.imagesWithGenericAlt === 0) {
+      totalScore += 3 // All images have good alt text
+    } else if (imageCheck.imagesWithoutAlt === 0) {
+      totalScore += 2 // All images have alt text, but some are generic
+    } else {
+      totalScore += 0 // Some images missing alt text
+    }
 
     // Readability (gaming-friendly)
     maxScore += 10
@@ -201,13 +258,54 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
   }
 
   return (
-    <div className="flex items-center space-x-2">
-      <Badge className={`${getScoreColor(score!)} text-xs font-semibold`}>
-        {score}/100
-      </Badge>
-      <div className="w-12">
-        <Progress value={score!} className="h-1" />
+    <div className="space-y-2">
+      <div className="flex items-center space-x-2">
+        <Badge className={`${getScoreColor(score!)} text-xs font-semibold`}>
+          {score}/100
+        </Badge>
+        <div className="w-12">
+          <Progress value={score!} className="h-1" />
+        </div>
+        {imageIssues.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowDetails(!showDetails)}
+            className="h-6 px-2 text-xs"
+          >
+            {showDetails ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            {imageIssues.length} issue{imageIssues.length !== 1 ? 's' : ''}
+          </Button>
+        )}
       </div>
+      
+      {showDetails && imageIssues.length > 0 && (
+        <Collapsible open={showDetails} onOpenChange={setShowDetails}>
+          <CollapsibleContent className="space-y-2">
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded border">
+              <div className="flex items-center space-x-1 mb-2">
+                <AlertTriangle className="h-3 w-3 text-amber-500" />
+                <span className="font-medium">Image Optimization Issues Found:</span>
+              </div>
+              <ul className="space-y-1">
+                {imageIssues.map((issue, index) => (
+                  <li key={index} className="flex items-start space-x-1">
+                    <span className="text-red-500">•</span>
+                    <span className="text-xs">{issue}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      
+      {imageIssues.length === 0 && score! >= 80 && (
+        <div className="flex items-center space-x-1 text-xs text-green-600">
+          <CheckCircle className="h-3 w-3" />
+          <span>All images have proper alt text</span>
+        </div>
+      )}
     </div>
   )
 }
