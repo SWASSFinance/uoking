@@ -57,7 +57,12 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
     const newScores: SEOScore[] = []
 
     // 1. Title Optimization (Meta Title)
-    const titleScore = calculateTitleScore(data.meta_title || data.name)
+    // For products, construct the same title format as the layout
+    const actualTitle = type === 'product' 
+      ? `${data.name} - UO King | Ultima Online ${data.category_name || 'Items'}`
+      : (data.meta_title || data.name)
+    
+    const titleScore = calculateTitleScore(actualTitle)
     newScores.push({
       factor: "Title Optimization",
       score: titleScore.score,
@@ -819,7 +824,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
             {score.factor === "Title Optimization" && (
               <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
                 <p className="text-xs text-gray-500 mb-1">Analyzing title:</p>
-                <p className="text-sm font-mono text-gray-800">"{data.meta_title || data.name}"</p>
+                <p className="text-sm font-mono text-gray-800">"{type === 'product' ? `${data.name} - UO King | Ultima Online ${data.category_name || 'Items'}` : (data.meta_title || data.name)}"</p>
               </div>
             )}
             {score.recommendation && (
