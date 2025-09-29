@@ -312,6 +312,7 @@ export default function ProductPage() {
                 <div className="mt-8">
                   <ProductImageSubmissions 
                     productId={product.id} 
+                    productName={product.name}
                     initialSubmissions={[]}
                   />
                 </div>

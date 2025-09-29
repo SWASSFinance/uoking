@@ -8,6 +8,7 @@ import { ProductImageSubmissionForm } from './product-image-submission-form'
 
 interface ProductImageSubmissionsProps {
   productId: string
+  productName?: string
   initialSubmissions?: any[]
 }
 
@@ -21,6 +22,7 @@ interface Submission {
 
 export function ProductImageSubmissions({ 
   productId, 
+  productName = "Ultima Online item",
   initialSubmissions = []
 }: ProductImageSubmissionsProps) {
   const [submissions, setSubmissions] = useState<Submission[]>(initialSubmissions)
@@ -105,7 +107,7 @@ export function ProductImageSubmissions({
               <div className="relative">
                 <img
                   src={submission.image_url}
-                  alt="User submitted product image"
+                  alt={`User submitted image of ${productName} - Ultima Online`}
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">

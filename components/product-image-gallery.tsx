@@ -30,7 +30,7 @@ export function ProductImageGallery({ imageUrl, productName, description }: Prod
         <div className="relative aspect-square max-h-80">
           <Image
             src={imageSrc}
-            alt={productName}
+            alt={`${productName} - Ultima Online item image`}
             fill
             className="object-contain"
             priority
@@ -64,7 +64,7 @@ export function ProductImageGallery({ imageUrl, productName, description }: Prod
           <div className="relative aspect-square">
             <Image
               src={imageSrc}
-              alt={productName}
+              alt={`${productName} - Ultima Online item image (zoomed view)`}
               fill
               className="object-contain"
               priority

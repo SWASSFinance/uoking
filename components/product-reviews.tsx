@@ -89,7 +89,7 @@ export function ProductReviews({
                         {review.profile_image_url ? (
                           <img
                             src={review.profile_image_url}
-                            alt={review.username}
+                            alt={`Profile picture of ${review.username}`}
                             className="w-full h-full object-cover"
                           />
                         ) : (
