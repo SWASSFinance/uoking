@@ -816,6 +816,12 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-2">{score.message}</p>
+            {score.factor === "Title Optimization" && (
+              <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
+                <p className="text-xs text-gray-500 mb-1">Analyzing title:</p>
+                <p className="text-sm font-mono text-gray-800">"{data.meta_title || data.name}"</p>
+              </div>
+            )}
             {score.recommendation && (
               <div className="flex items-start space-x-2 p-2 bg-amber-50 rounded border border-amber-200">
                 <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
