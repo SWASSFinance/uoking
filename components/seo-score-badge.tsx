@@ -25,7 +25,59 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
-    calculateScore()
+    // Wait for images to load before calculating score
+    const waitForImages = () => {
+      const images = document.querySelectorAll('img')
+      const nextImages = document.querySelectorAll('[data-nimg]')
+      const totalImages = images.length + nextImages.length
+      
+      if (totalImages === 0) {
+        // No images to wait for, calculate immediately
+        calculateScore()
+        return
+      }
+      
+      let loadedImages = 0
+      const checkAllLoaded = () => {
+        loadedImages++
+        if (loadedImages >= totalImages) {
+          calculateScore()
+        }
+      }
+      
+      // Check if images are already loaded
+      images.forEach((img) => {
+        const imgElement = img as HTMLImageElement
+        if (imgElement.complete) {
+          checkAllLoaded()
+        } else {
+          imgElement.addEventListener('load', checkAllLoaded)
+          imgElement.addEventListener('error', checkAllLoaded) // Count errors as "loaded"
+        }
+      })
+      
+      nextImages.forEach((img) => {
+        const imgElement = img as HTMLImageElement
+        if (imgElement.complete) {
+          checkAllLoaded()
+        } else {
+          imgElement.addEventListener('load', checkAllLoaded)
+          imgElement.addEventListener('error', checkAllLoaded)
+        }
+      })
+      
+      // Fallback: if no images load within 2 seconds, calculate anyway
+      setTimeout(() => {
+        if (loadedImages < totalImages) {
+          calculateScore()
+        }
+      }, 2000)
+    }
+    
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(waitForImages, 50)
+    
+    return () => clearTimeout(timer)
   }, [product])
 
   const checkImageAltText = () => {
@@ -35,6 +87,9 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     const images = document.querySelectorAll('img')
     const nextImages = document.querySelectorAll('[data-nimg]') // Next.js Image components
     
+    // Debug logging
+    console.log(`[SEO Debug] Found ${images.length} regular images and ${nextImages.length} Next.js images for product: ${product.name}`)
+    
     let imagesWithoutAlt = 0
     let imagesWithGenericAlt = 0
     let totalImages = 0
@@ -43,6 +98,8 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     images.forEach((img, index) => {
       totalImages++
       const alt = img.getAttribute('alt')
+      console.log(`[SEO Debug] Image ${index + 1} alt: "${alt}"`)
+      
       if (!alt || alt.trim() === '') {
         imagesWithoutAlt++
         issues.push(`Image ${index + 1}: Missing alt text`)
@@ -55,6 +112,8 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     // Check Next.js Image components (they render as img tags but with data-nimg)
     nextImages.forEach((img, index) => {
       const alt = img.getAttribute('alt')
+      console.log(`[SEO Debug] Next.js Image ${index + 1} alt: "${alt}"`)
+      
       if (!alt || alt.trim() === '') {
         imagesWithoutAlt++
         issues.push(`Next.js Image ${index + 1}: Missing alt text`)
