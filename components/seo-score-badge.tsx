@@ -249,6 +249,14 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     const imageCheck = checkImageAltText()
     setImageIssues(imageCheck.issues)
     
+    // Debug logging
+    console.log(`[SEO Debug] Image check results:`, {
+      totalImages: imageCheck.totalImages,
+      imagesWithoutAlt: imageCheck.imagesWithoutAlt,
+      imagesWithGenericAlt: imageCheck.imagesWithGenericAlt,
+      issues: imageCheck.issues
+    })
+    
     if (imageCheck.totalImages === 0) {
       totalScore += 1 // No images to check
     } else if (imageCheck.imagesWithoutAlt === 0 && imageCheck.imagesWithGenericAlt === 0) {
@@ -372,6 +380,14 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     )
   }
 
+  // Debug logging for render
+  console.log(`[SEO Debug] Render state:`, {
+    imageIssues: imageIssues,
+    imageIssuesLength: imageIssues.length,
+    showDetails: showDetails,
+    score: score
+  })
+
   return (
     <div className="space-y-2">
       <div className="flex items-center space-x-2">
@@ -419,6 +435,19 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
         <div className="flex items-center space-x-1 text-xs text-green-600">
           <CheckCircle className="h-3 w-3" />
           <span>All images have proper alt text</span>
+        </div>
+      )}
+      
+      {/* Always show issues if they exist, even if not expanded */}
+      {imageIssues.length > 0 && !showDetails && (
+        <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
+          <div className="flex items-center space-x-1">
+            <AlertTriangle className="h-3 w-3" />
+            <span className="font-medium">{imageIssues.length} image issue{imageIssues.length !== 1 ? 's' : ''} found</span>
+          </div>
+          <div className="mt-1 text-xs text-amber-700">
+            Click the issues button above to see details
+          </div>
         </div>
       )}
     </div>
