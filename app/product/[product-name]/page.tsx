@@ -166,7 +166,7 @@ export default function ProductPage() {
             <div className="lg:col-span-3 space-y-6">
               {/* Product Header */}
               <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600 rounded-lg p-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{product.name}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Ultima Online {product.name}</h1>
                 
                 {/* Rating */}
                 {reviewCount > 0 && (
