@@ -49,7 +49,6 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     else if (totalLength > 0) totalScore += 1
     if (content.includes('Ultima Online') || content.includes('UO')) totalScore += 2
     if (content.split('.').length >= 3) totalScore += 2
-    if (content.includes('quality') || content.includes('premium') || content.includes('fast')) totalScore += 2
     if (content.length > 0 && shortContent.length > 0) totalScore += 1
 
     // Keyword optimization

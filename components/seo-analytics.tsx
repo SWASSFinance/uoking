@@ -256,12 +256,6 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation += 'Add more detailed sentences. '
     }
 
-    if (content.includes('quality') || content.includes('premium') || content.includes('fast')) {
-      score += 2
-      message += 'Contains value propositions. '
-    } else {
-      recommendation += 'Include value propositions like "premium quality" or "fast delivery". '
-    }
 
     if (content.length > 0 && shortContent.length > 0) {
       score += 1
