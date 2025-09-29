@@ -67,18 +67,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: titleScore.recommendation
     })
 
-    // 2. Meta Description
-    const metaDescScore = calculateMetaDescriptionScore(data.meta_description || data.short_description || data.description)
-    newScores.push({
-      factor: "Meta Description",
-      score: metaDescScore.score,
-      maxScore: metaDescScore.maxScore,
-      status: metaDescScore.status,
-      message: metaDescScore.message,
-      recommendation: metaDescScore.recommendation
-    })
-
-    // 3. Content Quality & Length
+    // 2. Content Quality & Length
     const contentScore = calculateContentScore(data.description, data.short_description)
     newScores.push({
       factor: "Content Quality",
@@ -89,7 +78,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: contentScore.recommendation
     })
 
-    // 4. Keyword Optimization
+    // 3. Keyword Optimization
     const keywordScore = calculateKeywordScore(data.name, data.description, data.short_description)
     newScores.push({
       factor: "Keyword Optimization",
@@ -100,7 +89,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: keywordScore.recommendation
     })
 
-    // 5. URL Structure (Slug)
+    // 4. URL Structure (Slug)
     const urlScore = calculateURLScore(data.slug)
     newScores.push({
       factor: "URL Structure",
@@ -111,7 +100,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: urlScore.recommendation
     })
 
-    // 6. Image Optimization
+    // 5. Image Optimization
     const imageScore = calculateImageScore(data.image_url)
     newScores.push({
       factor: "Image Optimization",
@@ -122,7 +111,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: imageScore.recommendation
     })
 
-    // 7. Readability Score
+    // 6. Readability Score
     const readabilityScore = calculateReadabilityScore(data.description)
     newScores.push({
       factor: "Readability",
@@ -133,7 +122,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: readabilityScore.recommendation
     })
 
-    // 8. Content Uniqueness
+    // 7. Content Uniqueness
     const uniquenessScore = calculateUniquenessScore(data.description, data.name)
     newScores.push({
       factor: "Content Uniqueness",
@@ -144,7 +133,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: uniquenessScore.recommendation
     })
 
-    // 9. Internal Linking Potential
+    // 8. Internal Linking Potential
     const linkingScore = calculateLinkingScore(data.description, data.category_name)
     newScores.push({
       factor: "Internal Linking",
@@ -155,7 +144,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       recommendation: linkingScore.recommendation
     })
 
-    // 10. Mobile & User Experience
+    // 9. Mobile & User Experience
     const uxScore = calculateUXScore(data.description, data.short_description)
     newScores.push({
       factor: "User Experience",
@@ -225,58 +214,6 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
     return { score, maxScore: 10, status, message: message || 'Title needs improvement', recommendation }
   }
 
-  const calculateMetaDescriptionScore = (description: string) => {
-    if (!description) return { score: 0, maxScore: 10, status: 'error' as const, message: 'No meta description', recommendation: 'Add a compelling meta description' }
-    
-    const length = description.length
-    let score = 0
-    let status: 'excellent' | 'good' | 'warning' | 'error' = 'error'
-    let message = ''
-    let recommendation = ''
-
-    if (length >= 120 && length <= 160) {
-      score += 4
-      message += 'Optimal length (120-160 chars). '
-    } else if (length < 120) {
-      score += 2
-      message += 'Too short. '
-      recommendation += 'Add more descriptive content. '
-    } else if (length > 160) {
-      score += 1
-      message += 'May be truncated in search results. '
-      recommendation += 'Shorten the description. '
-    }
-
-    if (description.includes(data.name)) {
-      score += 2
-      message += 'Contains main keyword. '
-    } else {
-      recommendation += 'Include the main keyword in description. '
-    }
-
-    if (description.includes('buy') || description.includes('purchase') || description.includes('order')) {
-      score += 2
-      message += 'Contains action words. '
-    } else {
-      recommendation += 'Include action words like "buy" or "purchase". '
-    }
-
-    if (description.endsWith('.')) {
-      score += 1
-      message += 'Properly formatted. '
-    }
-
-    if (description.split(' ').length >= 15) {
-      score += 1
-      message += 'Sufficient word count. '
-    }
-
-    if (score >= 8) status = 'excellent'
-    else if (score >= 6) status = 'good'
-    else if (score >= 4) status = 'warning'
-
-    return { score, maxScore: 10, status, message: message || 'Meta description needs improvement', recommendation }
-  }
 
   const calculateContentScore = (description: string, shortDescription?: string) => {
     const content = description || ''
