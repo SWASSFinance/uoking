@@ -930,8 +930,76 @@ export async function getProductCategories(productId: string) {
 }
 
 // Admin functions for products
-export async function getAllProducts() {
+export async function getAllProducts(options?: {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  status?: string;
+  categoryId?: string;
+  classId?: string;
+  sortBy?: 'created_at' | 'name' | 'price' | 'rank';
+  sortOrder?: 'asc' | 'desc';
+}) {
   try {
+    const {
+      limit = 50,
+      offset = 0,
+      search,
+      status,
+      categoryId,
+      classId,
+      sortBy = 'created_at',
+      sortOrder = 'desc'
+    } = options || {};
+
+    let whereConditions: string[] = [];
+    let params: any[] = [];
+    let paramCount = 0;
+
+    // Add search condition
+    if (search) {
+      whereConditions.push(`(p.name ILIKE $${++paramCount} OR p.description ILIKE $${++paramCount} OR p.short_description ILIKE $${++paramCount})`);
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    // Add status filter
+    if (status && status !== 'all') {
+      whereConditions.push(`p.status = $${++paramCount}`);
+      params.push(status);
+    }
+
+    // Add category filter
+    if (categoryId && categoryId !== 'all') {
+      whereConditions.push(`EXISTS (
+        SELECT 1 FROM product_categories pc 
+        WHERE pc.product_id = p.id AND pc.category_id = $${++paramCount}
+      )`);
+      params.push(categoryId);
+    }
+
+    // Add class filter
+    if (classId && classId !== 'all') {
+      whereConditions.push(`EXISTS (
+        SELECT 1 FROM product_classes pcl 
+        WHERE pcl.product_id = p.id AND pcl.class_id = $${++paramCount}
+      )`);
+      params.push(classId);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // Get total count for pagination
+    const countResult = await query(`
+      SELECT COUNT(DISTINCT p.id) as total
+      FROM products p
+      LEFT JOIN product_categories pc ON p.id = pc.product_id
+      LEFT JOIN product_classes pcl ON p.id = pcl.product_id
+      ${whereClause}
+    `, params);
+
+    const total = parseInt(countResult.rows[0]?.total || '0');
+
+    // Get paginated results
     const result = await query(`
       SELECT 
         p.*,
@@ -944,10 +1012,20 @@ export async function getAllProducts() {
       LEFT JOIN categories c ON pc.category_id = c.id
       LEFT JOIN product_classes pcl ON p.id = pcl.product_id
       LEFT JOIN classes cl ON pcl.class_id = cl.id
+      ${whereClause}
       GROUP BY p.id
-      ORDER BY p.created_at DESC
-    `)
-    return result.rows
+      ORDER BY p.${sortBy} ${sortOrder.toUpperCase()}
+      LIMIT $${++paramCount} OFFSET $${++paramCount}
+    `, [...params, limit, offset]);
+
+    return {
+      products: result.rows,
+      total,
+      page: Math.floor(offset / limit) + 1,
+      totalPages: Math.ceil(total / limit),
+      limit,
+      offset
+    };
   } catch (error) {
     console.error('Error fetching all products:', error)
     throw error

@@ -31,6 +31,7 @@ import { ProductImage } from "@/components/ui/product-image"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { SEOAnalytics } from "@/components/seo-analytics"
 import { SEOScoreBadge } from "@/components/seo-score-badge"
+import { Pagination } from "@/components/ui/pagination"
 
 interface Product {
   id: string
@@ -83,24 +84,50 @@ export default function ProductsAdminPage() {
   const [showForm, setShowForm] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(50)
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   // Fetch data on component mount
   useEffect(() => {
-    fetchProducts()
     fetchCategories()
     fetchClasses()
   }, [])
 
+  // Fetch products when pagination or filters change
+  useEffect(() => {
+    fetchProducts()
+  }, [currentPage, itemsPerPage, searchTerm, filterStatus, filterCategory, filterClass, sortOrder])
+
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/admin/products')
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        ...(searchTerm && { search: searchTerm }),
+        ...(filterStatus !== 'all' && { status: filterStatus }),
+        ...(filterCategory !== 'all' && { categoryId: filterCategory }),
+        ...(filterClass !== 'all' && { classId: filterClass }),
+        sortBy: 'created_at',
+        sortOrder: sortOrder === 'newest' ? 'desc' : 'asc'
+      })
+      
+      const response = await fetch(`/api/admin/products?${params}`)
       if (response.ok) {
         const data = await response.json()
         setProducts(data.products || [])
+        setTotalItems(data.total || 0)
+        setTotalPages(data.totalPages || 0)
       }
     } catch (error) {
       console.error('Error fetching products:', error)
       setProducts([])
+      setTotalItems(0)
+      setTotalPages(0)
     } finally {
       setLoading(false)
     }
@@ -170,21 +197,21 @@ export default function ProductsAdminPage() {
     }
   }
 
-  const filteredProducts = (products || []).filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesStatus = filterStatus === "all" || product.status === filterStatus
-    const matchesCategory = filterCategory === "all" || (product.category_ids && product.category_ids.includes(filterCategory))
-    const matchesClass = filterClass === "all" || (product.class_ids && product.class_ids.includes(filterClass))
-    
-    return matchesSearch && matchesStatus && matchesCategory && matchesClass
-  }).sort((a, b) => {
-    if (sortOrder === "newest") {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    } else {
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    }
-  })
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1) // Reset to first page when changing items per page
+  }
+
+  // Reset to first page when filters change
+  const handleFilterChange = (newFilter: any) => {
+    setCurrentPage(1)
+    // The actual filter state will be updated by the component that calls this
+  }
 
   const ProductForm = ({ product, onSave, onCancel }: { 
     product?: Product | null, 
@@ -637,7 +664,10 @@ export default function ProductsAdminPage() {
                       id="search"
                       placeholder="Search by name or description..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value)
+                        setCurrentPage(1)
+                      }}
                       className="pl-10 border-gray-300 bg-white text-black"
                     />
                   </div>
@@ -645,7 +675,10 @@ export default function ProductsAdminPage() {
                 
                 <div>
                   <Label htmlFor="status-filter" className="text-black font-semibold">Status</Label>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <Select value={filterStatus} onValueChange={(value) => {
+                    setFilterStatus(value)
+                    setCurrentPage(1)
+                  }}>
                     <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
@@ -660,7 +693,10 @@ export default function ProductsAdminPage() {
                 
                 <div>
                   <Label htmlFor="category-filter" className="text-black font-semibold">Category</Label>
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <Select value={filterCategory} onValueChange={(value) => {
+                    setFilterCategory(value)
+                    setCurrentPage(1)
+                  }}>
                     <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
@@ -677,7 +713,10 @@ export default function ProductsAdminPage() {
                 
                 <div>
                   <Label htmlFor="class-filter" className="text-black font-semibold">Class</Label>
-                  <Select value={filterClass} onValueChange={setFilterClass}>
+                  <Select value={filterClass} onValueChange={(value) => {
+                    setFilterClass(value)
+                    setCurrentPage(1)
+                  }}>
                     <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
@@ -694,7 +733,10 @@ export default function ProductsAdminPage() {
                 
                 <div>
                   <Label htmlFor="sort-order" className="text-black font-semibold">Sort By</Label>
-                  <Select value={sortOrder} onValueChange={(value: "newest" | "oldest") => setSortOrder(value)}>
+                  <Select value={sortOrder} onValueChange={(value: "newest" | "oldest") => {
+                    setSortOrder(value)
+                    setCurrentPage(1)
+                  }}>
                     <SelectTrigger className="border-gray-300 bg-white text-black">
                       <SelectValue />
                     </SelectTrigger>
@@ -755,7 +797,7 @@ export default function ProductsAdminPage() {
           ) : (
             <Card className="border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-black">Products ({filteredProducts.length})</CardTitle>
+                <CardTitle className="text-black">Products ({totalItems})</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -774,7 +816,7 @@ export default function ProductsAdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product) => (
+                    {products.map((product) => (
                       <TableRow key={product.id} className="hover:bg-gray-50">
                         <TableCell>
                           <div className="flex items-center space-x-3">
@@ -888,11 +930,25 @@ export default function ProductsAdminPage() {
                     ))}
                   </TableBody>
                 </Table>
+                
+                {/* Pagination */}
+                <div className="flex items-center justify-between px-2 py-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                    showItemsPerPage={true}
+                    itemsPerPageOptions={[10, 25, 50, 100]}
+                  />
+                </div>
               </CardContent>
             </Card>
           )}
 
-          {!loading && filteredProducts.length === 0 && (
+          {!loading && products.length === 0 && (
             <div className="text-center py-12">
               <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-black mb-2">No products found</h3>
