@@ -11,7 +11,7 @@ export function Footer() {
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-amber-900 to-gray-900 text-white border-t border-amber-700">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           {/* Company Info */}
           <div className="space-y-3">
             <Link href="/" className="flex items-center space-x-2">
@@ -74,6 +74,9 @@ export function Footer() {
           {/* Contact & Support */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-600">Contact & Support</h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link></li>
+            </ul>
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
                 <MessageCircle className="h-4 w-4 text-amber-600" />
