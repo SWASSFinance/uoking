@@ -7,17 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Crown, MessageCircle, Mail, Clock, MapPin, Phone } from "lucide-react"
-import Head from "next/head"
 
 export default function ContactPage() {
   return (
-    <>
-      <Head>
-        <title>Contact Us - UO King | Ultima Online Support & Customer Service</title>
-        <meta name="description" content="Get in touch with UO King's support team. We're here to help with all your Ultima Online needs. Contact us via Discord, email, or live chat for fast assistance." />
-        <meta name="keywords" content="contact, support, Ultima Online, UO King, customer service, help, discord, email" />
-      </Head>
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100">
         <Header />
       
       <main className="py-16 px-4">
@@ -182,6 +175,5 @@ export default function ContactPage() {
 
         <Footer />
       </div>
-    </>
   )
 } 
