@@ -80,7 +80,7 @@ export function ImageUpload({ value, onChange, label = "Image", className }: Ima
         <div className="relative w-24 h-24 bg-gray-100 rounded-full overflow-hidden">
           <Image
             src={preview}
-            alt="Preview"
+            alt="Image preview"
             width={96}
             height={96}
             className="object-cover w-full h-full"

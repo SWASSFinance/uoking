@@ -173,7 +173,7 @@ export function ProductImageSubmissionForm({ productId, onImageSubmitted }: Prod
             <div className="relative">
               <img
                 src={previewUrl!}
-                alt="Preview"
+                alt="Product image preview"
                 className="w-full h-64 object-cover rounded-lg border border-gray-200"
               />
               <Button
