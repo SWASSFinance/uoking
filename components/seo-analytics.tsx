@@ -446,39 +446,66 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0)
     const words = content.split(/\s+/).filter(w => w.length > 0)
     const avgWordsPerSentence = words.length / sentences.length
-    const avgSyllablesPerWord = words.reduce((sum, word) => sum + countSyllables(word), 0) / words.length
+    
+    // Gaming-specific terms that are commonly used and shouldn't penalize readability
+    const gamingTerms = [
+      'ultima', 'online', 'spellbook', 'talisman', 'armor', 'weapon', 'equipment', 'character',
+      'shard', 'guild', 'pvp', 'pve', 'quest', 'dungeon', 'loot', 'gold', 'silver', 'copper',
+      'magic', 'spell', 'scroll', 'potion', 'reagent', 'component', 'ingredient', 'crafting',
+      'smithing', 'tailoring', 'carpentry', 'alchemy', 'tinkering', 'mining', 'lumberjacking',
+      'fishing', 'cooking', 'healing', 'resurrection', 'blessed', 'cursed', 'enchanted',
+      'legendary', 'epic', 'rare', 'unique', 'artifact', 'relic', 'tome', 'grimoire',
+      'amulet', 'ring', 'bracelet', 'necklace', 'cloak', 'robe', 'tunic', 'leather',
+      'plate', 'chain', 'mail', 'helmet', 'gauntlet', 'boots', 'shield', 'sword',
+      'dagger', 'mace', 'bow', 'crossbow', 'staff', 'wand', 'orb', 'crystal'
+    ]
+    
+    // Count syllables but be more lenient with gaming terms
+    const avgSyllablesPerWord = words.reduce((sum, word) => {
+      const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '')
+      // If it's a gaming term, count it as having fewer syllables for scoring
+      if (gamingTerms.some(term => cleanWord.includes(term) || term.includes(cleanWord))) {
+        return sum + Math.max(1, Math.floor(countSyllables(word) * 0.7)) // 30% reduction for gaming terms
+      }
+      return sum + countSyllables(word)
+    }, 0) / words.length
     
     let score = 0
     let status: 'excellent' | 'good' | 'warning' | 'error' = 'error'
     let message = ''
     let recommendation = ''
 
-    // Flesch Reading Ease approximation
+    // More lenient Flesch Reading Ease calculation for gaming content
     const fleschScore = 206.835 - (1.015 * avgWordsPerSentence) - (84.6 * avgSyllablesPerWord)
     
-    if (fleschScore >= 60) {
+    // Adjusted thresholds for gaming content
+    if (fleschScore >= 50) { // Lowered from 60
       score += 4
-      message += 'Good readability score. '
-    } else if (fleschScore >= 30) {
-      score += 2
+      message += 'Good readability for gaming content. '
+    } else if (fleschScore >= 20) { // Lowered from 30
+      score += 3
       message += 'Moderate readability. '
-      recommendation += 'Use shorter sentences and simpler words. '
+    } else if (fleschScore >= 0) {
+      score += 2
+      message += 'Acceptable readability for technical gaming content. '
     } else {
       score += 1
-      message += 'Complex readability. '
-      recommendation += 'Simplify language and sentence structure. '
+      message += 'Complex content, but may be appropriate for gaming. '
+      recommendation += 'Consider breaking up very long sentences. '
     }
 
-    if (avgWordsPerSentence <= 20) {
+    // More lenient sentence length for gaming content
+    if (avgWordsPerSentence <= 25) { // Increased from 20
       score += 2
       message += 'Good sentence length. '
-    } else {
+    } else if (avgWordsPerSentence <= 35) { // New threshold
       score += 1
-      message += 'Long sentences detected. '
-      recommendation += 'Break up long sentences. '
+      message += 'Acceptable sentence length for detailed content. '
+    } else {
+      recommendation += 'Consider breaking up very long sentences. '
     }
 
-    if (sentences.length >= 3) {
+    if (sentences.length >= 2) { // Lowered from 3
       score += 2
       message += 'Well-structured content. '
     } else {
@@ -486,7 +513,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
     }
 
     // Check for transition words
-    const transitionWords = ['however', 'therefore', 'moreover', 'furthermore', 'additionally', 'also', 'but', 'and', 'or']
+    const transitionWords = ['however', 'therefore', 'moreover', 'furthermore', 'additionally', 'also', 'but', 'and', 'or', 'while', 'when', 'if', 'because']
     const hasTransitions = transitionWords.some(word => content.toLowerCase().includes(word))
     
     if (hasTransitions) {
@@ -497,7 +524,7 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
     }
 
     // Check for bullet points or lists
-    if (content.includes('•') || content.includes('-') || content.includes('*') || content.includes('1.')) {
+    if (content.includes('•') || content.includes('-') || content.includes('*') || content.includes('1.') || content.includes('•')) {
       score += 1
       message += 'Uses lists for clarity. '
     } else {
