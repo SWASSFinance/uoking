@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { ProductImage } from "@/components/ui/product-image"
 import { ImageUpload } from "@/components/ui/image-upload"
+import { SEOAnalytics } from "@/components/seo-analytics"
 
 interface Category {
   id: string
@@ -322,6 +323,21 @@ export default function CategoriesAdminPage() {
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Inactive categories won't be visible to customers</p>
                 </div>
+              </div>
+
+              {/* SEO Analytics */}
+              <div className="mt-6">
+                <SEOAnalytics 
+                  type="category" 
+                  data={{
+                    name: formData.name,
+                    slug: formData.slug,
+                    description: formData.description,
+                    meta_title: formData.meta_title,
+                    meta_description: formData.meta_description,
+                    image_url: formData.image_url
+                  }}
+                />
               </div>
 
               <div className="flex justify-end space-x-4 pt-6 border-t">

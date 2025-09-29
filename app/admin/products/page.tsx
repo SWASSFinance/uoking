@@ -29,6 +29,7 @@ import {
 import Link from "next/link"
 import { ProductImage } from "@/components/ui/product-image"
 import { ImageUpload } from "@/components/ui/image-upload"
+import { SEOAnalytics } from "@/components/seo-analytics"
 
 interface Product {
   id: string
@@ -575,6 +576,22 @@ export default function ProductsAdminPage() {
               </div>
             </div>
             
+            {/* SEO Analytics */}
+            <div className="mt-6">
+              <SEOAnalytics 
+                type="product" 
+                data={{
+                  name: formData.name,
+                  slug: formData.slug,
+                  description: formData.description,
+                  short_description: formData.short_description,
+                  image_url: formData.image_url,
+                  price: formData.price,
+                  category_name: categories.find(c => c.id === formData.category_ids[0])?.name
+                }}
+              />
+            </div>
+
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={onCancel} className="border-gray-300 text-gray-700">
                 Cancel
