@@ -680,15 +680,19 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
     let message = ''
     let recommendation = ''
 
-    // Check for structured content
-    if (content.includes('\n') || content.includes('•') || content.includes('-')) {
-      score += 2
+    // More lenient structured content check
+    if (content.includes('\n') || content.includes('•') || content.includes('-') || content.includes('.')) {
+      score += 3
       message += 'Well-structured content. '
+    } else if (content.length > 0) {
+      score += 2
+      message += 'Has content structure. '
     } else {
-      recommendation += 'Use line breaks and lists for better readability. '
+      score += 1
+      recommendation += 'Add more structured content. '
     }
 
-    // Check for both short and long descriptions
+    // More generous description scoring
     if (shortContent && content) {
       score += 3
       message += 'Has both short and detailed descriptions. '
@@ -696,31 +700,50 @@ export function SEOAnalytics({ type, data }: SEOAnalyticsProps) {
       score += 2
       message += 'Has description content. '
     } else {
-      recommendation += 'Add both short and detailed descriptions. '
+      score += 1
+      recommendation += 'Add description content. '
     }
 
-    // Check for action-oriented language
-    if (content.includes('buy') || content.includes('purchase') || content.includes('order') || content.includes('get')) {
+    // More lenient action-oriented language check
+    const actionWords = ['buy', 'purchase', 'order', 'get', 'find', 'use', 'equip', 'wear', 'obtain', 'acquire', 'collect']
+    const hasActionWords = actionWords.some(word => content.toLowerCase().includes(word))
+    
+    if (hasActionWords) {
       score += 2
       message += 'Contains action-oriented language. '
+    } else if (content.length > 50) {
+      score += 1
+      message += 'Content provides information. '
     } else {
-      recommendation += 'Include action words like "buy" or "purchase". '
+      recommendation += 'Include action words or more descriptive content. '
     }
 
-    // Check for benefit-focused content
-    if (content.includes('benefit') || content.includes('advantage') || content.includes('feature') || content.includes('quality')) {
+    // More generous benefit-focused content check
+    const benefitWords = ['benefit', 'advantage', 'feature', 'quality', 'premium', 'powerful', 'useful', 'effective', 'strong', 'durable', 'magical', 'enchanted', 'rare', 'unique']
+    const hasBenefitWords = benefitWords.some(word => content.toLowerCase().includes(word))
+    
+    if (hasBenefitWords) {
       score += 2
       message += 'Focuses on benefits and features. '
+    } else if (content.length > 30) {
+      score += 1
+      message += 'Provides product information. '
     } else {
-      recommendation += 'Highlight benefits and key features. '
+      recommendation += 'Highlight key features and benefits. '
     }
 
-    // Check for trust signals
-    if (content.includes('guarantee') || content.includes('secure') || content.includes('trusted') || content.includes('reliable')) {
+    // More lenient trust signals - give points for any positive content
+    const trustWords = ['guarantee', 'secure', 'trusted', 'reliable', 'safe', 'quality', 'premium', 'official', 'authentic']
+    const hasTrustWords = trustWords.some(word => content.toLowerCase().includes(word))
+    
+    if (hasTrustWords) {
       score += 1
       message += 'Contains trust signals. '
+    } else if (content.length > 0) {
+      score += 1
+      message += 'Content provides value. '
     } else {
-      recommendation += 'Add trust signals like "secure" or "guaranteed". '
+      recommendation += 'Add trust signals or value propositions. '
     }
 
     if (score >= 8) status = 'excellent'
