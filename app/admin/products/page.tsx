@@ -30,6 +30,7 @@ import Link from "next/link"
 import { ProductImage } from "@/components/ui/product-image"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { SEOAnalytics } from "@/components/seo-analytics"
+import { SEOScoreBadge } from "@/components/seo-score-badge"
 
 interface Product {
   id: string
@@ -767,6 +768,7 @@ export default function ProductsAdminPage() {
                       <TableHead className="text-black font-semibold">Status</TableHead>
                       <TableHead className="text-black font-semibold">Type</TableHead>
                       <TableHead className="text-black font-semibold">Rank</TableHead>
+                      <TableHead className="text-black font-semibold">SEO Score</TableHead>
                       <TableHead className="text-black font-semibold">Created Date</TableHead>
                       <TableHead className="text-black font-semibold">Actions</TableHead>
                     </TableRow>
@@ -837,6 +839,18 @@ export default function ProductsAdminPage() {
                           <div className="text-sm text-black">
                             {product.rank || 0}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <SEOScoreBadge 
+                            product={{
+                              name: product.name,
+                              slug: product.slug,
+                              description: product.description,
+                              short_description: product.short_description,
+                              image_url: product.image_url,
+                              category_name: product.category_names
+                            }}
+                          />
                         </TableCell>
                         <TableCell>
                           <div className="text-sm text-black">
