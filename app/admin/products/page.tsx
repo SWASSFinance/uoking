@@ -87,7 +87,7 @@ export default function ProductsAdminPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(50)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [totalItems, setTotalItems] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
 
@@ -800,6 +800,19 @@ export default function ProductsAdminPage() {
                 <CardTitle className="text-black">Products ({totalItems})</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Top Pagination */}
+                <div className="flex items-center justify-between px-2 py-4 border-b">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                    showItemsPerPage={true}
+                    itemsPerPageOptions={[10, 25, 50, 100]}
+                  />
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -931,8 +944,8 @@ export default function ProductsAdminPage() {
                   </TableBody>
                 </Table>
                 
-                {/* Pagination */}
-                <div className="flex items-center justify-between px-2 py-4">
+                {/* Bottom Pagination */}
+                <div className="flex items-center justify-between px-2 py-4 border-t">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

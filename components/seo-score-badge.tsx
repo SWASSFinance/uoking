@@ -80,6 +80,62 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
     return () => clearTimeout(timer)
   }, [product])
 
+  const isGenericAltText = (alt: string): boolean => {
+    const trimmedAlt = alt.trim()
+    
+    // Truly generic words that should be flagged
+    const genericWords = [
+      'image', 'photo', 'picture', 'img', 'pic', 'graphic', 'illustration',
+      'banner', 'logo', 'icon', 'thumbnail', 'preview', 'placeholder',
+      'loading', 'spinner', 'arrow', 'button', 'link', 'click here',
+      'more', 'less', 'up', 'down', 'left', 'right', 'next', 'previous',
+      'close', 'open', 'menu', 'search', 'home', 'back', 'forward'
+    ]
+    
+    // Check if it's exactly a generic word (case insensitive)
+    if (genericWords.includes(trimmedAlt.toLowerCase())) {
+      return true
+    }
+    
+    // Check if it's a very short alt text that's not descriptive
+    if (trimmedAlt.length < 3) {
+      return true
+    }
+    
+    // Check if it's just numbers or special characters
+    if (/^[\d\s\-_\.]+$/.test(trimmedAlt)) {
+      return true
+    }
+    
+    // Check if it contains "Ultima Online" or product context - these are good
+    if (trimmedAlt.toLowerCase().includes('ultima online') || 
+        trimmedAlt.toLowerCase().includes('uo') ||
+        trimmedAlt.toLowerCase().includes('item') ||
+        trimmedAlt.toLowerCase().includes('product')) {
+      return false
+    }
+    
+    // For short alt text (3-9 characters), be more lenient if it looks like a product name
+    if (trimmedAlt.length >= 3 && trimmedAlt.length <= 9) {
+      // If it starts with a capital letter and contains letters, it's likely a product name
+      if (/^[A-Z][a-zA-Z]*$/.test(trimmedAlt)) {
+        return false
+      }
+      // If it's all lowercase but looks like a word, it might be a product name
+      if (/^[a-z]+$/.test(trimmedAlt) && trimmedAlt.length >= 4) {
+        return false
+      }
+    }
+    
+    // If it's longer than 10 characters, it's probably descriptive enough
+    if (trimmedAlt.length >= 10) {
+      return false
+    }
+    
+    // Default to not flagging short text as generic (be more lenient)
+    return false
+  }
+
   const checkImageAltText = () => {
     const issues: string[] = []
     
@@ -103,7 +159,7 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
       if (!alt || alt.trim() === '') {
         imagesWithoutAlt++
         issues.push(`Image ${index + 1}: Missing alt text`)
-      } else if (alt.length < 10 || alt === 'image' || alt === 'photo' || alt === 'picture') {
+      } else if (isGenericAltText(alt)) {
         imagesWithGenericAlt++
         issues.push(`Image ${index + 1}: Generic alt text "${alt}"`)
       }
@@ -117,7 +173,7 @@ export function SEOScoreBadge({ product }: SEOScoreBadgeProps) {
       if (!alt || alt.trim() === '') {
         imagesWithoutAlt++
         issues.push(`Next.js Image ${index + 1}: Missing alt text`)
-      } else if (alt.length < 10 || alt === 'image' || alt === 'photo' || alt === 'picture') {
+      } else if (isGenericAltText(alt)) {
         imagesWithGenericAlt++
         issues.push(`Next.js Image ${index + 1}: Generic alt text "${alt}"`)
       }
