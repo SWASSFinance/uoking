@@ -92,13 +92,7 @@ export function Footer() {
               </div>
             </div>
             
-            <div className="pt-4">
-              <h4 className="font-semibold text-amber-600 mb-2">We Accept</h4>
-              <div className="flex items-center space-x-2">
-                <CreditCard className="h-6 w-6 text-green-500" />
-                <span className="text-sm text-gray-300">Bank And Credit Cards Accepted</span>
-              </div>
-            </div>
+           
           </div>
 
           {/* Getting Started */}
