@@ -61,7 +61,7 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
       <div className="text-center">
         <div className="flex items-center justify-center gap-4 mb-4">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100">
-            {skill.name}
+            UO {skill.name} Skill Guide
           </h1>
           <Badge 
             className={`${difficultyColors[skill.difficulty_level as keyof typeof difficultyColors]} text-white text-sm px-3 py-1`}
