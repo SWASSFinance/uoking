@@ -205,7 +205,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden p-0">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden p-0 w-full">
         <div className="flex flex-col h-full">
           {/* Header - Removed custom close button to avoid overlap */}
           <div className="flex items-center justify-between p-4 border-b">
@@ -273,12 +273,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <p className="mt-2 text-gray-600">Searching...</p>
                   </div>
                 ) : results.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="space-y-2 overflow-hidden">
                     {results.map((result) => (
                       <button
                         key={result.id}
                         onClick={() => handleResultClick(result)}
-                        className="flex items-center space-x-3 w-full p-3 text-left hover:bg-gray-50 rounded-lg transition-colors group"
+                        className="flex items-start space-x-3 w-full p-3 text-left hover:bg-gray-50 rounded-lg transition-colors group overflow-hidden"
                       >
                         <div className="flex-shrink-0">
                           {result.type === 'product' && result.image_url ? (
@@ -296,27 +296,33 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium text-gray-900 truncate">
-                                {result.name}
-                              </span>
-                              <Badge className={`text-xs ${getBadgeColor(result.type)}`}>
-                                {result.type}
-                              </Badge>
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-gray-900 truncate">
+                                  {result.name}
+                                </span>
+                                <Badge className={`text-xs flex-shrink-0 ${getBadgeColor(result.type)}`}>
+                                  {result.type}
+                                </Badge>
+                              </div>
+                              {result.description && (
+                                <p className="text-sm text-gray-600 break-words overflow-hidden" style={{
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical'
+                                }}>
+                                  {result.description}
+                                </p>
+                              )}
                             </div>
                             {result.type === 'product' && result.price && (
-                              <div className="text-sm font-semibold text-green-600">
+                              <div className="text-sm font-semibold text-green-600 flex-shrink-0">
                                 ${parseFloat(result.price).toFixed(2)}
                               </div>
                             )}
                           </div>
-                          {result.description && (
-                            <p className="text-sm text-gray-600 truncate mt-1">
-                              {result.description}
-                            </p>
-                          )}
                         </div>
                         <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
                       </button>
