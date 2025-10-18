@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createCanvas, loadImage } from 'canvas'
+
+// Try to import canvas, fallback to alternative if not available
+let createCanvas: any, loadImage: any
+try {
+  const canvas = require('canvas')
+  createCanvas = canvas.createCanvas
+  loadImage = canvas.loadImage
+} catch (error) {
+  console.error('Canvas library not available:', error)
+  // We'll handle this in the function
+}
 
 const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number; maxY: number }> = {
   telmur: {
@@ -110,12 +120,24 @@ function convertCoordX(gameX: number, maxX: number, mapType: string): number {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Image generation request started')
+    
+    // Check if canvas is available
+    if (!createCanvas || !loadImage) {
+      console.error('Canvas library not available in production')
+      return NextResponse.json({ 
+        error: 'Image generation not available in production environment. Canvas library requires native dependencies.' 
+      }, { status: 503 })
+    }
+    
     const { searchParams } = new URL(request.url)
     const mapParam = searchParams.get('map')
     const xParam = searchParams.get('x')
     const yParam = searchParams.get('y')
     const width = parseInt(searchParams.get('width') || '800')
     const height = parseInt(searchParams.get('height') || '600')
+
+    console.log('Request params:', { mapParam, xParam, yParam, width, height })
 
     if (!mapParam) {
       return NextResponse.json({ error: 'Map parameter is required' }, { status: 400 })
@@ -144,11 +166,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Create canvas
+    console.log('Creating canvas:', { width, height })
     const canvas = createCanvas(width, height)
     const ctx = canvas.getContext('2d')
+    console.log('Canvas created successfully')
 
     // Load the map image
+    console.log('Loading image:', `public${config.imageUrl}`)
     const mapImage = await loadImage(`public${config.imageUrl}`)
+    console.log('Image loaded successfully:', { width: mapImage.width, height: mapImage.height })
     
     // Draw the map image to fill the entire canvas (no letterboxing)
     ctx.drawImage(mapImage, 0, 0, width, height)
@@ -212,7 +238,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert canvas to PNG buffer
+    console.log('Converting canvas to PNG buffer')
     const buffer = canvas.toBuffer('image/png')
+    console.log('PNG buffer created, size:', buffer.length)
 
     return new NextResponse(buffer, {
       headers: {
@@ -223,6 +251,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error generating map image:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
   }
 }
