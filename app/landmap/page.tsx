@@ -58,8 +58,9 @@ function convertCoordY(gameY: number, maxY: number, mapType: string): number {
   if (mapType === 'malas') {
     mapBounds = { minLat: 4, maxLat: 8, minLng: -7, maxLng: -2 }
   } else if (mapType === 'felucca' || mapType === 'trammel') {
-    // Calculate proper bounds based on image aspect ratio
-    const imageAspectRatio = maxX / maxY // Use actual config values
+    // Get the map config to access maxX
+    const mapConfig = MAP_CONFIGS[mapType]
+    const imageAspectRatio = mapConfig.maxX / maxY // Use actual config values
     const mapHeight = 10 // Total height in map units
     const mapWidth = mapHeight * imageAspectRatio
     const centerLat = 5
@@ -94,8 +95,9 @@ function convertCoordX(gameX: number, maxX: number, mapType: string): number {
   if (mapType === 'malas') {
     mapBounds = { minLat: 4, maxLat: 8, minLng: -7, maxLng: -2 }
   } else if (mapType === 'felucca' || mapType === 'trammel') {
-    // Calculate proper bounds based on image aspect ratio
-    const imageAspectRatio = maxX / maxY // Use actual config values
+    // Get the map config to access maxY
+    const mapConfig = MAP_CONFIGS[mapType]
+    const imageAspectRatio = maxX / mapConfig.maxY // Use actual config values
     const mapHeight = 10 // Total height in map units
     const mapWidth = mapHeight * imageAspectRatio
     const centerLat = 5
