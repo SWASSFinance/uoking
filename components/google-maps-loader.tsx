@@ -12,7 +12,7 @@ export function GoogleMapsLoader({ children }: GoogleMapsLoaderProps) {
   const pathname = usePathname()
   
   // Only load Google Maps on pages that need it
-  const needsGoogleMaps = pathname.startsWith('/maps') || pathname.startsWith('/admin/maps') || pathname.startsWith('/plot/')
+  const needsGoogleMaps = pathname.startsWith('/maps') || pathname.startsWith('/admin/maps') || pathname.startsWith('/plot/') || pathname.startsWith('/landmap')
 
   useEffect(() => {
     if (!needsGoogleMaps) {
