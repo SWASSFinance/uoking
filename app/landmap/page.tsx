@@ -445,14 +445,6 @@ export default function LandMapPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {mapConfig?.name} Map
             </h1>
-            {coordinates && (
-              <p className="text-gray-600">
-                Showing location at coordinates: {coordinates.x}, {coordinates.y}
-              </p>
-            )}
-            <p className="text-sm text-gray-500">
-              Map bounds: 0,0 to {mapConfig?.maxX},{mapConfig?.maxY}
-            </p>
           </div>
 
           {/* Map Selection Form */}
