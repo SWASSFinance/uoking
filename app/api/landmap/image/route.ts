@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import fs from 'fs'
+import path from 'path'
 
 // Try to import canvas, fallback to alternative if not available
 let createCanvas: any, loadImage: any
@@ -125,9 +127,15 @@ export async function GET(request: NextRequest) {
     // Check if canvas is available
     if (!createCanvas || !loadImage) {
       console.error('Canvas library not available in production')
-      return NextResponse.json({ 
-        error: 'Image generation not available in production environment. Canvas library requires native dependencies.' 
-      }, { status: 503 })
+      // Redirect to the interactive map instead of failing
+      const { searchParams } = new URL(request.url)
+      const mapParam = searchParams.get('map')
+      const xParam = searchParams.get('x')
+      const yParam = searchParams.get('y')
+      
+      const interactiveUrl = `/landmap?map=${mapParam}${xParam ? `&x=${xParam}` : ''}${yParam ? `&y=${yParam}` : ''}`
+      
+      return NextResponse.redirect(interactiveUrl)
     }
     
     const { searchParams } = new URL(request.url)
