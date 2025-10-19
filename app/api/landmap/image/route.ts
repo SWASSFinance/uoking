@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage, registerFont } from 'canvas'
 import path from 'path'
 
 const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number; maxY: number }> = {
@@ -114,6 +114,19 @@ export async function GET(request: NextRequest) {
   
   try {
     console.log('Image generation request started')
+    
+    // Register a fallback font for consistent text rendering
+    try {
+      // Try to register a system font
+      registerFont('/System/Library/Fonts/Arial.ttf', { family: 'Arial' })
+    } catch (error) {
+      try {
+        // Try Windows font
+        registerFont('C:/Windows/Fonts/arial.ttf', { family: 'Arial' })
+      } catch (error2) {
+        console.log('Font registration failed, using default fonts:', error2)
+      }
+    }
     const mapParam = searchParams.get('map')
     const xParam = searchParams.get('x')
     const yParam = searchParams.get('y')
