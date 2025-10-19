@@ -456,19 +456,18 @@ export default function LandMapPage() {
           </div>
 
           {/* Map Selection Form */}
-          <div className="mb-6 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Map Controls</h2>
-            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="mb-4 bg-white rounded-lg shadow-md p-4">
+            <form onSubmit={handleFormSubmit} className="flex flex-wrap items-end gap-3">
               {/* Map Selection */}
-              <div>
-                <label htmlFor="map-select" className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="flex-1 min-w-[120px]">
+                <label htmlFor="map-select" className="block text-xs font-medium text-gray-700 mb-1">
                   Map
                 </label>
                 <select
                   id="map-select"
                   value={selectedMap}
                   onChange={(e) => setSelectedMap(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
                   {Object.entries(MAP_CONFIGS).map(([key, config]) => (
                     <option key={key} value={key}>
@@ -479,9 +478,9 @@ export default function LandMapPage() {
               </div>
 
               {/* X Coordinate */}
-              <div>
-                <label htmlFor="x-coord" className="block text-sm font-medium text-gray-700 mb-1">
-                  X Coordinate
+              <div className="flex-1 min-w-[100px]">
+                <label htmlFor="x-coord" className="block text-xs font-medium text-gray-700 mb-1">
+                  X Coord
                 </label>
                 <input
                   type="number"
@@ -491,14 +490,14 @@ export default function LandMapPage() {
                   placeholder="0"
                   min="0"
                   max={MAP_CONFIGS[selectedMap]?.maxX || 9999}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
               {/* Y Coordinate */}
-              <div>
-                <label htmlFor="y-coord" className="block text-sm font-medium text-gray-700 mb-1">
-                  Y Coordinate
+              <div className="flex-1 min-w-[100px]">
+                <label htmlFor="y-coord" className="block text-xs font-medium text-gray-700 mb-1">
+                  Y Coord
                 </label>
                 <input
                   type="number"
@@ -508,37 +507,18 @@ export default function LandMapPage() {
                   placeholder="0"
                   min="0"
                   max={MAP_CONFIGS[selectedMap]?.maxY || 9999}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
-              {/* Zoom Level */}
-              <div>
-                <label htmlFor="zoom-level" className="block text-sm font-medium text-gray-700 mb-1">
-                  Zoom Level
-                </label>
-                <select
-                  id="zoom-level"
-                  value={zoom}
-                  onChange={(e) => setZoom(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-                >
-                  <option value="0.25">25% (Very Wide)</option>
-                  <option value="0.5">50% (Wide)</option>
-                  <option value="1">100% (Normal)</option>
-                  <option value="2">200% (Close)</option>
-                  <option value="4">400% (Very Close)</option>
-                </select>
-              </div>
-
               {/* Submit Button */}
-              <div className="md:col-span-4">
+              <div>
                 <button
                   type="submit"
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-medium py-1.5 px-4 rounded-md transition-colors flex items-center text-sm"
                 >
-                  <Map className="h-4 w-4 mr-2" />
-                  Update Map
+                  <Map className="h-4 w-4 mr-1" />
+                  Update
                 </button>
               </div>
             </form>
