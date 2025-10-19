@@ -517,7 +517,7 @@ export default function LandMapPage() {
           </div>
 
           {/* Map Container */}
-          <div className="relative w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
+          <div className="relative w-full h-[700px] rounded-lg overflow-hidden shadow-lg">
             {/* Map */}
             <div 
               ref={mapRef} 
