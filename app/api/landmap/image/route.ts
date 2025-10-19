@@ -118,10 +118,11 @@ export async function GET(request: NextRequest) {
     const mapParam = searchParams.get('map')
     const xParam = searchParams.get('x')
     const yParam = searchParams.get('y')
+    const zoom = parseFloat(searchParams.get('zoom') || '1')
     const width = parseInt(searchParams.get('width') || '800')
     const height = parseInt(searchParams.get('height') || '600')
 
-    console.log('Request params:', { mapParam, xParam, yParam, width, height })
+    console.log('Request params:', { mapParam, xParam, yParam, zoom, width, height })
 
     if (!mapParam) {
       return NextResponse.json({ error: 'Map parameter is required' }, { status: 400 })
@@ -154,14 +155,50 @@ export async function GET(request: NextRequest) {
     const imagePath = path.join(process.cwd(), 'public', config.imageUrl.replace('/uo/', 'uo/'))
     
     let image = sharp(imagePath)
-      .resize(width, height, { 
-        fit: 'fill' // Fill the entire canvas (no letterboxing)
+    
+    // Apply zoom if coordinates are provided
+    if (coordinates && zoom > 1) {
+      // Calculate crop area around the marker
+      const markerX = (coordinates.x / config.maxX) * (await image.metadata()).width!
+      const markerY = (coordinates.y / config.maxY) * (await image.metadata()).height!
+      
+      // Calculate crop dimensions based on zoom level
+      const cropWidth = Math.round((await image.metadata()).width! / zoom)
+      const cropHeight = Math.round((await image.metadata()).height! / zoom)
+      
+      // Calculate crop position (center on marker)
+      const cropLeft = Math.max(0, Math.min(markerX - cropWidth / 2, (await image.metadata()).width! - cropWidth))
+      const cropTop = Math.max(0, Math.min(markerY - cropHeight / 2, (await image.metadata()).height! - cropHeight))
+      
+      console.log('Applying zoom:', { zoom, markerX, markerY, cropWidth, cropHeight, cropLeft, cropTop })
+      
+      // Crop the image around the marker
+      image = image.extract({
+        left: Math.round(cropLeft),
+        top: Math.round(cropTop),
+        width: Math.round(cropWidth),
+        height: Math.round(cropHeight)
       })
+    }
+    
+    // Resize to final dimensions
+    image = image.resize(width, height, { 
+      fit: 'fill' // Fill the entire canvas (no letterboxing)
+    })
 
     // Add marker if coordinates are provided
     if (coordinates) {
-      const markerX = Math.round((coordinates.x / config.maxX) * width)
-      const markerY = Math.round((coordinates.y / config.maxY) * height)
+      let markerX, markerY
+      
+      if (zoom > 1) {
+        // When zoomed, marker is centered in the cropped area
+        markerX = Math.round(width / 2)
+        markerY = Math.round(height / 2)
+      } else {
+        // Normal positioning for zoom = 1
+        markerX = Math.round((coordinates.x / config.maxX) * width)
+        markerY = Math.round((coordinates.y / config.maxY) * height)
+      }
       
       console.log('Adding marker at:', { markerX, markerY })
 
