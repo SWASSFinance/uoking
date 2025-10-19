@@ -5,15 +5,15 @@ import path from 'path'
 const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number; maxY: number }> = {
   telmur: {
     name: "Ter Mur",
-    imageUrl: "/uo/Ter_mur_map.jpg",
+    imageUrl: "/uo/telmur.jpg",
     maxX: 4200,
     maxY: 4200
   },
   malas: {
     name: "Malas",
     imageUrl: "/uo/malas.png",
-    maxX: 5120,
-    maxY: 4096
+    maxX: 2546,
+    maxY: 2056
   },
   felucca: {
     name: "Felucca",
@@ -30,6 +30,12 @@ const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number
   ilshenar: {
     name: "Ilshenar",
     imageUrl: "/uo/ilshenar.png",
+    maxX: 5120,
+    maxY: 4096
+  },
+  tokuno: {
+    name: "Tokuno",
+    imageUrl: "/uo/tokuno.png",
     maxX: 5120,
     maxY: 4096
   }
@@ -163,7 +169,14 @@ export async function GET(request: NextRequest) {
     
     // Load the map image
     const mapImage = await loadImage(imagePath)
-    console.log('Image loaded successfully:', { width: mapImage.width, height: mapImage.height })
+    console.log('Image loaded successfully:', { 
+      width: mapImage.width, 
+      height: mapImage.height,
+      configMaxX: config.maxX,
+      configMaxY: config.maxY,
+      aspectRatio: mapImage.width / mapImage.height,
+      configAspectRatio: config.maxX / config.maxY
+    })
     
     // Create canvas
     console.log('Creating canvas:', { width, height })

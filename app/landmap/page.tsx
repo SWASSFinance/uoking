@@ -25,8 +25,8 @@ const MAP_CONFIGS: Record<string, MapConfig> = {
   malas: {
     name: "Malas",
     imageUrl: "/uo/malas.png",
-    maxX: 5120,
-    maxY: 4096
+    maxX: 2546,
+    maxY: 2056
   },
   felucca: {
     name: "Felucca",
@@ -43,6 +43,12 @@ const MAP_CONFIGS: Record<string, MapConfig> = {
   ilshenar: {
     name: "Ilshenar",
     imageUrl: "/uo/ilshenar.png",
+    maxX: 5120,
+    maxY: 4096
+  },
+  tokuno: {
+    name: "Tokuno",
+    imageUrl: "/uo/tokuno.png",
     maxX: 5120,
     maxY: 4096
   }
@@ -129,11 +135,24 @@ export default function LandMapPage() {
   const searchParams = useSearchParams()
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<any>(null)
+  
+  // Form state
+  const [selectedMap, setSelectedMap] = useState(searchParams.get('map') || 'telmur')
+  const [xCoord, setXCoord] = useState(searchParams.get('x') || '')
+  const [yCoord, setYCoord] = useState(searchParams.get('y') || '')
+  const [zoom, setZoom] = useState(searchParams.get('zoom') || '1')
   const markerRef = useRef<any>(null)
   
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapConfig, setMapConfig] = useState<MapConfig | null>(null)
+
+  // Handle form submission
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const newUrl = `/landmap?map=${selectedMap}${xCoord ? `&x=${xCoord}` : ''}${yCoord ? `&y=${yCoord}` : ''}${zoom !== '1' ? `&zoom=${zoom}` : ''}`
+    window.location.href = newUrl
+  }
   const [coordinates, setCoordinates] = useState<{ x: number; y: number } | null>(null)
 
   // Parse URL parameters
@@ -443,6 +462,95 @@ export default function LandMapPage() {
             <p className="text-sm text-gray-500">
               Map bounds: 0,0 to {mapConfig?.maxX},{mapConfig?.maxY}
             </p>
+          </div>
+
+          {/* Map Selection Form */}
+          <div className="mb-6 bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Map Controls</h2>
+            <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Map Selection */}
+              <div>
+                <label htmlFor="map-select" className="block text-sm font-medium text-gray-700 mb-1">
+                  Map
+                </label>
+                <select
+                  id="map-select"
+                  value={selectedMap}
+                  onChange={(e) => setSelectedMap(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  {Object.entries(MAP_CONFIGS).map(([key, config]) => (
+                    <option key={key} value={key}>
+                      {config.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* X Coordinate */}
+              <div>
+                <label htmlFor="x-coord" className="block text-sm font-medium text-gray-700 mb-1">
+                  X Coordinate
+                </label>
+                <input
+                  type="number"
+                  id="x-coord"
+                  value={xCoord}
+                  onChange={(e) => setXCoord(e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  max={MAP_CONFIGS[selectedMap]?.maxX || 9999}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              {/* Y Coordinate */}
+              <div>
+                <label htmlFor="y-coord" className="block text-sm font-medium text-gray-700 mb-1">
+                  Y Coordinate
+                </label>
+                <input
+                  type="number"
+                  id="y-coord"
+                  value={yCoord}
+                  onChange={(e) => setYCoord(e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  max={MAP_CONFIGS[selectedMap]?.maxY || 9999}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              {/* Zoom Level */}
+              <div>
+                <label htmlFor="zoom-level" className="block text-sm font-medium text-gray-700 mb-1">
+                  Zoom Level
+                </label>
+                <select
+                  id="zoom-level"
+                  value={zoom}
+                  onChange={(e) => setZoom(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="0.25">25% (Very Wide)</option>
+                  <option value="0.5">50% (Wide)</option>
+                  <option value="1">100% (Normal)</option>
+                  <option value="2">200% (Close)</option>
+                  <option value="4">400% (Very Close)</option>
+                </select>
+              </div>
+
+              {/* Submit Button */}
+              <div className="md:col-span-4">
+                <button
+                  type="submit"
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center"
+                >
+                  <Map className="h-4 w-4 mr-2" />
+                  Update Map
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Full Screen Map Container */}
