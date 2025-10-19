@@ -111,10 +111,10 @@ function convertCoordX(gameX: number, maxX: number, mapType: string): number {
 }
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  
   try {
     console.log('Image generation request started')
-    
-    const { searchParams } = new URL(request.url)
     const mapParam = searchParams.get('map')
     const xParam = searchParams.get('x')
     const yParam = searchParams.get('y')
@@ -210,6 +210,23 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error generating map image:', error)
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
-    return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
+    
+    // Return detailed error information
+    const errorDetails = {
+      error: 'Failed to generate image',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      type: error instanceof Error ? error.constructor.name : typeof error,
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+      requestParams: {
+        map: searchParams.get('map'),
+        x: searchParams.get('x'),
+        y: searchParams.get('y'),
+        width: searchParams.get('width'),
+        height: searchParams.get('height')
+      }
+    }
+    
+    return NextResponse.json(errorDetails, { status: 500 })
   }
 }
