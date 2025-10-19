@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import sharp from 'sharp'
-import fs from 'fs'
+import { createCanvas, loadImage } from 'canvas'
 import path from 'path'
 
 const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number; maxY: number }> = {
@@ -150,48 +149,64 @@ export async function GET(request: NextRequest) {
       coordinates = { x, y }
     }
 
-    // Load and resize the map image using Sharp
-    console.log('Loading image with Sharp:', `public${config.imageUrl}`)
+    // Load and resize the map image using Canvas
+    console.log('Loading image with Canvas:', `public${config.imageUrl}`)
     const imagePath = path.join(process.cwd(), 'public', config.imageUrl.replace('/uo/', 'uo/'))
     
-    let image = sharp(imagePath)
+    // Load the map image
+    const mapImage = await loadImage(imagePath)
+    console.log('Image loaded successfully:', { width: mapImage.width, height: mapImage.height })
     
+    // Create canvas
+    console.log('Creating canvas:', { width, height })
+    const canvas = createCanvas(width, height)
+    const ctx = canvas.getContext('2d')
+    console.log('Canvas created successfully')
+
     // Apply zoom if coordinates are provided
     if (coordinates && zoom > 1) {
+      console.log('Applying zoom:', { zoom })
+      
       // Calculate crop area around the marker
-      const markerX = (coordinates.x / config.maxX) * (await image.metadata()).width!
-      const markerY = (coordinates.y / config.maxY) * (await image.metadata()).height!
+      const markerX = Math.round((coordinates.x / config.maxX) * mapImage.width)
+      const markerY = Math.round((coordinates.y / config.maxY) * mapImage.height)
       
       // Calculate crop dimensions based on zoom level
-      const cropWidth = Math.round((await image.metadata()).width! / zoom)
-      const cropHeight = Math.round((await image.metadata()).height! / zoom)
+      const cropWidth = Math.round(mapImage.width / zoom)
+      const cropHeight = Math.round(mapImage.height / zoom)
       
       // Calculate crop position (center on marker)
-      const cropLeft = Math.max(0, Math.min(markerX - cropWidth / 2, (await image.metadata()).width! - cropWidth))
-      const cropTop = Math.max(0, Math.min(markerY - cropHeight / 2, (await image.metadata()).height! - cropHeight))
+      const cropLeft = Math.max(0, Math.min(markerX - cropWidth / 2, mapImage.width - cropWidth))
+      const cropTop = Math.max(0, Math.min(markerY - cropHeight / 2, mapImage.height - cropHeight))
       
-      console.log('Applying zoom:', { zoom, markerX, markerY, cropWidth, cropHeight, cropLeft, cropTop })
-      
-      // Crop the image around the marker
-      image = image.extract({
-        left: Math.round(cropLeft),
-        top: Math.round(cropTop),
-        width: Math.round(cropWidth),
-        height: Math.round(cropHeight)
+      console.log('Zoom calculations:', { 
+        zoom, 
+        markerX, 
+        markerY, 
+        cropWidth, 
+        cropHeight, 
+        cropLeft, 
+        cropTop
       })
+      
+      // Draw cropped portion of the image
+      ctx.drawImage(
+        mapImage,
+        cropLeft, cropTop, cropWidth, cropHeight,  // Source rectangle (crop)
+        0, 0, width, height  // Destination rectangle (fill canvas)
+      )
+    } else {
+      // Draw the full map image
+      ctx.drawImage(mapImage, 0, 0, width, height)
     }
-    
-    // Resize to final dimensions
-    image = image.resize(width, height, { 
-      fit: 'fill' // Fill the entire canvas (no letterboxing)
-    })
 
     // Add marker if coordinates are provided
     if (coordinates) {
+      // Calculate marker position
       let markerX, markerY
       
       if (zoom > 1) {
-        // When zoomed, marker is centered in the cropped area
+        // When zoomed, marker is centered
         markerX = Math.round(width / 2)
         markerY = Math.round(height / 2)
       } else {
@@ -202,42 +217,36 @@ export async function GET(request: NextRequest) {
       
       console.log('Adding marker at:', { markerX, markerY })
 
-      // Create SVG overlay for marker
-      const svg = `
-        <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-          <!-- Map name -->
-          <text x="20" y="30" 
-                fill="white" 
-                font-family="monospace" 
-                font-size="18" 
-                font-weight="bold">${config.name}</text>
-          <!-- Horizontal line -->
-          <line x1="${markerX - 15}" y1="${markerY}" x2="${markerX + 15}" y2="${markerY}" 
-                stroke="#ffd700" stroke-width="2"/>
-          <!-- Vertical line -->
-          <line x1="${markerX}" y1="${markerY - 15}" x2="${markerX}" y2="${markerY + 15}" 
-                stroke="#ffd700" stroke-width="2"/>
-          <!-- Coordinates -->
-          <text x="${markerX}" y="${markerY - 25}" 
-                text-anchor="middle" 
-                fill="white" 
-                font-family="monospace" 
-                font-size="14" 
-                font-weight="bold">${coordinates.x}, ${coordinates.y}</text>
-        </svg>
-      `
+      // Draw thin crossing lines marker
+      ctx.strokeStyle = '#ffd700'
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      
+      // Horizontal line
+      ctx.moveTo(markerX - 15, markerY)
+      ctx.lineTo(markerX + 15, markerY)
+      
+      // Vertical line
+      ctx.moveTo(markerX, markerY - 15)
+      ctx.lineTo(markerX, markerY + 15)
+      
+      ctx.stroke()
 
-      // Apply SVG overlay
-      image = image.composite([{
-        input: Buffer.from(svg),
-        top: 0,
-        left: 0
-      }])
+      // Add coordinate text
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 14px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${coordinates.x}, ${coordinates.y}`, markerX, markerY - 25)
+
+      // Add map name
+      ctx.font = 'bold 18px Arial'
+      ctx.textAlign = 'left'
+      ctx.fillText(config.name, 20, 30)
     }
 
-    // Generate PNG buffer
-    console.log('Generating PNG with Sharp')
-    const buffer = await image.png().toBuffer()
+    // Convert canvas to PNG buffer
+    console.log('Converting canvas to PNG buffer')
+    const buffer = canvas.toBuffer('image/png')
     console.log('PNG buffer created, size:', buffer.length)
 
     return new NextResponse(new Uint8Array(buffer), {
