@@ -79,7 +79,20 @@ function convertCoordY(gameY: number, maxY: number, mapType: string): number {
       maxLng: centerLng + mapWidth/2 
     }
   } else if (mapType === 'ilshenar') {
-    mapBounds = { minLat: 4, maxLat: 9, minLng: -7, maxLng: -3 }
+    // Calculate proper bounds based on image aspect ratio for Ilshenar
+    const mapConfig = MAP_CONFIGS[mapType]
+    const imageAspectRatio = mapConfig.maxX / mapConfig.maxY // 5120/4096 = 1.25
+    const mapHeight = 5 // Total height in map units
+    const mapWidth = mapHeight * imageAspectRatio // 5 * 1.25 = 6.25
+    const centerLat = 6.5
+    const centerLng = -5
+    
+    mapBounds = { 
+      minLat: centerLat - mapHeight/2, 
+      maxLat: centerLat + mapHeight/2, 
+      minLng: centerLng - mapWidth/2, 
+      maxLng: centerLng + mapWidth/2 
+    }
   } else {
     // Ter Mur
     mapBounds = { minLat: -2, maxLat: 4, minLng: -8, maxLng: -3 }
@@ -116,7 +129,20 @@ function convertCoordX(gameX: number, maxX: number, mapType: string): number {
       maxLng: centerLng + mapWidth/2 
     }
   } else if (mapType === 'ilshenar') {
-    mapBounds = { minLat: 4, maxLat: 9, minLng: -7, maxLng: -3 }
+    // Calculate proper bounds based on image aspect ratio for Ilshenar
+    const mapConfig = MAP_CONFIGS[mapType]
+    const imageAspectRatio = maxX / mapConfig.maxY // 5120/4096 = 1.25
+    const mapHeight = 5 // Total height in map units
+    const mapWidth = mapHeight * imageAspectRatio // 5 * 1.25 = 6.25
+    const centerLat = 6.5
+    const centerLng = -5
+    
+    mapBounds = { 
+      minLat: centerLat - mapHeight/2, 
+      maxLat: centerLat + mapHeight/2, 
+      minLng: centerLng - mapWidth/2, 
+      maxLng: centerLng + mapWidth/2 
+    }
   } else {
     // Ter Mur
     mapBounds = { minLat: -2, maxLat: 4, minLng: -8, maxLng: -3 }
@@ -232,9 +258,16 @@ export default function LandMapPage() {
     } else if (mapType === 'ilshenar') {
       center = { lat: 6.5, lng: -5 } // Ilshenar center
       zoom = 3 // Ilshenar zoom level
+      // Calculate proper bounds based on image aspect ratio for Ilshenar
+      const imageAspectRatio = mapConfig.maxX / mapConfig.maxY // 5120/4096 = 1.25
+      const mapHeight = 5 // Total height in map units
+      const mapWidth = mapHeight * imageAspectRatio // 5 * 1.25 = 6.25
+      const centerLat = 6.5
+      const centerLng = -5
+      
       bounds = new window.google.maps.LatLngBounds(
-        new window.google.maps.LatLng(4, -7), // Southwest corner
-        new window.google.maps.LatLng(9, -3)  // Northeast corner
+        new window.google.maps.LatLng(centerLat - mapHeight/2, centerLng - mapWidth/2), // Southwest corner
+        new window.google.maps.LatLng(centerLat + mapHeight/2, centerLng + mapWidth/2)  // Northeast corner
       )
     } else {
       center = { lat: 1.3, lng: -5.6 } // Ter Mur center
