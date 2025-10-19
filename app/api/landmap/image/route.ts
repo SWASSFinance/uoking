@@ -178,8 +178,6 @@ export async function GET(request: NextRequest) {
           <text x="${markerX}" y="${markerY - 25}" 
                 text-anchor="middle" 
                 fill="white" 
-                stroke="black" 
-                stroke-width="2" 
                 font-family="Arial" 
                 font-size="14" 
                 font-weight="bold">${coordinates.x}, ${coordinates.y}</text>
