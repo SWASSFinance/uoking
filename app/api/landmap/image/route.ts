@@ -208,7 +208,6 @@ export async function GET(request: NextRequest) {
           <!-- Map name -->
           <text x="20" y="30" 
                 fill="white" 
-                font-family="Arial" 
                 font-size="18" 
                 font-weight="bold">${config.name}</text>
           <!-- Horizontal line -->
@@ -221,7 +220,6 @@ export async function GET(request: NextRequest) {
           <text x="${markerX}" y="${markerY - 25}" 
                 text-anchor="middle" 
                 fill="white" 
-                font-family="Arial" 
                 font-size="14" 
                 font-weight="bold">${coordinates.x}, ${coordinates.y}</text>
         </svg>
