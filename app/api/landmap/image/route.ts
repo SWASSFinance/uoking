@@ -155,8 +155,7 @@ export async function GET(request: NextRequest) {
     
     let image = sharp(imagePath)
       .resize(width, height, { 
-        fit: 'fill', // Fill the entire canvas (no letterboxing)
-        position: 'top left'
+        fit: 'fill' // Fill the entire canvas (no letterboxing)
       })
 
     // Add marker if coordinates are provided
