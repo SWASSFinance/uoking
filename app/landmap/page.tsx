@@ -18,7 +18,7 @@ interface MapConfig {
 const MAP_CONFIGS: Record<string, MapConfig> = {
   telmur: {
     name: "Ter Mur",
-    imageUrl: "/uo/Ter_mur_map.jpg",
+    imageUrl: "/uo/telmur.jpg",
     maxX: 4200,
     maxY: 4200
   },
