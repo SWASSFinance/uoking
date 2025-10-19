@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import sharp from 'sharp'
 import fs from 'fs'
 import path from 'path'
-
-// Try to import canvas, fallback to alternative if not available
-let createCanvas: any, loadImage: any
-try {
-  const canvas = require('canvas')
-  createCanvas = canvas.createCanvas
-  loadImage = canvas.loadImage
-} catch (error) {
-  console.error('Canvas library not available:', error)
-  // We'll handle this in the function
-}
 
 const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number; maxY: number }> = {
   telmur: {
@@ -124,20 +114,6 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Image generation request started')
     
-    // Check if canvas is available
-    if (!createCanvas || !loadImage) {
-      console.error('Canvas library not available in production')
-      // Redirect to the interactive map instead of failing
-      const { searchParams } = new URL(request.url)
-      const mapParam = searchParams.get('map')
-      const xParam = searchParams.get('x')
-      const yParam = searchParams.get('y')
-      
-      const interactiveUrl = `/landmap?map=${mapParam}${xParam ? `&x=${xParam}` : ''}${yParam ? `&y=${yParam}` : ''}`
-      
-      return NextResponse.redirect(interactiveUrl)
-    }
-    
     const { searchParams } = new URL(request.url)
     const mapParam = searchParams.get('map')
     const xParam = searchParams.get('x')
@@ -173,87 +149,61 @@ export async function GET(request: NextRequest) {
       coordinates = { x, y }
     }
 
-    // Create canvas
-    console.log('Creating canvas:', { width, height })
-    const canvas = createCanvas(width, height)
-    const ctx = canvas.getContext('2d')
-    console.log('Canvas created successfully')
-
-    // Load the map image
-    console.log('Loading image:', `public${config.imageUrl}`)
-    const mapImage = await loadImage(`public${config.imageUrl}`)
-    console.log('Image loaded successfully:', { width: mapImage.width, height: mapImage.height })
+    // Load and resize the map image using Sharp
+    console.log('Loading image with Sharp:', `public${config.imageUrl}`)
+    const imagePath = path.join(process.cwd(), 'public', config.imageUrl.replace('/uo/', 'uo/'))
     
-    // Draw the map image to fill the entire canvas (no letterboxing)
-    ctx.drawImage(mapImage, 0, 0, width, height)
+    let image = sharp(imagePath)
+      .resize(width, height, { 
+        fit: 'fill', // Fill the entire canvas (no letterboxing)
+        position: 'top left'
+      })
 
     // Add marker if coordinates are provided
     if (coordinates) {
-      // Convert UO coordinates directly to canvas coordinates
-      // UO coordinates: (0,0) is top-left, (maxX,maxY) is bottom-right
-      // Canvas coordinates: (0,0) is top-left, (width,height) is bottom-right
+      const markerX = Math.round((coordinates.x / config.maxX) * width)
+      const markerY = Math.round((coordinates.y / config.maxY) * height)
       
-      const markerX = (coordinates.x / config.maxX) * width
-      const markerY = (coordinates.y / config.maxY) * height
+      console.log('Adding marker at:', { markerX, markerY })
 
-      // Draw thin crossing lines marker
-      ctx.strokeStyle = '#ffd700'
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      
-      // Horizontal line
-      ctx.moveTo(markerX - 15, markerY)
-      ctx.lineTo(markerX + 15, markerY)
-      
-      // Vertical line
-      ctx.moveTo(markerX, markerY - 15)
-      ctx.lineTo(markerX, markerY + 15)
-      
-      ctx.stroke()
+      // Create SVG overlay for marker
+      const svg = `
+        <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+          <!-- Horizontal line -->
+          <line x1="${markerX - 15}" y1="${markerY}" x2="${markerX + 15}" y2="${markerY}" 
+                stroke="#ffd700" stroke-width="2"/>
+          <!-- Vertical line -->
+          <line x1="${markerX}" y1="${markerY - 15}" x2="${markerX}" y2="${markerY + 15}" 
+                stroke="#ffd700" stroke-width="2"/>
+          <!-- Text -->
+          <text x="${markerX}" y="${markerY - 25}" 
+                text-anchor="middle" 
+                fill="white" 
+                stroke="black" 
+                stroke-width="2" 
+                font-family="Arial" 
+                font-size="14" 
+                font-weight="bold">${coordinates.x}, ${coordinates.y}</text>
+        </svg>
+      `
 
-      // Add coordinate text with smart positioning
-      const text = `${coordinates.x}, ${coordinates.y}`
-      ctx.fillStyle = '#ffffff'
-      ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 3
-      ctx.font = 'bold 14px Arial'
-      ctx.textAlign = 'center'
-      
-      // Smart text positioning - avoid edges
-      let textX = markerX
-      let textY = markerY - 25
-      
-      // Check if too close to top edge
-      if (markerY < 50) {
-        textY = markerY + 25 // Move text below marker
-      }
-      
-      // Check if too close to left edge
-      if (markerX < 100) {
-        textX = markerX + 50 // Move text to the right
-        ctx.textAlign = 'left'
-      }
-      // Check if too close to right edge
-      else if (markerX > width - 100) {
-        textX = markerX - 50 // Move text to the left
-        ctx.textAlign = 'right'
-      }
-      
-      // Draw text outline
-      ctx.strokeText(text, textX, textY)
-      // Draw text fill
-      ctx.fillText(text, textX, textY)
+      // Apply SVG overlay
+      image = image.composite([{
+        input: Buffer.from(svg),
+        top: 0,
+        left: 0
+      }])
     }
 
-    // Convert canvas to PNG buffer
-    console.log('Converting canvas to PNG buffer')
-    const buffer = canvas.toBuffer('image/png')
+    // Generate PNG buffer
+    console.log('Generating PNG with Sharp')
+    const buffer = await image.png().toBuffer()
     console.log('PNG buffer created, size:', buffer.length)
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+        'Cache-Control': 'public, max-age=3600',
       },
     })
 
