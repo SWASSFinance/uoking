@@ -138,8 +138,8 @@ export default function LandMapPage() {
   
   // Form state
   const [selectedMap, setSelectedMap] = useState(searchParams.get('map') || 'telmur')
-  const [xCoord, setXCoord] = useState(searchParams.get('x') || '')
-  const [yCoord, setYCoord] = useState(searchParams.get('y') || '')
+  const [xCoord, setXCoord] = useState(searchParams.get('x') || '2100')
+  const [yCoord, setYCoord] = useState(searchParams.get('y') || '2100')
   const [zoom, setZoom] = useState(searchParams.get('zoom') || '1')
   const markerRef = useRef<any>(null)
   
@@ -157,15 +157,9 @@ export default function LandMapPage() {
 
   // Parse URL parameters
   useEffect(() => {
-    const mapParam = searchParams.get('map')
-    const xParam = searchParams.get('x')
-    const yParam = searchParams.get('y')
-
-    if (!mapParam) {
-      setError("Map parameter is required. Use ?map=telmur")
-      setIsLoading(false)
-      return
-    }
+    const mapParam = searchParams.get('map') || 'telmur'
+    const xParam = searchParams.get('x') || '2100'
+    const yParam = searchParams.get('y') || '2100'
 
     const config = MAP_CONFIGS[mapParam]
     if (!config) {
@@ -176,26 +170,23 @@ export default function LandMapPage() {
 
     setMapConfig(config)
 
-    // Parse coordinates if provided
-    if (xParam && yParam) {
-      const x = parseInt(xParam)
-      const y = parseInt(yParam)
-      
-      if (isNaN(x) || isNaN(y)) {
-        setError("Invalid coordinates. X and Y must be numbers.")
-        setIsLoading(false)
-        return
-      }
-
-      if (x < 0 || x > config.maxX || y < 0 || y > config.maxY) {
-        setError(`Coordinates out of bounds. X must be 0-${config.maxX}, Y must be 0-${config.maxY}`)
-        setIsLoading(false)
-        return
-      }
-
-      setCoordinates({ x, y })
+    // Parse coordinates (use defaults if not provided)
+    const x = parseInt(xParam)
+    const y = parseInt(yParam)
+    
+    if (isNaN(x) || isNaN(y)) {
+      setError("Invalid coordinates. X and Y must be numbers.")
+      setIsLoading(false)
+      return
     }
 
+    if (x < 0 || x > config.maxX || y < 0 || y > config.maxY) {
+      setError(`Coordinates out of bounds. X must be 0-${config.maxX}, Y must be 0-${config.maxY}`)
+      setIsLoading(false)
+      return
+    }
+
+    setCoordinates({ x, y })
     setIsLoading(false)
   }, [searchParams])
 
