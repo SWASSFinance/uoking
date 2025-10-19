@@ -544,8 +544,8 @@ export default function LandMapPage() {
             </form>
           </div>
 
-          {/* Full Screen Map Container */}
-          <div className="relative w-screen h-[calc(100vh-200px)] min-h-[600px] -mx-4">
+          {/* Map Container */}
+          <div className="relative w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
             {/* Map */}
             <div 
               ref={mapRef} 
