@@ -205,13 +205,19 @@ export async function GET(request: NextRequest) {
       // Create SVG overlay for marker
       const svg = `
         <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+          <!-- Map name -->
+          <text x="20" y="30" 
+                fill="white" 
+                font-family="Arial" 
+                font-size="18" 
+                font-weight="bold">${config.name}</text>
           <!-- Horizontal line -->
           <line x1="${markerX - 15}" y1="${markerY}" x2="${markerX + 15}" y2="${markerY}" 
                 stroke="#ffd700" stroke-width="2"/>
           <!-- Vertical line -->
           <line x1="${markerX}" y1="${markerY - 15}" x2="${markerX}" y2="${markerY + 15}" 
                 stroke="#ffd700" stroke-width="2"/>
-          <!-- Text -->
+          <!-- Coordinates -->
           <text x="${markerX}" y="${markerY - 25}" 
                 text-anchor="middle" 
                 fill="white" 
