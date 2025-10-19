@@ -115,17 +115,12 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Image generation request started')
     
-    // Register a fallback font for consistent text rendering
+    // Register the uploaded font for consistent text rendering
     try {
-      // Try to register a system font
-      registerFont('/System/Library/Fonts/Arial.ttf', { family: 'Arial' })
+      registerFont(path.join(process.cwd(), 'public/fonts/arial.ttf'), { family: 'Arial' })
+      console.log('Font registered successfully')
     } catch (error) {
-      try {
-        // Try Windows font
-        registerFont('C:/Windows/Fonts/arial.ttf', { family: 'Arial' })
-      } catch (error2) {
-        console.log('Font registration failed, using default fonts:', error2)
-      }
+      console.log('Font registration failed, using default fonts:', error)
     }
     const mapParam = searchParams.get('map')
     const xParam = searchParams.get('x')
