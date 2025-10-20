@@ -36,8 +36,8 @@ const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number
   tokuno: {
     name: "Tokuno",
     imageUrl: "/uo/tokuno.png",
-    maxX: 5120,
-    maxY: 4096
+    maxX: 1450,
+    maxY: 1450
   }
 }
 
