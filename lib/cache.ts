@@ -1,10 +1,12 @@
 // Redis-based caching layer for Vercel optimization
-import { Redis } from '@upstash/redis'
+import { createClient } from 'redis'
 
-const redis = new Redis({
+const redis = createClient({
   url: process.env.REDIS_URL!,
-  token: process.env.REDIS_URL!.split('@')[0].split('://')[1] || '',
 })
+
+// Connect to Redis
+redis.connect().catch(console.error)
 
 // Cache configuration
 const CACHE_TTL = {
@@ -29,7 +31,7 @@ export class CacheManager {
 
   static async set(key: string, value: any, ttl: number = 3600): Promise<void> {
     try {
-      await redis.setex(key, ttl, JSON.stringify(value))
+      await redis.setEx(key, ttl, JSON.stringify(value))
     } catch (error) {
       console.error('Cache set error:', error)
     }
