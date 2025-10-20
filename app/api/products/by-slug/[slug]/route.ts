@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getProductBySlug, getProductReviews, query } from '@/lib/db'
+import { getProductBySlugOptimized } from '@/lib/db-optimized'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET(
@@ -20,10 +21,10 @@ export async function GET(
       isPremiumUser = userResult.rows[0]?.account_rank === 1
     }
     
-    // Fetch product and reviews
+    // Fetch product and reviews with optimized queries
     const [product, reviews] = await Promise.all([
-      getProductBySlug(slug),
-      getProductBySlug(slug).then(product => 
+      getProductBySlugOptimized(slug),
+      getProductBySlugOptimized(slug).then(product => 
         product ? getProductReviews(product.id) : []
       )
     ])

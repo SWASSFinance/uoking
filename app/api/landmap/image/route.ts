@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createCanvas, loadImage, registerFont } from 'canvas'
 import path from 'path'
+import CacheManager from '@/lib/cache'
 
 const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number; maxY: number }> = {
   telmur: {
@@ -146,6 +147,21 @@ export async function GET(request: NextRequest) {
   
   try {
     console.log('Image generation request started')
+    
+    // Create cache key from parameters
+    const cacheKey = `map:image:${searchParams.toString()}`
+    
+    // Check cache first
+    const cached = await CacheManager.getMapImage(cacheKey)
+    if (cached && typeof cached === 'string') {
+      console.log('Returning cached map image')
+      return new NextResponse(new Uint8Array(Buffer.from(cached, 'base64')), {
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, max-age=86400', // 24 hours
+        },
+      })
+    }
     
     // Register the uploaded font for consistent text rendering
     try {
@@ -296,10 +312,13 @@ export async function GET(request: NextRequest) {
     const buffer = canvas.toBuffer('image/png')
     console.log('PNG buffer created, size:', buffer.length)
 
+    // Cache the generated image
+    await CacheManager.setMapImage(cacheKey, buffer)
+
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=86400', // 24 hours
       },
     })
 

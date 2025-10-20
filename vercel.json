@@ -4,5 +4,21 @@
       "path": "/api/cron/contest",
       "schedule": "0 0 */14 * *"
     }
+  ],
+  "functions": {
+    "app/api/landmap/image/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, s-maxage=3600"
+        }
+      ]
+    }
   ]
 }
