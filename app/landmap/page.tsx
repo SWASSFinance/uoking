@@ -144,6 +144,44 @@ function convertCoordX(gameX: number, maxX: number, mapType: string): number {
   return mapX
 }
 
+// Helper function to get map bounds for coordinate conversion
+function getMapBounds(mapType: string): { minLat: number; maxLat: number; minLng: number; maxLng: number } {
+  if (mapType === 'malas') {
+    return { minLat: 4, maxLat: 8, minLng: -7, maxLng: -2 }
+  } else if (mapType === 'felucca' || mapType === 'trammel') {
+    const mapConfig = MAP_CONFIGS[mapType]
+    const imageAspectRatio = mapConfig.maxX / mapConfig.maxY
+    const mapHeight = 10
+    const mapWidth = mapHeight * imageAspectRatio
+    const centerLat = 5
+    const centerLng = -2
+    
+    return { 
+      minLat: centerLat - mapHeight/2, 
+      maxLat: centerLat + mapHeight/2, 
+      minLng: centerLng - mapWidth/2, 
+      maxLng: centerLng + mapWidth/2 
+    }
+  } else if (mapType === 'ilshenar') {
+    const mapConfig = MAP_CONFIGS[mapType]
+    const imageAspectRatio = mapConfig.maxX / mapConfig.maxY
+    const mapHeight = 5
+    const mapWidth = mapHeight * imageAspectRatio
+    const centerLat = 6.5
+    const centerLng = -5
+    
+    return { 
+      minLat: centerLat - mapHeight/2, 
+      maxLat: centerLat + mapHeight/2, 
+      minLng: centerLng - mapWidth/2, 
+      maxLng: centerLng + mapWidth/2 
+    }
+  } else {
+    // Ter Mur
+    return { minLat: -2, maxLat: 4, minLng: -8, maxLng: -3 }
+  }
+}
+
 export default function LandMapPage() {
   const searchParams = useSearchParams()
   const mapRef = useRef<HTMLDivElement>(null)
@@ -159,6 +197,7 @@ export default function LandMapPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapConfig, setMapConfig] = useState<MapConfig | null>(null)
+  const [mouseCoordinates, setMouseCoordinates] = useState<{ x: number; y: number } | null>(null)
 
   // Handle form submission
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -301,6 +340,84 @@ export default function LandMapPage() {
 
     // Fit the map to show the entire image
     googleMapRef.current.fitBounds(imageBounds)
+
+    // Add click listener to show coordinates
+    googleMapRef.current.addListener('click', (event: any) => {
+      const lat = event.latLng.lat()
+      const lng = event.latLng.lng()
+      
+      // Convert map coordinates back to game coordinates
+      const mapType = searchParams.get('map') || 'telmur'
+      const gameX = Math.round(((lng - getMapBounds(mapType).minLng) / (getMapBounds(mapType).maxLng - getMapBounds(mapType).minLng)) * mapConfig.maxX)
+      const gameY = Math.round(((getMapBounds(mapType).maxLat - lat) / (getMapBounds(mapType).maxLat - getMapBounds(mapType).minLat)) * mapConfig.maxY)
+      
+      // Update form fields with clicked coordinates
+      setXCoord(gameX.toString())
+      setYCoord(gameY.toString())
+      
+      // Update URL
+      const newUrl = `/landmap?map=${mapType}&x=${gameX}&y=${gameY}`
+      window.history.pushState({}, '', newUrl)
+      
+      // Add marker at clicked location
+      if (markerRef.current) {
+        markerRef.current.setMap(null)
+      }
+      
+      markerRef.current = new window.google.maps.Marker({
+        position: { lat, lng },
+        map: googleMapRef.current,
+        title: `Location: ${gameX}, ${gameY}`,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge> 
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <circle cx="16" cy="16" r="14" fill="url(#gradient)" stroke="#ffd700" stroke-width="2" filter="url(#glow)"/>
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+                  <stop offset="50%" style="stop-color:#f7931e;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ffd700;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <circle cx="16" cy="16" r="10" fill="#1a1a1a" stroke="#ffd700" stroke-width="1"/>
+              <g transform="translate(8, 4)">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 8 8 16 8 16s8-8 8-16c0-4.42-3.58-8-8-8z" fill="#ffd700"/>
+                <circle cx="8" cy="8" r="3" fill="#1a1a1a"/>
+              </g>
+            </svg>
+          `),
+          scaledSize: new window.google.maps.Size(32, 32),
+          anchor: new window.google.maps.Point(16, 16)
+        }
+      })
+    })
+
+    // Add mouse move listener to show coordinates
+    googleMapRef.current.addListener('mousemove', (event: any) => {
+      const lat = event.latLng.lat()
+      const lng = event.latLng.lng()
+      
+      // Convert map coordinates back to game coordinates
+      const mapType = searchParams.get('map') || 'telmur'
+      const gameX = Math.round(((lng - getMapBounds(mapType).minLng) / (getMapBounds(mapType).maxLng - getMapBounds(mapType).minLng)) * mapConfig.maxX)
+      const gameY = Math.round(((getMapBounds(mapType).maxLat - lat) / (getMapBounds(mapType).maxLat - getMapBounds(mapType).minLat)) * mapConfig.maxY)
+      
+      setMouseCoordinates({ x: gameX, y: gameY })
+    })
+
+    // Add mouse leave listener to hide coordinates
+    googleMapRef.current.addListener('mouseout', () => {
+      setMouseCoordinates(null)
+    })
 
     // Add marker if coordinates are provided
     if (coordinates) {
@@ -563,6 +680,21 @@ export default function LandMapPage() {
                       >
                         📷 Download PNG
                       </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mouse Coordinates Display */}
+            {mouseCoordinates && (
+              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md border-2 border-blue-400 shadow-xl rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <Map className="h-4 w-4 text-blue-600" />
+                  <div>
+                    <div className="text-xs font-medium text-gray-600">Mouse Position</div>
+                    <div className="text-sm font-mono text-blue-600">
+                      {mouseCoordinates.x}, {mouseCoordinates.y}
                     </div>
                   </div>
                 </div>
