@@ -43,8 +43,8 @@ const MAP_CONFIGS: Record<string, MapConfig> = {
   ilshenar: {
     name: "Ilshenar",
     imageUrl: "/uo/ilshenar.png",
-    maxX: 5120,
-    maxY: 4096
+    maxX: 2300,
+    maxY: 1600
   },
   tokuno: {
     name: "Tokuno",
@@ -79,20 +79,7 @@ function convertCoordY(gameY: number, maxY: number, mapType: string): number {
       maxLng: centerLng + mapWidth/2 
     }
   } else if (mapType === 'ilshenar') {
-    // Calculate proper bounds based on image aspect ratio for Ilshenar
-    const mapConfig = MAP_CONFIGS[mapType]
-    const imageAspectRatio = mapConfig.maxX / mapConfig.maxY // 5120/4096 = 1.25
-    const mapHeight = 5 // Total height in map units
-    const mapWidth = mapHeight * imageAspectRatio // 5 * 1.25 = 6.25
-    const centerLat = 6.5
-    const centerLng = -5
-    
-    mapBounds = { 
-      minLat: centerLat - mapHeight/2, 
-      maxLat: centerLat + mapHeight/2, 
-      minLng: centerLng - mapWidth/2, 
-      maxLng: centerLng + mapWidth/2 
-    }
+    mapBounds = { minLat: 4, maxLat: 9, minLng: -7, maxLng: -3 }
   } else {
     // Ter Mur
     mapBounds = { minLat: -2, maxLat: 4, minLng: -8, maxLng: -3 }
