@@ -6,8 +6,8 @@ const MAP_CONFIGS: Record<string, { name: string; imageUrl: string; maxX: number
   telmur: {
     name: "Ter Mur",
     imageUrl: "/uo/telmur.jpg",
-    maxX: 4200,
-    maxY: 4200
+    maxX: 1885,
+    maxY: 5485
   },
   malas: {
     name: "Malas",
