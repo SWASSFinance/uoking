@@ -1012,7 +1012,11 @@ export default function AccountPage() {
                   <div>
                     <p className="text-sm text-gray-600">Member Since</p>
                     <p className="text-lg font-bold text-cyan-600">
-                      {new Date(userProfile.created_at).toLocaleDateString()}
+                      {new Date(userProfile.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      })}
                     </p>
                   </div>
                 </div>

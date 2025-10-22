@@ -958,11 +958,19 @@ export default function UsersAdminPage() {
                           <div className="text-sm text-gray-600">
                             <div className="flex items-center mb-1">
                               <Calendar className="h-4 w-4 mr-2" />
-                              Joined: {new Date(user.created_at).toLocaleDateString()}
+                              Joined: {new Date(user.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit'
+                              })}
                             </div>
                             {user.last_login_at && (
                               <div className="text-xs text-gray-500">
-                                Last login: {new Date(user.last_login_at).toLocaleDateString()}
+                                Last login: {new Date(user.last_login_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit'
+                                })}
                               </div>
                             )}
                             <div className="text-xs text-gray-500 mt-1">
