@@ -205,6 +205,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user?.email) {
         // SECURITY: Always fetch fresh user data from database
         // This prevents stale session data and ensures user status is current
+        // ORDER BY created_at DESC to get the most recent user if duplicates exist
         const userResult = await query(`
           SELECT 
             u.id, u.username, u.first_name, u.last_name, u.is_admin, u.status,
@@ -213,6 +214,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           FROM users u
           LEFT JOIN user_profiles up ON u.id = up.user_id
           WHERE u.email = $1 AND u.status = 'active'
+          ORDER BY u.created_at DESC
+          LIMIT 1
         `, [session.user.email])
 
         if (userResult.rows && userResult.rows.length > 0) {

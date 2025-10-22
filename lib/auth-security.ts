@@ -33,10 +33,13 @@ export async function validateSession(): Promise<ValidatedUser> {
 
   // Always verify against database to prevent stale sessions
   // This ensures we're getting the most up-to-date user information
+  // ORDER BY created_at DESC to get the most recent user if duplicates exist
   const userResult = await query(`
     SELECT id, email, username, is_admin, status
     FROM users 
     WHERE email = $1
+    ORDER BY created_at DESC
+    LIMIT 1
   `, [session.user.email])
 
   if (!userResult.rows || userResult.rows.length === 0) {
