@@ -121,13 +121,9 @@ export async function getCategoriesOptimized() {
   }
 }
 
-// Optimized user profile with caching
+// Optimized user profile with caching - DISABLED FOR SECURITY
 export async function getUserProfileOptimized(userId: string) {
-  const cached = await CacheManager.getUserProfile(userId)
-  if (cached) {
-    return cached
-  }
-
+  // DISABLED: Always fetch from database to prevent data leakage
   try {
     const result = await query(`
       SELECT 
@@ -142,12 +138,7 @@ export async function getUserProfileOptimized(userId: string) {
       WHERE u.id = $1
     `, [userId])
 
-    const profile = result.rows[0]
-    if (profile) {
-      await CacheManager.setUserProfile(userId, profile)
-    }
-    
-    return profile
+    return result.rows[0]
   } catch (error) {
     console.error('Error fetching user profile:', error)
     throw error

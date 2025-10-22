@@ -67,13 +67,15 @@ export class CacheManager {
     return this.set('categories:all', categories, CACHE_TTL.CATEGORIES)
   }
 
-  // User profile caching
+  // User profile caching - DISABLED FOR SECURITY
   static async getUserProfile(userId: string) {
-    return this.get(`user:profile:${userId}`)
+    // DISABLED: Return null to force database lookup
+    return null
   }
 
   static async setUserProfile(userId: string, profile: any) {
-    return this.set(`user:profile:${userId}`, profile, CACHE_TTL.USER_PROFILE)
+    // DISABLED: Do not cache user profiles
+    return
   }
 
   // Map image caching
