@@ -203,7 +203,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user?.email) {
-        // Get user data from database
+        // SECURITY: Always fetch fresh user data from database
+        // This prevents stale session data and ensures user status is current
         const userResult = await query(`
           SELECT 
             u.id, u.username, u.first_name, u.last_name, u.is_admin, u.status,
@@ -211,11 +212,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             up.profile_image_url
           FROM users u
           LEFT JOIN user_profiles up ON u.id = up.user_id
-          WHERE u.email = $1
+          WHERE u.email = $1 AND u.status = 'active'
         `, [session.user.email])
 
         if (userResult.rows && userResult.rows.length > 0) {
           const user = userResult.rows[0]
+          
+          // SECURITY: Ensure user ID is always from database, not from token
+          // This prevents any tampering with the session
           session.user.id = user.id
           session.user.username = user.username
           session.user.firstName = user.first_name
@@ -225,6 +229,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           session.user.image = user.profile_image_url || session.user.image
           session.user.discordUsername = user.discord_username
           session.user.discordId = user.discord_id
+        } else {
+          // SECURITY: User not found or inactive - invalidate session
+          return null
         }
       }
       return session
@@ -241,8 +248,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours - refresh session data daily
   },
   secret: process.env.NEXTAUTH_SECRET,
+  // Enable debug mode in development for troubleshooting
+  debug: process.env.NODE_ENV === 'development',
 })
 
 export const { GET, POST } = handlers 

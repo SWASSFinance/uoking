@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { validateSession, getAuthErrorResponse, validateResourceOwnership } from '@/lib/auth-security'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
+    const userId = validatedUser.id
 
     const { orderId } = await request.json()
 
@@ -21,20 +16,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Get user ID
-    const userResult = await query(`
-      SELECT id FROM users WHERE email = $1
-    `, [session.user.email])
-
-    if (!userResult.rows || userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const userId = userResult.rows[0].id
 
     // Get order details and verify it belongs to the user
     const orderResult = await query(`
@@ -51,6 +32,14 @@ export async function POST(request: NextRequest) {
     }
 
     const order = orderResult.rows[0]
+
+    // Additional security: Validate resource ownership
+    try {
+      validateResourceOwnership(userId, order.user_id || userId)
+    } catch (error) {
+      console.error(`Security violation: User ${userId} attempted to complete order ${orderId}`)
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
 
     // Verify the order is pending payment
     if (order.payment_status !== 'pending') {
@@ -140,6 +129,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error completing cashback order:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to complete order with cashback' },
       { status: 500 }

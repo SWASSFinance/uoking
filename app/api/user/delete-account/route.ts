@@ -1,30 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Get the current session
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    // Get user ID from session
-    const userResult = await query('SELECT id FROM users WHERE email = $1', [session.user.email])
-    
-    if (userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const userId = userResult.rows[0].id
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
+    const userId = validatedUser.id
 
     // Start a transaction to delete all user-related data
     await query('BEGIN')
@@ -91,6 +73,12 @@ export async function DELETE(request: NextRequest) {
     
     // Check if it's a database constraint error
     if (error instanceof Error) {
+      // Check for auth errors first
+      const { message, statusCode } = getAuthErrorResponse(error)
+      if (statusCode !== 500) {
+        return NextResponse.json({ success: false, error: message }, { status: statusCode })
+      }
+      
       const errorMessage = error.message
       
       // Handle specific database errors

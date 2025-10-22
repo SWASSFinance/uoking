@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
+    const userId = validatedUser.id
 
     const { amount, orderId } = await request.json()
 
@@ -21,20 +16,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Get user ID
-    const userResult = await query(`
-      SELECT id FROM users WHERE email = $1
-    `, [session.user.email])
-
-    if (!userResult.rows || userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const userId = userResult.rows[0].id
 
     // Get current cashback balance and pending cashback
     const balanceResult = await query(`
@@ -92,6 +73,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error using cashback balance:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to use cashback balance' },
       { status: 500 }

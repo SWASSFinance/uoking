@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
 
     const body = await request.json()
     const { discordUsername, discordId, profileImageUrl } = body
@@ -18,8 +16,8 @@ export async function POST(request: NextRequest) {
 
     // Check if Discord ID is already linked to another account
     const existingDiscordUser = await query(`
-      SELECT id, email FROM users WHERE discord_id = $1 AND email != $2
-    `, [discordId, session.user.email])
+      SELECT id, email FROM users WHERE discord_id = $1 AND id != $2
+    `, [discordId, validatedUser.id])
 
     if (existingDiscordUser.rows && existingDiscordUser.rows.length > 0) {
       return NextResponse.json({ 
@@ -27,29 +25,25 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Update user with Discord information
+    // Update user with Discord information using validated user ID
     await query(`
       UPDATE users 
       SET 
         discord_username = $1,
         discord_id = $2,
         updated_at = NOW()
-      WHERE email = $3
-    `, [discordUsername, discordId, session.user.email])
+      WHERE id = $3
+    `, [discordUsername, discordId, validatedUser.id])
 
     // Update profile image if provided
     if (profileImageUrl) {
       await query(`
         INSERT INTO user_profiles (user_id, profile_image_url, updated_at)
-        VALUES (
-          (SELECT id FROM users WHERE email = $1),
-          $2,
-          NOW()
-        )
+        VALUES ($1, $2, NOW())
         ON CONFLICT (user_id) DO UPDATE SET
           profile_image_url = EXCLUDED.profile_image_url,
           updated_at = NOW()
-      `, [session.user.email, profileImageUrl])
+      `, [validatedUser.id, profileImageUrl])
     }
 
     return NextResponse.json({
@@ -59,6 +53,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error linking Discord account:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to link Discord account' },
       { status: 500 }

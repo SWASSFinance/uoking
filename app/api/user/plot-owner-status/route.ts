@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { isUserPlotOwner } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
 
-    const isPlotOwner = await isUserPlotOwner(session.user.id)
+    const isPlotOwner = await isUserPlotOwner(validatedUser.id)
 
     return NextResponse.json({ 
       isPlotOwner,
@@ -22,6 +17,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error checking plot owner status:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to check plot owner status' },
       { status: 500 }

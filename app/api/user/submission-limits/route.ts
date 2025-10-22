@@ -1,20 +1,15 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { getUserPendingReviewCount, getUserPendingSpawnSubmissionCount } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
 
     const [pendingReviews, pendingSpawnSubmissions] = await Promise.all([
-      getUserPendingReviewCount(session.user.id),
-      getUserPendingSpawnSubmissionCount(session.user.id)
+      getUserPendingReviewCount(validatedUser.id),
+      getUserPendingSpawnSubmissionCount(validatedUser.id)
     ])
 
     return NextResponse.json({
@@ -30,6 +25,12 @@ export async function GET() {
 
   } catch (error) {
     console.error('Error fetching submission limits:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch submission limits' },
       { status: 500 }

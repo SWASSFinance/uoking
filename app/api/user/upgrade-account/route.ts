@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { upgradeUserAccount } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
 
     // Attempt to upgrade the user's account
-    const result = await upgradeUserAccount(session.user.id)
+    const result = await upgradeUserAccount(validatedUser.id)
 
     return NextResponse.json({
       success: true,
@@ -27,6 +22,11 @@ export async function POST(request: NextRequest) {
     console.error('Error upgrading account:', error)
     
     if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      if (statusCode !== 500) {
+        return NextResponse.json({ error: message }, { status: statusCode })
+      }
+      
       return NextResponse.json(
         { error: error.message },
         { status: 400 }

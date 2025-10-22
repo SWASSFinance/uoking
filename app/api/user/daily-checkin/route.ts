@@ -1,35 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { 
   getUserDailyCheckinStatus, 
   performDailyCheckin, 
   getUserCheckinHistory,
-  getCheckinStreak,
-  query 
+  getCheckinStreak
 } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    // Get user ID from session
-    const userResult = await query('SELECT id FROM users WHERE email = $1', [session.user.email])
-    
-    if (!userResult.rows.length) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const userId = userResult.rows[0].id
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
+    const userId = validatedUser.id
     
     // Get check-in status and history
     const [checkinStatus, checkinHistory, streak] = await Promise.all([
@@ -45,6 +27,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching daily check-in data:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch check-in data' },
       { status: 500 }
@@ -54,26 +42,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    // Get user ID from session
-    const userResult = await query('SELECT id FROM users WHERE email = $1', [session.user.email])
-    
-    if (!userResult.rows.length) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const userId = userResult.rows[0].id
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
+    const userId = validatedUser.id
     
     // Perform daily check-in
     const result = await performDailyCheckin(userId)
@@ -94,11 +65,16 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error performing daily check-in:', error)
     
-    if (error instanceof Error && error.message === 'Already checked in today') {
-      return NextResponse.json(
-        { error: 'You have already checked in today' },
-        { status: 400 }
-      )
+    if (error instanceof Error) {
+      if (error.message === 'Already checked in today') {
+        return NextResponse.json(
+          { error: 'You have already checked in today' },
+          { status: 400 }
+        )
+      }
+      
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
     }
     
     return NextResponse.json(

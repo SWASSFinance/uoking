@@ -1,33 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Validate session and get authenticated user
+    const validatedUser = await validateSession()
 
-    // Get user ID from email
-    const userResult = await query(`
-      SELECT id FROM users WHERE email = $1
-    `, [session.user.email])
-
-    if (!userResult.rows || userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const userId = userResult.rows[0].id
-
-    // Get user orders with item counts
+    // Get user orders with item counts using validated user ID
+    // This ensures we only return orders for the authenticated user
     const result = await query(`
       SELECT 
         o.id,
@@ -43,7 +24,7 @@ export async function GET(request: NextRequest) {
       WHERE o.user_id = $1
       GROUP BY o.id, o.order_number, o.status, o.total_amount, o.created_at, g.name
       ORDER BY o.created_at DESC
-    `, [userId])
+    `, [validatedUser.id])
 
     return NextResponse.json({
       orders: result.rows || []
@@ -51,6 +32,12 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching user orders:', error)
+    
+    if (error instanceof Error) {
+      const { message, statusCode } = getAuthErrorResponse(error)
+      return NextResponse.json({ error: message }, { status: statusCode })
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch user orders' },
       { status: 500 }
