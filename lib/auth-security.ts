@@ -26,21 +26,58 @@ export interface ValidatedUser {
 export async function validateSession(): Promise<ValidatedUser> {
   const session = await auth()
   
+  console.log('=== validateSession called ===')
+  console.log('Session data:', {
+    hasSession: !!session,
+    userEmail: session?.user?.email,
+    userId: session?.user?.id,
+    userName: session?.user?.username,
+    userFirstName: session?.user?.firstName,
+    userLastName: session?.user?.lastName
+  })
+  
   // Check if session exists and has required fields
   if (!session?.user?.email) {
+    console.log('ERROR: No valid session found')
     throw new Error('UNAUTHORIZED: No valid session found')
   }
 
   // Always verify against database to prevent stale sessions
   // This ensures we're getting the most up-to-date user information
   // ORDER BY created_at DESC to get the most recent user if duplicates exist
-  const userResult = await query(`
+  const queryText = `
     SELECT id, email, username, is_admin, status
     FROM users 
     WHERE email = $1
     ORDER BY created_at DESC
     LIMIT 1
+  `
+  
+  console.log('validateSession query:', queryText)
+  console.log('validateSession parameters:', [session.user.email])
+  
+  const userResult = await query(queryText, [session.user.email])
+  
+  console.log('validateSession result:', {
+    rowCount: userResult.rows?.length || 0,
+    userData: userResult.rows?.[0] ? {
+      id: userResult.rows[0].id,
+      email: userResult.rows[0].email,
+      username: userResult.rows[0].username,
+      is_admin: userResult.rows[0].is_admin,
+      status: userResult.rows[0].status
+    } : null
+  })
+
+  // Check if there are multiple users with this email
+  const allUsersWithEmail = await query(`
+    SELECT id, email, username, first_name, last_name, created_at, status
+    FROM users 
+    WHERE email = $1
+    ORDER BY created_at DESC
   `, [session.user.email])
+  
+  console.log('All users with email', session.user.email, ':', allUsersWithEmail.rows)
 
   if (!userResult.rows || userResult.rows.length === 0) {
     throw new Error('USER_NOT_FOUND: User does not exist in database')
