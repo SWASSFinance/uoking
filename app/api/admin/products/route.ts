@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllProducts, createProduct, updateProductCategories, updateProductClasses } from '@/lib/db'
+import { addNoCacheHeaders, createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,12 +28,12 @@ export async function GET(request: NextRequest) {
       sortOrder
     })
     
-    return NextResponse.json(result)
+    return createNoCacheResponse(result)
   } catch (error) {
     console.error('Error fetching products:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to fetch products' },
-      { status: 500 }
+      500
     )
   }
 }
@@ -72,12 +73,12 @@ export async function POST(request: NextRequest) {
       await updateProductClasses(product.id, filteredClassIds)
     }
     
-    return NextResponse.json(product)
+    return createNoCacheResponse(product)
   } catch (error) {
     console.error('Error creating product:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to create product', details: (error as Error).message },
-      { status: 500 }
+      500
     )
   }
 } 

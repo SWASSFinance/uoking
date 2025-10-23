@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { updateProduct, deleteProduct, updateProductCategories, updateProductClasses } from '@/lib/db'
+import { addNoCacheHeaders, createNoCacheResponse } from '@/lib/api-utils'
 
 export async function PUT(
   request: NextRequest,
@@ -43,12 +44,12 @@ export async function PUT(
       await updateProductClasses(productId, filteredClassIds)
     }
     
-    return NextResponse.json(product)
+    return createNoCacheResponse(product)
   } catch (error) {
     console.error('Error updating product:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to update product', details: (error as Error).message },
-      { status: 500 }
+      500
     )
   }
 }
@@ -60,12 +61,12 @@ export async function DELETE(
   try {
     const productId = params.id
     await deleteProduct(productId)
-    return NextResponse.json({ success: true, id: productId })
+    return createNoCacheResponse({ success: true, id: productId })
   } catch (error) {
     console.error('Error deleting product:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to delete product' },
-      { status: 500 }
+      500
     )
   }
 } 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getProducts, searchProducts, getClassBySlug } from '@/lib/db'
+import { addNoCacheHeaders, createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET(request: Request) {
   try {
@@ -31,12 +32,12 @@ export async function GET(request: Request) {
       })
     }
 
-    return NextResponse.json(products)
+    return createNoCacheResponse(products)
   } catch (error) {
     console.error('Error fetching products:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to fetch products' },
-      { status: 500 }
+      500
     )
   }
 } 

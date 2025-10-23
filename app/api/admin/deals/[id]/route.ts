@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
+import { addNoCacheHeaders, createNoCacheResponse } from '@/lib/api-utils'
 
 export async function PUT(
   request: NextRequest,
@@ -53,16 +54,16 @@ export async function PUT(
       WHERE id = $5
     `, [product_id, discount_percentage, start_date, end_date, params.id])
 
-    return NextResponse.json({
+    return createNoCacheResponse({
       success: true,
       message: 'Deal updated successfully'
     })
 
   } catch (error) {
     console.error('Error updating deal:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to update deal' },
-      { status: 500 }
+      500
     )
   }
 }

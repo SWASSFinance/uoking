@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
+import { addNoCacheHeaders, createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET() {
   try {
@@ -17,12 +18,12 @@ export async function GET() {
       ORDER BY d.start_date DESC
     `)
 
-    return NextResponse.json({ deals: result.rows || [] })
+    return createNoCacheResponse({ deals: result.rows || [] })
   } catch (error) {
     console.error('Error fetching deals:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to fetch deals' },
-      { status: 500 }
+      500
     )
   }
 }
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       RETURNING id
     `, [product_id, discount_percentage, start_date, end_date])
 
-    return NextResponse.json({
+    return createNoCacheResponse({
       success: true,
       message: 'Deal created successfully',
       dealId: result.rows[0].id
@@ -84,9 +85,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating deal:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to create deal' },
-      { status: 500 }
+      500
     )
   }
 } 

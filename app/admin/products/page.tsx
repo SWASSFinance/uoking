@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { AdminHeader } from "@/components/admin-header"
+import { createNoCacheFetch } from "@/lib/fetch-utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -115,7 +116,7 @@ export default function ProductsAdminPage() {
         sortOrder: sortOrder === 'newest' ? 'desc' : 'asc'
       })
       
-      const response = await fetch(`/api/admin/products?${params}`)
+      const response = await createNoCacheFetch(`/api/admin/products?${params}`)
       if (response.ok) {
         const data = await response.json()
         setProducts(data.products || [])
@@ -134,7 +135,7 @@ export default function ProductsAdminPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories')
+      const response = await createNoCacheFetch('/api/admin/categories')
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
@@ -146,7 +147,7 @@ export default function ProductsAdminPage() {
 
   const fetchClasses = async () => {
     try {
-      const response = await fetch('/api/admin/classes')
+      const response = await createNoCacheFetch('/api/admin/classes')
       if (response.ok) {
         const data = await response.json()
         setClasses(data)
@@ -161,7 +162,7 @@ export default function ProductsAdminPage() {
       const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products'
       const method = editingProduct ? 'PUT' : 'POST'
       
-      const response = await fetch(url, {
+      const response = await createNoCacheFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +184,7 @@ export default function ProductsAdminPage() {
   const handleDelete = async (productId: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`/api/admin/products/${productId}`, {
+        const response = await createNoCacheFetch(`/api/admin/products/${productId}`, {
           method: 'DELETE',
         })
 
