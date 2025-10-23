@@ -1,23 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query, getUserReviewCount } from '@/lib/db'
 import { validateSession, getAuthErrorResponse } from '@/lib/auth-security'
+import { auth } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET(request: NextRequest) {
   try {
     console.log('=== /api/user/profile API CALLED ===')
     
-    // Validate session and get authenticated user
-    const validatedUser = await validateSession()
-    console.log('Validated user from session:', {
-      id: validatedUser.id,
-      email: validatedUser.email,
-      username: validatedUser.username,
-      isAdmin: validatedUser.isAdmin,
-      status: validatedUser.status
+    // FORCE FRESH SESSION VALIDATION - NO CACHING
+    const session = await auth()
+    console.log('Raw session from auth():', {
+      email: session?.user?.email,
+      id: session?.user?.id,
+      username: session?.user?.username
+    })
+    
+    if (!session?.user?.email) {
+      console.log('ERROR: No session found')
+      return NextResponse.json({ error: 'No session found' }, { status: 401 })
+    }
+
+    // FORCE FRESH DATABASE LOOKUP - NO CACHING
+    console.log('Looking up user by email:', session.user.email)
+    const userResult = await query(`
+      SELECT id, email, username, is_admin, status
+      FROM users 
+      WHERE email = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [session.user.email])
+    
+    console.log('Fresh database lookup result:', {
+      rowCount: userResult.rows?.length || 0,
+      user: userResult.rows?.[0]
     })
 
-    // Get user profile from database using validated user ID
-    // This ensures we only return data for the authenticated user
+    if (!userResult.rows || userResult.rows.length === 0) {
+      console.log('ERROR: User not found in database')
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const currentUser = userResult.rows[0]
+    console.log('Using user ID for profile query:', currentUser.id)
+
+    // Get user profile from database using FRESH user ID
     const queryText = `
       SELECT 
         u.id, u.email, u.username, u.first_name, u.last_name, 
@@ -31,12 +57,12 @@ export async function GET(request: NextRequest) {
       WHERE u.id = $1
     `
     
-    console.log('Executing query:', queryText)
-    console.log('Query parameters:', [validatedUser.id])
+    console.log('Executing profile query:', queryText)
+    console.log('Profile query parameters:', [currentUser.id])
     
-    const result = await query(queryText, [validatedUser.id])
+    const result = await query(queryText, [currentUser.id])
     
-    console.log('Query result:', {
+    console.log('Profile query result:', {
       rowCount: result.rows?.length || 0,
       userData: result.rows?.[0] ? {
         id: result.rows[0].id,
@@ -70,37 +96,46 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const user = result.rows[0]
+    const profileUser = result.rows[0]
 
     // Get actual review count from product_reviews table
-    const actualReviewCount = await getUserReviewCount(user.id)
+    const actualReviewCount = await getUserReviewCount(profileUser.id)
 
-    return NextResponse.json({
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      discord_username: user.discord_username,
-      main_shard: user.main_shard,
-      character_names: user.character_names || [],
-      profile_image_url: user.profile_image_url,
-      phone: user.phone,
-      address: user.address,
-      city: user.city,
-      state: user.state,
-      zip_code: user.zip_code,
-      country: user.country || 'United States',
-      timezone: user.timezone,
-      email_verified: user.email_verified,
-      is_admin: user.is_admin,
-      created_at: user.created_at,
-      last_login_at: user.last_login_at,
+    // FORCE NO CACHING - Add cache-busting headers
+    const response = NextResponse.json({
+      id: profileUser.id,
+      email: profileUser.email,
+      username: profileUser.username,
+      first_name: profileUser.first_name,
+      last_name: profileUser.last_name,
+      discord_username: profileUser.discord_username,
+      main_shard: profileUser.main_shard,
+      character_names: profileUser.character_names || [],
+      profile_image_url: profileUser.profile_image_url,
+      phone: profileUser.phone,
+      address: profileUser.address,
+      city: profileUser.city,
+      state: profileUser.state,
+      zip_code: profileUser.zip_code,
+      country: profileUser.country || 'United States',
+      timezone: profileUser.timezone,
+      email_verified: profileUser.email_verified,
+      is_admin: profileUser.is_admin,
+      created_at: profileUser.created_at,
+      last_login_at: profileUser.last_login_at,
       review_count: actualReviewCount,
-      rating_count: user.rating_count || 0,
-      total_points_earned: user.total_points_earned || 0,
-      account_rank: user.account_rank || 0
+      rating_count: profileUser.rating_count || 0,
+      total_points_earned: profileUser.total_points_earned || 0,
+      account_rank: profileUser.account_rank || 0
     })
+
+    // Add headers to prevent caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
+    
+    return response
 
   } catch (error) {
     console.error('Error fetching user profile:', error)

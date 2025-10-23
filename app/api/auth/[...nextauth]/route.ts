@@ -252,7 +252,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours - refresh session data daily
+    updateAge: 0, // 0 seconds - ALWAYS refresh session data (no caching)
   },
   secret: process.env.NEXTAUTH_SECRET,
   // Enable debug mode in development for troubleshooting

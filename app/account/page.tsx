@@ -281,10 +281,30 @@ export default function AccountPage() {
 
   const loadUserData = async () => {
     try {
+      // FORCE NO CACHING - Add cache-busting parameters
+      const cacheBuster = `?t=${Date.now()}`
       const [profileResponse, ordersResponse, balanceResponse] = await Promise.all([
-        fetch('/api/user/profile'),
-        fetch('/api/user/orders'),
-        fetch('/api/user/cashback-balance')
+        fetch(`/api/user/profile${cacheBuster}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch(`/api/user/orders${cacheBuster}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch(`/api/user/cashback-balance${cacheBuster}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
       ])
 
       if (profileResponse.ok) {
