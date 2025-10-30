@@ -4,7 +4,7 @@ import { auth } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -16,7 +16,8 @@ export async function GET(
       )
     }
 
-    const existingReview = await hasUserReviewedProduct(session.user.id, params.id)
+    const { id } = await params
+    const existingReview = await hasUserReviewedProduct(session.user.id, id)
 
     return NextResponse.json({
       hasReviewed: !!existingReview,

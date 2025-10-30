@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
-// Global cache storage
-const apiCache: { [key: string]: { data: any; timestamp: number } } = {}
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+// DISABLED: Global cache storage - NO CACHING
+// const apiCache: { [key: string]: { data: any; timestamp: number } } = {}
+const CACHE_DURATION = 0 // DISABLED: No caching
 
 interface UseApiCacheOptions {
   cacheKey: string
@@ -28,12 +28,12 @@ export function useApiCache<T = any>({
     if (!enabled || fetchedRef.current) return
 
     const fetchData = async () => {
-      // Check cache first
-      const cached = apiCache[cacheKey]
-      if (cached && Date.now() - cached.timestamp < cacheDuration) {
-        setData(cached.data)
-        return
-      }
+      // DISABLED: Check cache - always fetch fresh data
+      // const cached = apiCache[cacheKey]
+      // if (cached && Date.now() - cached.timestamp < cacheDuration) {
+      //   setData(cached.data)
+      //   return
+      // }
 
       setLoading(true)
       setError(null)
@@ -47,11 +47,11 @@ export function useApiCache<T = any>({
         const result = await response.json()
         setData(result)
         
-        // Update cache
-        apiCache[cacheKey] = {
-          data: result,
-          timestamp: Date.now()
-        }
+        // DISABLED: Update cache - no caching
+        // apiCache[cacheKey] = {
+        //   data: result,
+        //   timestamp: Date.now()
+        // }
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))
       } finally {
@@ -64,23 +64,21 @@ export function useApiCache<T = any>({
   }, [cacheKey, url, cacheDuration, enabled, ...dependencies])
 
   const invalidateCache = () => {
-    delete apiCache[cacheKey]
+    // DISABLED: No cache to invalidate
     fetchedRef.current = false
   }
 
   return { data, loading, error, invalidateCache }
 }
 
-// Utility function to clear all cache
+// DISABLED: Utility function to clear all cache
 export const clearApiCache = () => {
-  Object.keys(apiCache).forEach(key => delete apiCache[key])
+  // DISABLED: No cache to clear
+  return
 }
 
-// Utility function to clear specific cache keys
+// DISABLED: Utility function to clear specific cache keys
 export const clearCacheByPattern = (pattern: string) => {
-  Object.keys(apiCache).forEach(key => {
-    if (key.includes(pattern)) {
-      delete apiCache[key]
-    }
-  })
+  // DISABLED: No cache to clear
+  return
 }

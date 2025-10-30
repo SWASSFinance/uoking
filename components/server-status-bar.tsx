@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { CheckCircle, XCircle } from "lucide-react"
-import { pingLoginServer } from "@/lib/login-ping"
+import { pingLoginServerFetch } from "@/lib/login-ping"
 
 interface LoginStatus {
   status: 'online' | 'offline' | 'timeout' | 'error'
@@ -23,14 +23,15 @@ export function ServerStatusBar() {
   const refreshStatus = async () => {
     try {
       // Ping the login server directly from the user's browser
-      const pingResult = await pingLoginServer(3000) // 3 second timeout
+      // Using fetch method to avoid mixed content favicon warnings
+      const pingResult = await pingLoginServerFetch(3000) // 3 second timeout
       
       setLoginStatus({
         status: pingResult.status === 'online' ? 'online' : 'offline',
         responseTime: pingResult.latency || undefined
       })
     } catch (error) {
-      console.error('Failed to ping login server:', error)
+      // Silently handle errors - don't log to avoid console noise
       // Keep existing data on error
     }
   }

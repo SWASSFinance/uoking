@@ -274,11 +274,13 @@ export default function ProductPage() {
               </Card>
 
               {/* Spawn Location Submission */}
-              <SpawnLocationForm 
-                productId={product.id}
-                productName={product.name}
-                currentSpawnLocation={product.spawn_location}
-              />
+              {product?.id && (
+                <SpawnLocationForm 
+                  productId={product.id}
+                  productName={product.name}
+                  currentSpawnLocation={product.spawn_location}
+                />
+              )}
 
 
             </div>
@@ -301,21 +303,25 @@ export default function ProductPage() {
                 </Card>
 
                 {/* Reviews Section */}
-                <ProductReviews 
-                  productId={product.id} 
-                  initialReviews={reviews}
-                  avgRating={avgRating}
-                  reviewCount={reviewCount}
-                />
+                {product?.id && (
+                  <ProductReviews 
+                    productId={product.id} 
+                    initialReviews={reviews}
+                    avgRating={avgRating}
+                    reviewCount={reviewCount}
+                  />
+                )}
 
                 {/* User Image Submissions Section */}
-                <div className="mt-8">
-                  <ProductImageSubmissions 
-                    productId={product.id} 
-                    productName={product.name}
-                    initialSubmissions={[]}
-                  />
-                </div>
+                {product?.id && (
+                  <div className="mt-8">
+                    <ProductImageSubmissions 
+                      productId={product.id} 
+                      productName={product.name}
+                      initialSubmissions={[]}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Sidebar */}

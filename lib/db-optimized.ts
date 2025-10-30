@@ -1,14 +1,14 @@
-// Optimized database functions with caching and query optimization
+// DISABLED: Optimized database functions with caching and query optimization
 import { query } from './db'
-import CacheManager from './cache'
+// import CacheManager from './cache' // DISABLED: No caching
 
-// Optimized product functions with caching
+// DISABLED: Optimized product functions with caching
 export async function getProductBySlugOptimized(slug: string) {
-  // Check cache first
-  const cached = await CacheManager.getProduct(slug)
-  if (cached) {
-    return cached
-  }
+  // DISABLED: No cache check - always fetch fresh data
+  // const cached = await CacheManager.getProduct(slug)
+  // if (cached) {
+  //   return cached
+  // }
 
   try {
     // Optimized query with fewer joins
@@ -56,10 +56,10 @@ export async function getProductBySlugOptimized(slug: string) {
       }
     }
     
-    // Cache the result
-    if (product) {
-      await CacheManager.setProduct(slug, product)
-    }
+    // DISABLED: Cache the result - no caching
+    // if (product) {
+    //   await CacheManager.setProduct(slug, product)
+    // }
     
     return product
   } catch (error) {

@@ -1,12 +1,12 @@
-// Redis-based caching layer for Vercel optimization
-import { createClient } from 'redis'
+// DISABLED: Redis-based caching layer for Vercel optimization
+// import { createClient } from 'redis'
 
-const redis = createClient({
-  url: process.env.REDIS_URL!,
-})
+// const redis = createClient({
+//   url: process.env.REDIS_URL!,
+// })
 
-// Connect to Redis
-redis.connect().catch(console.error)
+// Connect to Redis - DISABLED
+// redis.connect().catch(console.error)
 
 // Cache configuration
 const CACHE_TTL = {
@@ -18,53 +18,42 @@ const CACHE_TTL = {
 }
 
 export class CacheManager {
-  // Generic cache methods
+  // DISABLED: Generic cache methods - NO CACHING
   static async get<T>(key: string): Promise<T | null> {
-    try {
-      const data = await redis.get(key)
-      return data as T | null
-    } catch (error) {
-      console.error('Cache get error:', error)
-      return null
-    }
+    // DISABLED: Always return null to force fresh data
+    return null
   }
 
   static async set(key: string, value: any, ttl: number = 3600): Promise<void> {
-    try {
-      await redis.setEx(key, ttl, JSON.stringify(value))
-    } catch (error) {
-      console.error('Cache set error:', error)
-    }
+    // DISABLED: Do nothing - no caching
+    return
   }
 
   static async del(key: string): Promise<void> {
-    try {
-      await redis.del(key)
-    } catch (error) {
-      console.error('Cache delete error:', error)
-    }
+    // DISABLED: Do nothing - no caching
+    return
   }
 
-  // Product-specific caching
+  // DISABLED: Product-specific caching - NO CACHING
   static async getProduct(slug: string) {
-    return this.get(`product:${slug}`)
+    return null // DISABLED: Always return null
   }
 
   static async setProduct(slug: string, product: any) {
-    return this.set(`product:${slug}`, product, CACHE_TTL.PRODUCTS)
+    return // DISABLED: Do nothing
   }
 
   static async invalidateProduct(slug: string) {
-    return this.del(`product:${slug}`)
+    return // DISABLED: Do nothing
   }
 
-  // Category caching
+  // DISABLED: Category caching - NO CACHING
   static async getCategories() {
-    return this.get('categories:all')
+    return null // DISABLED: Always return null
   }
 
   static async setCategories(categories: any[]) {
-    return this.set('categories:all', categories, CACHE_TTL.CATEGORIES)
+    return // DISABLED: Do nothing
   }
 
   // User profile caching - DISABLED FOR SECURITY
@@ -78,32 +67,31 @@ export class CacheManager {
     return
   }
 
-  // Map image caching
+  // DISABLED: Map image caching - NO CACHING
   static async getMapImage(params: string) {
-    return this.get(`map:image:${params}`)
+    return null // DISABLED: Always return null
   }
 
   static async setMapImage(params: string, imageBuffer: Buffer) {
-    return this.set(`map:image:${params}`, imageBuffer.toString('base64'), CACHE_TTL.MAP_IMAGES)
+    return // DISABLED: Do nothing
   }
 
-  // Featured products caching
+  // DISABLED: Featured products caching - NO CACHING
   static async getFeaturedProducts() {
-    return this.get('products:featured')
+    return null // DISABLED: Always return null
   }
 
   static async setFeaturedProducts(products: any[]) {
-    return this.set('products:featured', products, CACHE_TTL.PRODUCTS)
+    return // DISABLED: Do nothing
   }
 
-  // Cache invalidation helpers
+  // DISABLED: Cache invalidation helpers - NO CACHING
   static async invalidateProductCaches() {
-    const keys = ['products:featured', 'categories:all']
-    await Promise.all(keys.map(key => this.del(key)))
+    return // DISABLED: Do nothing
   }
 
   static async invalidateUserCache(userId: string) {
-    return this.del(`user:profile:${userId}`)
+    return // DISABLED: Do nothing
   }
 }
 

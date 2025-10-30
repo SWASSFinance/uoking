@@ -51,7 +51,7 @@ export function ProductReviews({
   }
 
   const checkUserReview = async () => {
-    if (!session?.user) return
+    if (!session?.user || !productId) return
     
     setIsCheckingReview(true)
     try {
@@ -68,7 +68,7 @@ export function ProductReviews({
   }
 
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user && productId) {
       checkUserReview()
     }
   }, [session, productId])

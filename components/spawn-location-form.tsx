@@ -42,12 +42,14 @@ export function SpawnLocationForm({ productId, productName, currentSpawnLocation
 
   // Check for existing submission
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session?.user?.id && productId) {
       checkExistingSubmission()
     }
   }, [session, productId])
 
   const checkExistingSubmission = async () => {
+    if (!productId) return
+    
     try {
       const response = await fetch(`/api/spawn-locations?productId=${productId}`)
       if (response.ok) {
