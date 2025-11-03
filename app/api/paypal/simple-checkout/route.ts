@@ -13,15 +13,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { cartItems, cashbackToUse, selectedShard, couponCode, giftId, existingOrderId } = body
 
-    console.log('Received checkout request:', {
-      cartItemsCount: cartItems?.length,
-      cashbackToUse,
-      selectedShard,
-      couponCode,
-      giftId,
-      existingOrderId
-    })
-
     if (!cartItems || cartItems.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
     }
@@ -48,8 +39,6 @@ export async function POST(request: NextRequest) {
     if (!userCheckResult.rows || userCheckResult.rows.length === 0) {
       return NextResponse.json({ error: 'User not found in database' }, { status: 404 })
     }
-    
-    console.log('User found:', userCheckResult.rows[0].id)
 
     // Get PayPal email from admin settings
     const settingsResult = await query(`
@@ -64,8 +53,6 @@ export async function POST(request: NextRequest) {
     if (!paypalEmail) {
       return NextResponse.json({ error: 'PayPal email not configured in admin settings' }, { status: 500 })
     }
-
-    console.log('PayPal email found:', paypalEmail)
 
     // Validate cashback amount against user's available balance
     if (cashbackToUse > 0) {
@@ -146,10 +133,7 @@ export async function POST(request: NextRequest) {
     let orderId: string
 
     if (existingOrderId) {
-      // Update existing order
-      console.log('Updating existing order:', existingOrderId)
-      
-      // Verify the order exists and belongs to the user
+      // Update existing order - verify the order exists and belongs to the user
       const existingOrderResult = await query(`
         SELECT id, payment_status FROM orders 
         WHERE id = $1 AND user_id = (SELECT id FROM users WHERE email = $2)
@@ -183,40 +167,37 @@ export async function POST(request: NextRequest) {
         DELETE FROM order_items WHERE order_id = $1
       `, [existingOrderId])
 
-      // Insert new order items
-      console.log('Updating order items for existing order:', existingOrderId)
-      for (const item of cartItems) {
-        console.log('Inserting item:', item.name, 'for order:', existingOrderId)
-        
-        // Check if this is a custom product (non-UUID format)
-        const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
-        
-        // Generate a UUID for custom products to satisfy NOT NULL constraint
-        const productId = isCustomProduct ? randomUUID() : item.id
-        
+      // OPTIMIZED: Batch insert order items in a single query
+      if (cartItems.length > 0) {
+        const values: string[] = []
+        const params: any[] = []
+        let paramIndex = 1
+
+        for (const item of cartItems) {
+          const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+          const productId = isCustomProduct ? randomUUID() : item.id
+          
+          values.push(`($${paramIndex}, $${paramIndex+1}, $${paramIndex+2}, $${paramIndex+3}, $${paramIndex+4}, $${paramIndex+5}, $${paramIndex+6})`)
+          params.push(
+            existingOrderId,
+            productId,
+            item.name,
+            item.quantity,
+            item.price,
+            item.price * item.quantity,
+            item.details ? JSON.stringify(item.details) : null
+          )
+          paramIndex += 7
+        }
+
         await query(`
           INSERT INTO order_items (
-            order_id, 
-            product_id, 
-            product_name, 
-            quantity, 
-            unit_price, 
-            total_price,
-            custom_details
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-        `, [
-          existingOrderId, 
-          productId,
-          item.name, 
-          item.quantity, 
-          item.price, 
-          item.price * item.quantity,
-          item.details ? JSON.stringify(item.details) : null
-        ])
+            order_id, product_id, product_name, quantity, unit_price, total_price, custom_details
+          ) VALUES ${values.join(', ')}
+        `, params)
       }
 
       orderId = existingOrderId
-      console.log('Existing order updated successfully:', orderId)
     } else {
       // Get user's character name from profile
       const userDetailsResult = await query(`
@@ -233,7 +214,6 @@ export async function POST(request: NextRequest) {
         : null
 
       // Create new order
-      console.log('Creating new order')
       const orderResult = await query(`
         INSERT INTO orders (
           user_id, 
@@ -269,40 +249,36 @@ export async function POST(request: NextRequest) {
       `, [user.id, subtotal, discount, premiumDiscount, finalTotal, selectedShard, userCharacterName, cashbackToUse, giftId || null])
 
       orderId = orderResult.rows[0].id
-      console.log('New order created with ID:', orderId)
 
-      // Insert order items
-      console.log('Inserting order items:', cartItems.length)
-      for (const item of cartItems) {
-        console.log('Inserting item:', item.name, 'for order:', orderId)
-        
-        // Check if this is a custom product (non-UUID format)
-        const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
-        
-        // Generate a UUID for custom products to satisfy NOT NULL constraint
-        const productId = isCustomProduct ? randomUUID() : item.id
-        
+      // OPTIMIZED: Batch insert order items in a single query
+      if (cartItems.length > 0) {
+        const values: string[] = []
+        const params: any[] = []
+        let paramIndex = 1
+
+        for (const item of cartItems) {
+          const isCustomProduct = !item.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+          const productId = isCustomProduct ? randomUUID() : item.id
+          
+          values.push(`($${paramIndex}, $${paramIndex+1}, $${paramIndex+2}, $${paramIndex+3}, $${paramIndex+4}, $${paramIndex+5}, $${paramIndex+6})`)
+          params.push(
+            orderId,
+            productId,
+            item.name,
+            item.quantity,
+            item.price,
+            item.price * item.quantity,
+            item.details ? JSON.stringify(item.details) : null
+          )
+          paramIndex += 7
+        }
+
         await query(`
           INSERT INTO order_items (
-            order_id, 
-            product_id, 
-            product_name, 
-            quantity, 
-            unit_price, 
-            total_price,
-            custom_details
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-        `, [
-          orderId, 
-          productId,
-          item.name, 
-          item.quantity, 
-          item.price, 
-          item.price * item.quantity, 
-          item.details ? JSON.stringify(item.details) : null
-        ])
+            order_id, product_id, product_name, quantity, unit_price, total_price, custom_details
+          ) VALUES ${values.join(', ')}
+        `, params)
       }
-      console.log('All order items inserted successfully')
     }
 
     // Create PayPal form data
@@ -319,8 +295,6 @@ export async function POST(request: NextRequest) {
       no_note: '1',
       charset: 'utf-8'
     }
-    
-    console.log('PayPal form data created:', paypalFormData)
 
     return NextResponse.json({
       success: true,
@@ -330,11 +304,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('PayPal simple checkout error:', error)
-    console.error('Error details:', {
-      message: error?.message || 'Unknown error',
-      stack: error?.stack
-    })
+    console.error('PayPal checkout error:', error?.message)
     return NextResponse.json(
       { error: 'Failed to create order', details: error?.message || 'Unknown error' },
       { status: 500 }

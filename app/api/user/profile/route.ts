@@ -5,46 +5,14 @@ import { auth } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('=== /api/user/profile API CALLED ===')
-    
-    // FORCE FRESH SESSION VALIDATION - NO CACHING
     const session = await auth()
-    console.log('Raw session from auth():', {
-      email: session?.user?.email,
-      id: session?.user?.id,
-      username: session?.user?.username
-    })
     
     if (!session?.user?.email) {
-      console.log('ERROR: No session found')
       return NextResponse.json({ error: 'No session found' }, { status: 401 })
     }
 
-    // FORCE FRESH DATABASE LOOKUP - NO CACHING
-    console.log('Looking up user by email:', session.user.email)
-    const userResult = await query(`
-      SELECT id, email, username, is_admin, status
-      FROM users 
-      WHERE email = $1
-      ORDER BY created_at DESC
-      LIMIT 1
-    `, [session.user.email])
-    
-    console.log('Fresh database lookup result:', {
-      rowCount: userResult.rows?.length || 0,
-      user: userResult.rows?.[0]
-    })
-
-    if (!userResult.rows || userResult.rows.length === 0) {
-      console.log('ERROR: User not found in database')
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    const currentUser = userResult.rows[0]
-    console.log('Using user ID for profile query:', currentUser.id)
-
-    // Get user profile from database using FRESH user ID
-    const queryText = `
+    // OPTIMIZED: Single query to get user profile with all data
+    const result = await query(`
       SELECT 
         u.id, u.email, u.username, u.first_name, u.last_name, 
         u.discord_username, u.main_shard, u.character_names,
@@ -54,40 +22,10 @@ export async function GET(request: NextRequest) {
         up.profile_image_url
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
-      WHERE u.id = $1
-    `
-    
-    console.log('Executing profile query:', queryText)
-    console.log('Profile query parameters:', [currentUser.id])
-    
-    const result = await query(queryText, [currentUser.id])
-    
-    console.log('Profile query result:', {
-      rowCount: result.rows?.length || 0,
-      userData: result.rows?.[0] ? {
-        id: result.rows[0].id,
-        email: result.rows[0].email,
-        username: result.rows[0].username,
-        first_name: result.rows[0].first_name,
-        last_name: result.rows[0].last_name,
-        discord_username: result.rows[0].discord_username,
-        main_shard: result.rows[0].main_shard,
-        character_names: result.rows[0].character_names,
-        profile_image_url: result.rows[0].profile_image_url,
-        phone: result.rows[0].phone,
-        address: result.rows[0].address,
-        city: result.rows[0].city,
-        state: result.rows[0].state,
-        zip_code: result.rows[0].zip_code,
-        country: result.rows[0].country,
-        timezone: result.rows[0].timezone,
-        status: result.rows[0].status,
-        email_verified: result.rows[0].email_verified,
-        is_admin: result.rows[0].is_admin,
-        created_at: result.rows[0].created_at,
-        last_login_at: result.rows[0].last_login_at
-      } : null
-    })
+      WHERE u.email = $1
+      ORDER BY u.created_at DESC
+      LIMIT 1
+    `, [session.user.email])
 
     if (!result.rows || result.rows.length === 0) {
       return NextResponse.json(

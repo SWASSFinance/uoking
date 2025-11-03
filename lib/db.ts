@@ -1,15 +1,15 @@
 // Database connection utility for Next.js
 import { Pool } from 'pg';
 
-// Create a connection pool
+// Create a connection pool - OPTIMIZED for Neon serverless
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL || 'postgres://neondb_owner:npg_RPzI0AWebu8l@ep-royal-waterfall-adludrzw-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require',
   ssl: {
     rejectUnauthorized: false
   },
-  max: 20,
+  max: 10,  // Reduced from 20 - Neon handles connection pooling
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,  // Increased from 2000 for serverless
 });
 
 // Test connection function
