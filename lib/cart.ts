@@ -28,10 +28,15 @@ export const clientCart = {
       const cartData = localStorage.getItem('cart')
       if (cartData) {
         const cart = JSON.parse(cartData)
+        // Validate and sanitize cart data
+        const items = Array.isArray(cart.items) ? cart.items : []
+        const total = parseFloat(String(cart.total)) || 0
+        const itemCount = parseInt(String(cart.itemCount)) || 0
+        
         return {
-          items: cart.items || [],
-          total: cart.total || 0,
-          itemCount: cart.itemCount || 0
+          items,
+          total: isNaN(total) ? 0 : total,
+          itemCount: isNaN(itemCount) ? 0 : itemCount
         }
       }
     } catch (error) {
@@ -46,6 +51,9 @@ export const clientCart = {
     const cart = clientCart.getCart()
     const existingItemIndex = cart.items.findIndex(cartItem => cartItem.id === item.id)
     
+    // Validate price
+    const validPrice = parseFloat(String(item.price)) || 0
+    
     // Validate quantity limit
     const maxQuantity = 10000
     const newQuantity = existingItemIndex > -1 
@@ -56,13 +64,17 @@ export const clientCart = {
       // Update existing item quantity
       cart.items[existingItemIndex].quantity = newQuantity
     } else {
-      // Add new item
-      cart.items.push({ ...item, quantity: newQuantity })
+      // Add new item with validated price
+      cart.items.push({ ...item, price: validPrice, quantity: newQuantity })
     }
     
-    // Recalculate totals
-    cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    cart.itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0)
+    // Recalculate totals with safety checks
+    cart.total = cart.items.reduce((sum, item) => {
+      const itemPrice = parseFloat(String(item.price)) || 0
+      const itemQty = parseInt(String(item.quantity)) || 0
+      return sum + (itemPrice * itemQty)
+    }, 0)
+    cart.itemCount = cart.items.reduce((sum, item) => sum + (parseInt(String(item.quantity)) || 0), 0)
     
     // Save to localStorage
     localStorage.setItem('cart', JSON.stringify(cart))
@@ -75,9 +87,13 @@ export const clientCart = {
     const cart = clientCart.getCart()
     cart.items = cart.items.filter(item => item.id !== itemId)
     
-    // Recalculate totals
-    cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    cart.itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0)
+    // Recalculate totals with safety checks
+    cart.total = cart.items.reduce((sum, item) => {
+      const itemPrice = parseFloat(String(item.price)) || 0
+      const itemQty = parseInt(String(item.quantity)) || 0
+      return sum + (itemPrice * itemQty)
+    }, 0)
+    cart.itemCount = cart.items.reduce((sum, item) => sum + (parseInt(String(item.quantity)) || 0), 0)
     
     // Save to localStorage
     localStorage.setItem('cart', JSON.stringify(cart))
@@ -100,9 +116,13 @@ export const clientCart = {
         cart.items[itemIndex].quantity = Math.min(quantity, maxQuantity)
       }
       
-      // Recalculate totals
-      cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      cart.itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0)
+      // Recalculate totals with safety checks
+      cart.total = cart.items.reduce((sum, item) => {
+        const itemPrice = parseFloat(String(item.price)) || 0
+        const itemQty = parseInt(String(item.quantity)) || 0
+        return sum + (itemPrice * itemQty)
+      }, 0)
+      cart.itemCount = cart.items.reduce((sum, item) => sum + (parseInt(String(item.quantity)) || 0), 0)
       
       // Save to localStorage
       localStorage.setItem('cart', JSON.stringify(cart))

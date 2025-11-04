@@ -44,10 +44,12 @@ export function ProductCard({
   const { toast } = useToast()
 
   const handleAddToCart = () => {
+    const price = parseFloat(product.sale_price || product.price || '0') || 0
+    
     addItem({
       id: String(product.id),
-      name: product.name,
-      price: parseFloat(product.sale_price || product.price),
+      name: product.name || 'Unknown Product',
+      price: price,
       image_url: product.image_url || '',
       category: product.category || ''
     }, quantity)
@@ -109,18 +111,18 @@ export function ProductCard({
           
           <div className="flex items-center justify-between mb-3">
             <div className="flex flex-col">
-              {product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price) ? (
+              {product.sale_price && parseFloat(product.sale_price || 0) < parseFloat(product.price || 0) ? (
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
-                    ${parseFloat(product.sale_price).toFixed(2)}
+                    ${(parseFloat(product.sale_price || 0) || 0).toFixed(2)}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400 line-through">
-                    ${parseFloat(product.price).toFixed(2)}
+                    ${(parseFloat(product.price || 0) || 0).toFixed(2)}
                   </span>
                 </div>
               ) : (
                 <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
-                  ${parseFloat(product.price).toFixed(2)}
+                  ${(parseFloat(product.price || 0) || 0).toFixed(2)}
                 </span>
               )}
             </div>

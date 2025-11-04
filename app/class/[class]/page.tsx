@@ -233,8 +233,12 @@ export default async function ClassPage({ params }: ClassPageProps) {
           </div>
 
           {/* Products Grid */}
-          {products && products.length > 0 && (
+          {products && products.length > 0 ? (
             <ProductsGrid products={products} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 dark:text-gray-400">No products available for this class yet.</p>
+            </div>
           )}
 
           {/* Class Features */}

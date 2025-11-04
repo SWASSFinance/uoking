@@ -30,6 +30,11 @@ export function ProductsGrid({
   showAddToCart = true,
   className = ""
 }: ProductsGridProps) {
+  // Safety check for products array
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    return null
+  }
+
   return (
     <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 ${className}`}>
       {products.map((product: Product) => (

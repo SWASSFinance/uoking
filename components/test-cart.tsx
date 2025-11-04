@@ -32,7 +32,7 @@ export function TestCart() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <p className="text-sm text-gray-600">
-            Items: {cart.itemCount} | Total: ${cart.total.toFixed(2)}
+            Items: {cart.itemCount} | Total: ${(cart.total || 0).toFixed(2)}
           </p>
           
           {cart.items.map((item) => (
