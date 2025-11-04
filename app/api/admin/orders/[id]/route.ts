@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 
+// Disable caching for admin order details
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -110,8 +114,13 @@ export async function GET(
       }
     }
     
+    // Create response with no-cache headers
+    const response = NextResponse.json(responseData)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
     
-    return NextResponse.json(responseData)
+    return response
 
   } catch (error) {
     console.error('Error in order details API:', error)

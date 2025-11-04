@@ -190,11 +190,17 @@ export async function POST(request: NextRequest) {
           paramIndex += 7
         }
 
-        await query(`
-          INSERT INTO order_items (
-            order_id, product_id, product_name, quantity, unit_price, total_price, custom_details
-          ) VALUES ${values.join(', ')}
-        `, params)
+        console.log('Batch inserting', cartItems.length, 'items for existing order')
+        try {
+          await query(`
+            INSERT INTO order_items (
+              order_id, product_id, product_name, quantity, unit_price, total_price, custom_details
+            ) VALUES ${values.join(', ')}
+          `, params)
+        } catch (batchError) {
+          console.error('Batch insert failed for existing order:', batchError)
+          throw batchError
+        }
       }
 
       orderId = existingOrderId
@@ -249,6 +255,7 @@ export async function POST(request: NextRequest) {
       `, [user.id, subtotal, discount, premiumDiscount, finalTotal, selectedShard, userCharacterName, cashbackToUse, giftId || null])
 
       orderId = orderResult.rows[0].id
+      console.log('New order created with ID:', orderId)
 
       // OPTIMIZED: Batch insert order items in a single query
       if (cartItems.length > 0) {
@@ -273,11 +280,18 @@ export async function POST(request: NextRequest) {
           paramIndex += 7
         }
 
-        await query(`
-          INSERT INTO order_items (
-            order_id, product_id, product_name, quantity, unit_price, total_price, custom_details
-          ) VALUES ${values.join(', ')}
-        `, params)
+        console.log('Batch inserting', cartItems.length, 'items for new order')
+        try {
+          await query(`
+            INSERT INTO order_items (
+              order_id, product_id, product_name, quantity, unit_price, total_price, custom_details
+            ) VALUES ${values.join(', ')}
+          `, params)
+          console.log('Batch insert successful')
+        } catch (batchError) {
+          console.error('Batch insert failed for new order:', batchError)
+          throw batchError
+        }
       }
     }
 
@@ -304,9 +318,13 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('PayPal checkout error:', error?.message)
+    console.error('PayPal checkout error:', error)
     return NextResponse.json(
-      { error: 'Failed to create order', details: error?.message || 'Unknown error' },
+      { 
+        error: 'Failed to create order', 
+        details: error?.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      },
       { status: 500 }
     )
   }

@@ -147,6 +147,7 @@ export async function POST(request: NextRequest) {
     ])
 
     const orderId = orderResult.rows[0].id
+    console.log('Order created with ID:', orderId)
 
     // OPTIMIZED: Batch insert order items in a single query
     if (cartItems.length > 0) {
@@ -171,12 +172,21 @@ export async function POST(request: NextRequest) {
         paramIndex += 7
       }
 
-      await query(`
-        INSERT INTO order_items (
-          order_id, product_id, product_name, quantity, unit_price, total_price, 
-          custom_details, created_at
-        ) VALUES ${values.join(', ')}
-      `, params)
+      console.log('Inserting', cartItems.length, 'items in batch')
+      try {
+        await query(`
+          INSERT INTO order_items (
+            order_id, product_id, product_name, quantity, unit_price, total_price, 
+            custom_details, created_at
+          ) VALUES ${values.join(', ')}
+        `, params)
+        console.log('Batch insert successful')
+      } catch (batchError) {
+        console.error('Batch insert failed:', batchError)
+        console.error('Values array:', values)
+        console.error('Params length:', params.length)
+        throw batchError
+      }
     }
 
     // Update coupon usage if coupon was applied
@@ -196,7 +206,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating pending order:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
