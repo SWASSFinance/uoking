@@ -243,7 +243,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
 
           {/* Class Features */}
           {classData.primary_stats && classData.primary_stats.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 mb-12">
               {classData.primary_stats.map((stat, index) => (
                 <Card key={index} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-200 dark:border-gray-600">
                   <CardContent className="p-6 text-center">
@@ -257,20 +257,16 @@ export default async function ClassPage({ params }: ClassPageProps) {
             </div>
           )}
 
-          {/* Latest Items */}
-          <div className="mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">Latest Items</h2>
-            <ProductsGrid products={products.slice(0, 12)} />
-            
-            {/* View All Products Button */}
-            <div className="text-center mt-8">
+          {/* View All Products Button */}
+          {products && products.length > 0 && (
+            <div className="text-center mt-8 mb-12">
               <Button asChild className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3">
                 <Link href="/store">
                   View All Items
                 </Link>
               </Button>
             </div>
-          </div>
+          )}
 
         </div>
       </main>

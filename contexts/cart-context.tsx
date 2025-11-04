@@ -64,6 +64,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return success
   }, [])
 
+  // Fixed: Only depend on cart state, not the callback functions
+  // The callbacks are stable (empty deps) so no need to include them
   const contextValue = useMemo(() => ({
     cart,
     addItem,
@@ -71,7 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     updateQuantity,
     clearCart,
     syncToServer
-  }), [cart, addItem, removeItem, updateQuantity, clearCart, syncToServer])
+  }), [cart])
 
   return (
     <CartContext.Provider value={contextValue}>
