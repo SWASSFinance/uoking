@@ -127,7 +127,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           id: `class-${cls.id}`,
           name: cls.name,
           type: 'class' as const,
-          url: `/Class/${cls.name}`,
+          url: `/class/${cls.name.toLowerCase()}`,
           description: 'Class-specific items'
         })),
         

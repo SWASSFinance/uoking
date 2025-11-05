@@ -64,7 +64,7 @@ const GamingButton = ({
   const colors = colorMap[color as keyof typeof colorMap] || colorMap.amber
 
   return (
-    <Link href={href} prefetch={href.startsWith('/Class/') ? false : undefined} className="block w-full h-full">
+    <Link href={href} prefetch={href.startsWith('/class/') ? false : undefined} className="block w-full h-full">
       <div className="relative group cursor-pointer bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 rounded-lg p-6 h-48 flex flex-col justify-between transition-all duration-300 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/20 hover:scale-105">
         {/* Animated background glow on hover */}
         <div 
@@ -318,7 +318,7 @@ export function ClassSection() {
               title={classData.name}
               description={classData.description}
               icon={<ClassIconSVG className="h-8 w-8" type={classData.slug} />}
-              href={`/Class/${classData.name}`}
+              href={`/class/${classData.name.toLowerCase()}`}
               color={classData.color}
               isPopular={classData.isPopular}
             />

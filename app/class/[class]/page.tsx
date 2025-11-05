@@ -119,7 +119,7 @@ export async function generateMetadata({ params }: ClassPageProps): Promise<Meta
     openGraph: {
       title: seoTitle,
       description: seoDescription,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/Class/${classSlug}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://uoking.com'}/class/${classSlug.toLowerCase()}`,
       siteName: 'UO King',
       locale: 'en_US',
       type: 'website',

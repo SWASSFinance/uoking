@@ -82,7 +82,7 @@ export default async function HomePage() {
                 ].map((classData) => (
                   <Link
                     key={classData.slug}
-                    href={`/Class/${classData.name}`}
+                    href={`/class/${classData.name.toLowerCase()}`}
                     prefetch={false}
                     className="block p-4 bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-600 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-center group"
                   >

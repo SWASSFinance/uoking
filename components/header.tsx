@@ -292,7 +292,7 @@ export function Header() {
                       {classes.map((cls) => (
                         <Link
                           key={cls.id}
-                          href={`/Class/${cls.name}`}
+                          href={`/class/${cls.name.toLowerCase()}`}
                           prefetch={false}
                           className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 transition-colors"
                         >
@@ -710,7 +710,7 @@ export function Header() {
                           <div className="grid grid-cols-2 gap-2">
                             {classes.map((cls) => (
                               <Button key={cls.id} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                                <Link href={`/Class/${cls.name}`} prefetch={false}>
+                                <Link href={`/class/${cls.name.toLowerCase()}`} prefetch={false}>
                                   {cls.name}
                                 </Link>
                               </Button>
