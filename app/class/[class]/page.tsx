@@ -82,11 +82,13 @@ export async function generateMetadata({ params }: ClassPageProps): Promise<Meta
     const classes = await getClasses()
     const normalizedSlug = classSlug.toLowerCase()
     
-    // Try exact match first, then case-insensitive
-    let foundClass = classes.find((cls: any) => cls.slug === classSlug && cls.is_active)
+    // Try exact match first, then case-insensitive - check both slug and name
+    let foundClass = classes.find((cls: any) => 
+      (cls.slug === classSlug || cls.name === classSlug) && cls.is_active
+    )
     if (!foundClass) {
       foundClass = classes.find((cls: any) => 
-        cls.slug.toLowerCase() === normalizedSlug && cls.is_active
+        (cls.slug.toLowerCase() === normalizedSlug || cls.name.toLowerCase() === normalizedSlug) && cls.is_active
       )
     }
     
@@ -155,13 +157,15 @@ export default async function ClassPage({ params }: ClassPageProps) {
   
   try {
     const classes = await getClasses()
-    // Try exact match first (case-sensitive)
-    classData = classes.find((cls: ClassData) => cls.slug === classSlug && cls.is_active)
+    // Try exact match first (case-sensitive) - check both slug and name
+    classData = classes.find((cls: ClassData) => 
+      (cls.slug === classSlug || cls.name === classSlug) && cls.is_active
+    )
     
-    // If not found, try case-insensitive match
+    // If not found, try case-insensitive match - check both slug and name
     if (!classData) {
       classData = classes.find((cls: ClassData) => 
-        cls.slug.toLowerCase() === normalizedSlug && cls.is_active
+        (cls.slug.toLowerCase() === normalizedSlug || cls.name.toLowerCase() === normalizedSlug) && cls.is_active
       )
     }
   } catch (error) {
