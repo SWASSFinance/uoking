@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSession } from 'next-auth/react'
 import { PremiumBenefitsAd } from './premium-benefits-ad'
 
 interface PremiumBenefitsAdWrapperProps {
@@ -20,23 +21,47 @@ export function PremiumBenefitsAdWrapper({
   showCloseButton = false,
   onClose 
 }: PremiumBenefitsAdWrapperProps) {
+  const { data: session, status } = useSession()
   const [isPremiumUser, setIsPremiumUser] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
+  const hasChecked = useRef(false)
 
   useEffect(() => {
+    // Wait for session to load
+    if (status === 'loading') {
+      return
+    }
+
+    // Prevent duplicate checks (React strict mode causes double renders)
+    if (hasChecked.current) {
+      return
+    }
+
+    // If user is not logged in, don't make API call - just show the ad
+    if (!session?.user?.email) {
+      setIsPremiumUser(false)
+      setLoading(false)
+      return
+    }
+
+    // Only check premium status if user is logged in
+    hasChecked.current = true
+
     const checkPremiumStatus = async () => {
       try {
-        const response = await fetch('/api/user/profile')
+        const response = await fetch('/api/user/profile', {
+          credentials: 'include'
+        })
+        
         if (response.ok) {
           const profile: UserProfile = await response.json()
           setIsPremiumUser(profile.account_rank === 1)
         } else {
-          // If not authenticated or error, show the ad
+          // Any error - show the ad
           setIsPremiumUser(false)
         }
       } catch (error) {
-        console.error('Error checking premium status:', error)
-        // On error, show the ad to be safe
+        // Network errors - silently handle
         setIsPremiumUser(false)
       } finally {
         setLoading(false)
@@ -44,7 +69,7 @@ export function PremiumBenefitsAdWrapper({
     }
 
     checkPremiumStatus()
-  }, [])
+  }, [session, status])
 
   // Show loading state briefly to prevent flash
   if (loading) {

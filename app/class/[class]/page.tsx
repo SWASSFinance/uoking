@@ -220,6 +220,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
                         alt={classData.name}
                         fill
                         className="object-cover"
+                        priority
                       />
                     </div>
                   ) : (
@@ -259,7 +260,7 @@ export default async function ClassPage({ params }: ClassPageProps) {
 
           {/* Products Grid */}
           {products && products.length > 0 ? (
-            <ProductsGrid products={products} />
+            <ProductsGrid products={products} priorityCount={3} />
           ) : (
             <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-400">No products available for this class yet.</p>

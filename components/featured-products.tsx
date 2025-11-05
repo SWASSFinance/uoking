@@ -62,7 +62,7 @@ export function FeaturedProducts() {
         </div>
 
         {products.length > 0 ? (
-          <ProductsGrid products={products} />
+          <ProductsGrid products={products} priorityCount={1} />
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-600 dark:text-gray-300">No featured products available at the moment.</p>

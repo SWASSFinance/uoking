@@ -132,6 +132,7 @@ export function DealOfTheDay({ className = "" }: DealOfTheDayProps) {
               width={300}
               height={300}
               className="rounded-lg object-contain w-full max-h-64"
+              priority
             />
             <div className="absolute top-2 left-2 flex flex-col space-y-1">
               <Badge className="bg-amber-600 text-white">

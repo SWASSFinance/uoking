@@ -285,6 +285,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  html[data-scroll-behavior="smooth"] {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer components {

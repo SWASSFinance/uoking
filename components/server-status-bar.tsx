@@ -16,7 +16,18 @@ export function ServerStatusBar() {
   })
 
   // Initial ping on component mount
+  // Skip in development to reduce console noise (network errors are expected)
   useEffect(() => {
+    // Only ping in production - server status checking causes console noise in dev
+    // Browser-level network errors (ERR_INVALID_HTTP_RESPONSE) cannot be suppressed
+    const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    
+    if (isDev) {
+      // In dev, skip the ping to avoid console errors
+      // Server status will show as "offline" which is fine for development
+      return
+    }
+    
     refreshStatus()
   }, [])
 
@@ -31,8 +42,8 @@ export function ServerStatusBar() {
         responseTime: pingResult.latency || undefined
       })
     } catch (error) {
-      // Silently handle errors - don't log to avoid console noise
-      // Keep existing data on error
+      // Silently handle errors - network failures are expected
+      // Don't update status on error, keep existing state
     }
   }
 

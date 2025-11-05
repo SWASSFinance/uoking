@@ -31,13 +31,15 @@ interface ProductCardProps {
   showQuantity?: boolean
   showAddToCart?: boolean
   className?: string
+  priority?: boolean // For LCP optimization
 }
 
 export function ProductCard({ 
   product, 
   showQuantity = true, 
   showAddToCart = true,
-  className = ""
+  className = "",
+  priority = false
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
@@ -77,6 +79,7 @@ export function ProductCard({
               alt={product.name}
               fill
               className="object-cover"
+              priority={priority}
             />
             
             {/* Short Description Overlay */}
