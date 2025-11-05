@@ -83,6 +83,7 @@ export default async function HomePage() {
                   <Link
                     key={classData.slug}
                     href={`/Class/${classData.name}`}
+                    prefetch={false}
                     className="block p-4 bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-600 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-center group"
                   >
                     <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-300">
