@@ -11,6 +11,10 @@ import { Metadata } from 'next'
 import { getProducts, getClasses } from '@/lib/db'
 import { ProductsGrid } from "@/components/products-grid"
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface ClassPageProps {
   params: Promise<{ class: string }>
 }
