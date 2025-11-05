@@ -12,12 +12,24 @@ const path = require('path');
 async function applyIndexes() {
   console.log('🔧 Applying critical performance indexes to Neon DB...\n');
 
-  const connectionString = process.env.POSTGRES_URL;
+  // Get connection string from environment variable or command line argument
+  let connectionString = process.env.POSTGRES_URL;
+  
+  // If not in env, check command line args
+  if (!connectionString) {
+    const args = process.argv.slice(2);
+    if (args.length > 0) {
+      connectionString = args[0];
+    }
+  }
   
   if (!connectionString) {
-    console.error('❌ Error: POSTGRES_URL environment variable not set');
-    console.error('Please set it in your .env.local file or export it:\n');
-    console.error('export POSTGRES_URL="postgres://..."');
+    console.error('❌ Error: POSTGRES_URL not provided');
+    console.error('\nUsage:');
+    console.error('  node scripts/apply-performance-indexes.js');
+    console.error('  (with POSTGRES_URL in environment)');
+    console.error('\nOR:');
+    console.error('  node scripts/apply-performance-indexes.js "postgres://..."');
     process.exit(1);
   }
 
