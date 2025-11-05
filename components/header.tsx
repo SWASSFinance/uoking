@@ -11,7 +11,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SearchModal } from "@/components/search-modal"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { ServerStatusBar } from "@/components/server-status-bar"
 import { useCart } from "@/contexts/cart-context"
 import { 
   Search, 
@@ -249,7 +248,6 @@ export function Header() {
 
   return (
     <>
-      <ServerStatusBar />
       <header className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
