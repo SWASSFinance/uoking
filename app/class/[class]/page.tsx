@@ -76,7 +76,16 @@ export async function generateMetadata({ params }: ClassPageProps): Promise<Meta
   try {
     // First get the class data to get the class ID
     const classes = await getClasses()
-    const foundClass = classes.find((cls: any) => cls.slug === classSlug && cls.is_active)
+    const normalizedSlug = classSlug.toLowerCase()
+    
+    // Try exact match first, then case-insensitive
+    let foundClass = classes.find((cls: any) => cls.slug === classSlug && cls.is_active)
+    if (!foundClass) {
+      foundClass = classes.find((cls: any) => 
+        cls.slug.toLowerCase() === normalizedSlug && cls.is_active
+      )
+    }
+    
     if (foundClass) {
       const products = await getProducts({ 
         classId: foundClass.id, 
@@ -133,19 +142,31 @@ export async function generateMetadata({ params }: ClassPageProps): Promise<Meta
 export default async function ClassPage({ params }: ClassPageProps) {
   const { class: classSlug } = await params
   
+  // Normalize slug to lowercase for matching
+  const normalizedSlug = classSlug.toLowerCase()
+  
   // Fetch class data from database
   let classData: ClassData | null = null
   let products: any[] = []
   
   try {
     const classes = await getClasses()
+    // Try exact match first (case-sensitive)
     classData = classes.find((cls: ClassData) => cls.slug === classSlug && cls.is_active)
+    
+    // If not found, try case-insensitive match
+    if (!classData) {
+      classData = classes.find((cls: ClassData) => 
+        cls.slug.toLowerCase() === normalizedSlug && cls.is_active
+      )
+    }
   } catch (error) {
     console.error('Error fetching class data:', error)
   }
 
   // If no class found, return 404
   if (!classData) {
+    console.log(`Class not found for slug: ${classSlug} (normalized: ${normalizedSlug})`)
     notFound()
   }
 
