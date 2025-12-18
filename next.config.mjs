@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -26,14 +23,6 @@ const nextConfig = {
         loaders: ['@svgr/webpack'],
         as: '*.js',
       },
-    },
-  },
-  serverRuntimeConfig: {
-    api: {
-      bodyParser: {
-        sizeLimit: '100mb',
-      },
-      responseLimit: false,
     },
   },
   // Performance optimizations
