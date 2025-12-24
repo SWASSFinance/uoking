@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CartProvider } from "@/contexts/cart-context"
+import { ChristmasThemeWrapper } from "@/components/christmas-theme-wrapper"
 import { memo } from "react"
 
 // Memoize providers to prevent unnecessary re-renders
@@ -16,9 +17,11 @@ const Providers = memo(function Providers({ children }: { children: React.ReactN
         disableTransitionOnChange
         storageKey="uoking-theme"
       >
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <ChristmasThemeWrapper>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </ChristmasThemeWrapper>
       </ThemeProvider>
     </SessionProvider>
   )

@@ -276,6 +276,74 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+  .christmas {
+    --background: 0 50% 98%;
+    --foreground: 142 76% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 142 76% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 142 76% 20%;
+    --primary: 0 84% 60%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 142 76% 96%;
+    --secondary-foreground: 142 76% 20%;
+    --muted: 142 30% 96%;
+    --muted-foreground: 142 20% 40%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 142 76% 20%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 142 30% 85%;
+    --input: 142 30% 96%;
+    --ring: 0 84% 60%;
+    --chart-1: 0 84% 60%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 45 100% 51%;
+    --chart-4: 0 84% 50%;
+    --chart-5: 142 60% 45%;
+    --sidebar-background: 142 76% 98%;
+    --sidebar-foreground: 142 76% 20%;
+    --sidebar-primary: 0 84% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 30% 96%;
+    --sidebar-accent-foreground: 142 76% 20%;
+    --sidebar-border: 142 30% 85%;
+    --sidebar-ring: 0 84% 60%;
+  }
+  .dark.christmas {
+    --background: 142 76% 8%;
+    --foreground: 0 0% 98%;
+    --card: 142 76% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 142 76% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 84% 60%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 142 50% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 142 30% 20%;
+    --muted-foreground: 142 20% 70%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 142 76% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 142 30% 25%;
+    --input: 142 30% 20%;
+    --ring: 0 84% 60%;
+    --chart-1: 0 84% 60%;
+    --chart-2: 142 76% 50%;
+    --chart-3: 45 100% 51%;
+    --chart-4: 0 84% 50%;
+    --chart-5: 142 60% 45%;
+    --sidebar-background: 142 76% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 84% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 50% 20%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 142 30% 25%;
+    --sidebar-ring: 0 84% 60%;
+  }
 }
 
 @layer base {
@@ -473,5 +541,62 @@
       opacity: 0.8;
       filter: blur(2px);
     }
+  }
+  
+  /* Christmas Theme Styles */
+  html.christmas body {
+    background: linear-gradient(to bottom right, 
+      hsl(0, 100%, 97%) 0%, 
+      hsl(142, 76%, 96%) 50%, 
+      hsl(0, 100%, 97%) 100%);
+  }
+  
+  html.christmas.dark body {
+    background: linear-gradient(to bottom right, 
+      hsl(142, 76%, 8%) 0%, 
+      hsl(0, 84%, 15%) 50%, 
+      hsl(142, 76%, 8%) 100%);
+  }
+  
+  /* Christmas snowflake animation */
+  @keyframes snowflake {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+  
+  .christmas-snowflake {
+    position: fixed;
+    top: -10px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    font-family: Arial, sans-serif;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+    user-select: none;
+    pointer-events: none;
+    z-index: 1000;
+    animation: snowflake linear infinite;
+  }
+  
+  html.christmas .gradient-text {
+    background: linear-gradient(to right, hsl(0, 84%, 60%), hsl(142, 76%, 36%), hsl(45, 100%, 51%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  html.christmas .button-primary {
+    background: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(142, 76%, 36%));
+    box-shadow: 0 4px 15px rgba(0, 84%, 60%, 0.4);
+  }
+  
+  html.christmas .button-primary:hover {
+    background: linear-gradient(135deg, hsl(0, 84%, 55%), hsl(142, 76%, 32%));
+    box-shadow: 0 6px 20px rgba(0, 84%, 60%, 0.6);
   }
 }

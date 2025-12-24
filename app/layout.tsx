@@ -8,6 +8,7 @@ import { GoogleMapsLoader } from '@/components/google-maps-loader'
 import { LazyMusicPlayer } from '@/components/lazy-music-player'
 import { TawkChat } from '@/components/tawk-chat'
 import { MaintenanceProvider } from '@/components/maintenance-provider'
+import { isChristmasSeason } from '@/hooks/use-christmas-theme'
 import './globals.css'
 
 // Configure fonts with display swap for better performance
@@ -58,8 +59,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const isChristmas = isChristmasSeason()
+  
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${isChristmas ? 'christmas' : ''}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
