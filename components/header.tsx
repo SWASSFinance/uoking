@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SearchModal } from "@/components/search-modal"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useCart } from "@/contexts/cart-context"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { 
   Search, 
   Menu, 
@@ -20,7 +21,8 @@ import {
   LogOut, 
   DollarSign,
   ChevronDown,
-  Crown
+  Crown,
+  ChevronRight
 } from "lucide-react"
 
 // Global cache for categories and classes to prevent duplicate API calls
@@ -40,6 +42,17 @@ export function Header() {
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [classes, setClasses] = useState<Array<{ id: string; name: string; slug: string }>>([])
   const [classesLoading, setClassesLoading] = useState(true)
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set())
+  
+  const toggleSection = (section: string) => {
+    const newOpenSections = new Set(openSections)
+    if (newOpenSections.has(section)) {
+      newOpenSections.delete(section)
+    } else {
+      newOpenSections.add(section)
+    }
+    setOpenSections(newOpenSections)
+  }
   
   // Use refs to track if data has been fetched
   const categoriesFetched = useRef(false)
@@ -660,137 +673,159 @@ export function Header() {
                     </div>
                   )}
 
-                  <nav className="flex flex-col space-y-6">
-                    {/* Main Categories */}
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Shop by Category</h3>
-                      
-                      {/* Store Section */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Store Categories</h4>
-                        {categoriesLoading ? (
-                          <div className="px-2 text-sm text-gray-500">Loading...</div>
-                        ) : (
-                                                  <div className="grid grid-cols-2 gap-2">
-                          {categories.slice(0, 6).map((category) => (
-                            <Button key={category.id} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={`/UO/${categoryToUrl(category.name)}`}>
-                                {category.name}
-                              </Link>
-                            </Button>
-                          ))}
-                        </div>
-                        )}
-                      </div>
-
-                      {/* Special Items */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 px-2">Special Items</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                            <Link href="/UO/Gold">Gold</Link>
-                          </Button>
-                          <Button variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                            <Link href="/UO/Custom-Suits/">Suits</Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Character Builds */}
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Character Builds</h3>
-                      
-                      {/* Class Section */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Class</h4>
+                  <nav className="flex flex-col space-y-2">
+                    {/* Class Dropdown */}
+                    <Collapsible open={openSections.has('class')} onOpenChange={() => toggleSection('class')}>
+                      <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                        <span>Class</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has('class') ? 'rotate-90' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 space-y-1">
                         {classesLoading ? (
                           <div className="px-2 text-sm text-gray-500">Loading classes...</div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-2">
-                            {classes.map((cls) => (
-                              <Button key={cls.id} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                                <Link href={`/class/${cls.name.toLowerCase()}`} prefetch={false}>
-                                  {cls.name}
-                                </Link>
-                              </Button>
-                            ))}
-                          </div>
+                          classes.map((cls) => (
+                            <Link
+                              key={cls.id}
+                              href={`/class/${cls.name.toLowerCase()}`}
+                              prefetch={false}
+                              onClick={() => setIsOpen(false)}
+                              className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded-md transition-colors"
+                            >
+                              {cls.name}
+                            </Link>
+                          ))
                         )}
-                      </div>
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                      {/* Slot Section */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Equipment Slots</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {slotItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={`/UO/${slotToCategoryUrl(item)}`}>
-                                {item}
-                              </Link>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    {/* Prop Dropdown */}
+                    <Collapsible open={openSections.has('prop')} onOpenChange={() => toggleSection('prop')}>
+                      <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                        <span>Prop</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has('prop') ? 'rotate-90' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 space-y-1">
+                        {propItems.map((item) => (
+                          <Link
+                            key={item}
+                            href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded-md transition-colors"
+                          >
+                            {item}
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                    {/* Item Properties */}
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Item Properties</h3>
-                      
-                      {/* Prop Section */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Properties</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {propItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={`/prop/${item.toLowerCase().replace(/\s+/g, '-')}`}>
-                                {item}
-                              </Link>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    {/* Slot Dropdown */}
+                    <Collapsible open={openSections.has('slot')} onOpenChange={() => toggleSection('slot')}>
+                      <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                        <span>Slot</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has('slot') ? 'rotate-90' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 space-y-1">
+                        {slotItems.map((item) => (
+                          <Link
+                            key={item}
+                            href={`/UO/${slotToCategoryUrl(item)}`}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded-md transition-colors"
+                          >
+                            {item}
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                    {/* Scrolls & Tools */}
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white px-2 border-b border-gray-200 dark:border-gray-700 pb-2">Scrolls & Tools</h3>
-                      
-                      {/* Scrolls Section */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Scrolls</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {scrollItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={`/UO/${scrollToUrl(item)}`}>
-                                {item}
-                              </Link>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
+                    {/* Store Dropdown */}
+                    <Collapsible open={openSections.has('store')} onOpenChange={() => toggleSection('store')}>
+                      <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                        <span>Store</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has('store') ? 'rotate-90' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 space-y-1">
+                        {categoriesLoading ? (
+                          <div className="px-2 text-sm text-gray-500">Loading...</div>
+                        ) : (
+                          categories.map((category) => (
+                            <Link
+                              key={category.id}
+                              href={`/UO/${categoryToUrl(category.name)}`}
+                              onClick={() => setIsOpen(false)}
+                              className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded-md transition-colors"
+                            >
+                              {category.name}
+                            </Link>
+                          ))
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
 
-                      {/* Tools Section */}
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 px-2">Tools</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {toolItems.map((item) => (
-                            <Button key={item} variant="ghost" className="justify-start text-xs h-8 text-left" asChild>
-                              <Link href={item === 'Skills' ? '/skills' :
-                                           item === 'Maps' ? '/maps' : 
-                                           item === 'Trading Board' ? '/trading' : 
-                                           item === 'Event Rares' ? '/event-rares' : 
-                                           item === 'EM Event List' ? '/em-events' : 
-                                           item === 'IDOC' ? '/IDOC' :
-                                           `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}>
-                                {item}
-                              </Link>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    {/* Gold Link */}
+                    <Link
+                      href="/UO/Gold"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center px-3 py-3 text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                    >
+                      Gold
+                    </Link>
+
+                    {/* Suits Link */}
+                    <Link
+                      href="/UO/Custom-Suits"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center px-3 py-3 text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                    >
+                      Suits
+                    </Link>
+
+                    {/* Scrolls Dropdown */}
+                    <Collapsible open={openSections.has('scrolls')} onOpenChange={() => toggleSection('scrolls')}>
+                      <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                        <span>Scrolls</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has('scrolls') ? 'rotate-90' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 space-y-1">
+                        {scrollItems.map((item) => (
+                          <Link
+                            key={item}
+                            href={`/UO/${scrollToUrl(item)}`}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded-md transition-colors"
+                          >
+                            {item}
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Tools Dropdown */}
+                    <Collapsible open={openSections.has('tools')} onOpenChange={() => toggleSection('tools')}>
+                      <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+                        <span>Tools</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has('tools') ? 'rotate-90' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-2 space-y-1">
+                        {toolItems.map((item) => (
+                          <Link
+                            key={item}
+                            href={item === 'Skills' ? '/skills' :
+                                 item === 'Maps' ? '/maps' : 
+                                 item === 'Trading Board' ? '/trading' : 
+                                 item === 'Event Rares' ? '/event-rares' : 
+                                 item === 'EM Event List' ? '/em-events' : 
+                                 item === 'IDOC' ? '/IDOC' :
+                                 `/UO/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-800 dark:hover:text-amber-400 rounded-md transition-colors"
+                          >
+                            {item}
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
                   </nav>
                 </div>
               </SheetContent>
