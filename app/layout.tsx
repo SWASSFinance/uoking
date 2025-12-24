@@ -8,6 +8,7 @@ import { GoogleMapsLoader } from '@/components/google-maps-loader'
 import { LazyMusicPlayer } from '@/components/lazy-music-player'
 import { TawkChat } from '@/components/tawk-chat'
 import { MaintenanceProvider } from '@/components/maintenance-provider'
+import { ChristmasSnowflakes } from '@/components/christmas-snowflakes'
 import { isChristmasSeason } from '@/hooks/use-christmas-theme'
 import './globals.css'
 
@@ -74,6 +75,7 @@ export default function RootLayout({
             <ErrorBoundary>
               <MaintenanceProvider>
                 {children}
+                <ChristmasSnowflakes />
                 <Toaster />
                 <LazyMusicPlayer />
                 <TawkChat />
