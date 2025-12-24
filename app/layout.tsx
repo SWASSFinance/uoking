@@ -9,7 +9,7 @@ import { LazyMusicPlayer } from '@/components/lazy-music-player'
 import { TawkChat } from '@/components/tawk-chat'
 import { MaintenanceProvider } from '@/components/maintenance-provider'
 import { ChristmasSnowflakes } from '@/components/christmas-snowflakes'
-import { isChristmasSeason } from '@/hooks/use-christmas-theme'
+import { isChristmasSeason } from '@/lib/christmas-utils'
 import './globals.css'
 
 // Configure fonts with display swap for better performance
