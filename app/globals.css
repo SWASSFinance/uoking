@@ -543,83 +543,8 @@
     }
   }
   
-  /* Christmas Theme Styles */
-  html.christmas body {
-    background: linear-gradient(to bottom right, 
-      hsl(0, 100%, 97%) 0%, 
-      hsl(142, 76%, 96%) 50%, 
-      hsl(0, 100%, 97%) 100%);
-  }
-  
-  html.christmas.dark body {
-    background: linear-gradient(to bottom right, 
-      hsl(142, 76%, 8%) 0%, 
-      hsl(0, 84%, 15%) 50%, 
-      hsl(142, 76%, 8%) 100%);
-  }
-  
-  /* Homepage Christmas Overrides */
-  html.christmas .bg-gradient-to-r.from-orange-50,
-  html.christmas .from-orange-50 {
-    background: linear-gradient(to right, hsl(0, 100%, 97%), hsl(142, 76%, 96%)) !important;
-  }
-  
-  html.christmas .bg-gradient-to-r.to-amber-50,
-  html.christmas .to-amber-50 {
-    background: linear-gradient(to right, hsl(142, 76%, 96%), hsl(0, 100%, 97%)) !important;
-  }
-  
-  html.christmas section.bg-gradient-to-r {
-    background: linear-gradient(to right, hsl(0, 100%, 97%), hsl(142, 76%, 96%)) !important;
-  }
-  
-  html.christmas.dark section.bg-gradient-to-r {
-    background: linear-gradient(to right, hsl(142, 76%, 8%), hsl(0, 84%, 15%)) !important;
-  }
-  
-  /* Christmas-themed cards and sections */
-  html.christmas .bg-white\/80,
-  html.christmas .bg-white {
-    background-color: hsl(0, 50%, 99%) !important;
-    border-color: hsl(142, 30%, 85%) !important;
-  }
-  
-  html.christmas .border-gray-200 {
-    border-color: hsl(142, 30%, 85%) !important;
-  }
-  
-  html.christmas .hover\:border-amber-500:hover {
-    border-color: hsl(0, 84%, 60%) !important;
-  }
-  
-  html.christmas .text-gray-900 {
-    color: hsl(142, 76%, 20%) !important;
-  }
-  
-  html.christmas .text-gray-600 {
-    color: hsl(142, 50%, 40%) !important;
-  }
-  
-  /* Christmas button styles */
-  html.christmas .bg-red-600,
-  html.christmas .bg-red-600:hover {
-    background: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(142, 76%, 36%)) !important;
-    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4) !important;
-  }
-  
-  html.christmas .bg-red-600:hover {
-    background: linear-gradient(135deg, hsl(0, 84%, 55%), hsl(142, 76%, 32%)) !important;
-    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6) !important;
-  }
-  
-  /* Christmas header/banner overlay */
-  html.christmas .bg-black\/30 {
-    background: linear-gradient(180deg, 
-      rgba(220, 38, 38, 0.3) 0%, 
-      rgba(34, 197, 94, 0.2) 100%) !important;
-  }
-  
-  /* Christmas decorations */
+  /* Christmas Theme - Only top bar and snowfall */
+  /* Red and green checkered top bar */
   html.christmas::before {
     content: '';
     position: fixed;
@@ -636,16 +561,6 @@
     );
     z-index: 9999;
     pointer-events: none;
-  }
-  
-  /* Twinkling stars effect */
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-  }
-  
-  html.christmas .christmas-star {
-    animation: twinkle 2s ease-in-out infinite;
   }
   
   /* Christmas snowflake animation */
