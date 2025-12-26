@@ -1140,19 +1140,28 @@ export async function updateProductAdminNotes(id: string, adminNotes: string) {
 
 export async function updateProductCategories(productId: string, categoryIds: string[]) {
   try {
+    // Validate productId
+    if (!productId || productId === 'null' || productId === 'undefined' || productId.trim() === '') {
+      throw new Error('Invalid product ID: productId is required and cannot be null or empty')
+    }
+    
     // Start a transaction
     await query('BEGIN')
     
     // Delete existing categories for this product
     await query('DELETE FROM product_categories WHERE product_id = $1', [productId])
     
-    // Insert new categories
-    for (let i = 0; i < categoryIds.length; i++) {
-      if (categoryIds[i] && categoryIds[i].trim() !== '') {
-        await query(`
-          INSERT INTO product_categories (product_id, category_id, sort_order, is_primary)
-          VALUES ($1, $2, $3, $4)
-        `, [productId, categoryIds[i], i, i === 0]) // First category is primary
+    // Insert new categories (only if we have valid category IDs)
+    if (categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) {
+      for (let i = 0; i < categoryIds.length; i++) {
+        const categoryId = categoryIds[i]
+        // Validate category ID before inserting
+        if (categoryId && categoryId !== 'null' && categoryId !== 'undefined' && String(categoryId).trim() !== '') {
+          await query(`
+            INSERT INTO product_categories (product_id, category_id, sort_order, is_primary)
+            VALUES ($1, $2, $3, $4)
+          `, [productId, String(categoryId).trim(), i, i === 0]) // First category is primary
+        }
       }
     }
     
@@ -1161,25 +1170,36 @@ export async function updateProductCategories(productId: string, categoryIds: st
   } catch (error) {
     await query('ROLLBACK')
     console.error('Error updating product categories:', error)
+    console.error('Product ID:', productId)
+    console.error('Category IDs:', categoryIds)
     throw error
   }
 }
 
 export async function updateProductClasses(productId: string, classIds: string[]) {
   try {
+    // Validate productId
+    if (!productId || productId === 'null' || productId === 'undefined' || productId.trim() === '') {
+      throw new Error('Invalid product ID: productId is required and cannot be null or empty')
+    }
+    
     // Start a transaction
     await query('BEGIN')
     
     // Delete existing classes for this product
     await query('DELETE FROM product_classes WHERE product_id = $1', [productId])
     
-    // Insert new classes
-    for (let i = 0; i < classIds.length; i++) {
-      if (classIds[i] && classIds[i].trim() !== '') {
-        await query(`
-          INSERT INTO product_classes (product_id, class_id, sort_order, is_primary)
-          VALUES ($1, $2, $3, $4)
-        `, [productId, classIds[i], i, i === 0]) // First class is primary
+    // Insert new classes (only if we have valid class IDs)
+    if (classIds && Array.isArray(classIds) && classIds.length > 0) {
+      for (let i = 0; i < classIds.length; i++) {
+        const classId = classIds[i]
+        // Validate class ID before inserting
+        if (classId && classId !== 'null' && classId !== 'undefined' && String(classId).trim() !== '') {
+          await query(`
+            INSERT INTO product_classes (product_id, class_id, sort_order, is_primary)
+            VALUES ($1, $2, $3, $4)
+          `, [productId, String(classId).trim(), i, i === 0]) // First class is primary
+        }
       }
     }
     
@@ -1188,6 +1208,8 @@ export async function updateProductClasses(productId: string, classIds: string[]
   } catch (error) {
     await query('ROLLBACK')
     console.error('Error updating product classes:', error)
+    console.error('Product ID:', productId)
+    console.error('Class IDs:', classIds)
     throw error
   }
 }

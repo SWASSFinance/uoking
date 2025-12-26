@@ -10,6 +10,14 @@ export async function PUT(
     const body = await request.json()
     const productId = params.id
     
+    // Validate productId
+    if (!productId || productId === 'undefined' || productId === 'null') {
+      return createNoCacheResponse(
+        { error: 'Invalid product ID' },
+        400
+      )
+    }
+    
     console.log('Updating product:', productId)
     console.log('Product data:', JSON.stringify(body, null, 2))
     
@@ -32,15 +40,33 @@ export async function PUT(
       slug
     })
     
+    // Validate product was updated successfully
+    if (!product || !product.id) {
+      return createNoCacheResponse(
+        { error: 'Product update failed - product not found or invalid' },
+        404
+      )
+    }
+    
     // Update product categories if provided
-    if (category_ids && Array.isArray(category_ids)) {
-      const filteredCategoryIds = category_ids.filter(id => id && id !== '')
+    if (category_ids !== undefined && Array.isArray(category_ids)) {
+      const filteredCategoryIds = category_ids
+        .filter(id => id != null && id !== '' && id !== 'undefined' && id !== 'null')
+        .map(id => String(id).trim())
+        .filter(id => id.length > 0)
+      
+      // Only call updateProductCategories if we have valid IDs or want to clear all (empty array)
       await updateProductCategories(productId, filteredCategoryIds)
     }
     
     // Update product classes if provided
-    if (class_ids && Array.isArray(class_ids)) {
-      const filteredClassIds = class_ids.filter(id => id && id !== '')
+    if (class_ids !== undefined && Array.isArray(class_ids)) {
+      const filteredClassIds = class_ids
+        .filter(id => id != null && id !== '' && id !== 'undefined' && id !== 'null')
+        .map(id => String(id).trim())
+        .filter(id => id.length > 0)
+      
+      // Only call updateProductClasses if we have valid IDs or want to clear all (empty array)
       await updateProductClasses(productId, filteredClassIds)
     }
     
