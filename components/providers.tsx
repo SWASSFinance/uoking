@@ -9,7 +9,7 @@ import { memo } from "react"
 // Memoize providers to prevent unnecessary re-renders
 const Providers = memo(function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
       <ThemeProvider
         attribute="class"
         defaultTheme="light"
