@@ -162,22 +162,42 @@ export default function ProductsAdminPage() {
       const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products'
       const method = editingProduct ? 'PUT' : 'POST'
       
+      // Clean up the data before sending
+      const cleanedData = {
+        ...productData,
+        // Ensure price is a number
+        price: productData.price ? parseFloat(productData.price) : 0,
+        // Filter out empty strings from arrays
+        category_ids: productData.category_ids ? productData.category_ids.filter((id: string) => id && id.trim() !== '' && id !== 'none') : [],
+        class_ids: productData.class_ids ? productData.class_ids.filter((id: string) => id && id.trim() !== '' && id !== 'none') : [],
+        // Ensure rank is a number
+        rank: productData.rank ? parseInt(productData.rank) : 0,
+      }
+      
+      console.log('Saving product:', { url, method, data: cleanedData })
+      
       const response = await createNoCacheFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(cleanedData),
       })
+
+      const responseData = await response.json()
 
       if (response.ok) {
         fetchProducts()
         setEditingProduct(null)
         setShowForm(false)
         setShowEditModal(false)
+      } else {
+        console.error('Save failed:', responseData)
+        alert(`Failed to save product: ${responseData.error || responseData.details || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error saving product:', error)
+      alert(`Error saving product: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

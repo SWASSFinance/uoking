@@ -7,13 +7,40 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json()
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      return createNoCacheResponse(
+        { error: 'Invalid JSON in request body', details: parseError instanceof Error ? parseError.message : 'Unknown error' },
+        400
+      )
+    }
+    
     const productId = params.id
     
     // Validate productId
-    if (!productId || productId === 'undefined' || productId === 'null') {
+    if (!productId || productId === 'undefined' || productId === 'null' || productId.trim() === '') {
       return createNoCacheResponse(
-        { error: 'Invalid product ID' },
+        { error: 'Invalid product ID', details: `Product ID: ${productId}` },
+        400
+      )
+    }
+    
+    // Validate required fields
+    if (!body.name || (typeof body.name === 'string' && body.name.trim() === '')) {
+      return createNoCacheResponse(
+        { error: 'Product name is required', details: `Received name: ${body.name}` },
+        400
+      )
+    }
+    
+    // Validate price - can be string or number
+    const priceValue = typeof body.price === 'string' ? parseFloat(body.price) : body.price
+    if (priceValue === undefined || priceValue === null || isNaN(priceValue)) {
+      return createNoCacheResponse(
+        { error: 'Product price is required and must be a valid number', details: `Received price: ${body.price}` },
         400
       )
     }
@@ -35,8 +62,22 @@ export async function PUT(
     
     const { category_ids, class_ids, ...productData } = body
     
+    // Ensure price is a number
+    const priceValue = typeof productData.price === 'string' ? parseFloat(productData.price) : productData.price
+    if (isNaN(priceValue) || priceValue < 0) {
+      return createNoCacheResponse(
+        { error: 'Invalid price value', details: `Price must be a valid positive number, got: ${productData.price}` },
+        400
+      )
+    }
+    
+    // Ensure rank is a number
+    const rankValue = typeof productData.rank === 'string' ? parseInt(productData.rank) : (productData.rank || 0)
+    
     const product = await updateProduct(productId, {
       ...productData,
+      price: priceValue,
+      rank: rankValue,
       slug
     })
     
