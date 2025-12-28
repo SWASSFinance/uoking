@@ -4,7 +4,7 @@ import { addNoCacheHeaders, createNoCacheResponse } from '@/lib/api-utils'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     let body
@@ -18,7 +18,7 @@ export async function PUT(
       )
     }
     
-    const productId = params.id
+    const { id: productId } = await params
     
     // Validate productId
     if (!productId || productId === 'undefined' || productId === 'null' || productId.trim() === '') {
@@ -114,10 +114,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id
+    const { id: productId } = await params
     await deleteProduct(productId)
     return createNoCacheResponse({ success: true, id: productId })
   } catch (error) {
