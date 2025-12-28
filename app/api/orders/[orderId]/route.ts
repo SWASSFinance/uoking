@@ -14,6 +14,11 @@ export async function GET(
 
     const orderId = params.orderId
 
+    // Validate orderId format
+    if (!orderId || orderId === 'undefined' || orderId === 'null' || orderId.trim() === '') {
+      return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 })
+    }
+
     // Get user ID
     const userResult = await query(`
       SELECT id FROM users WHERE email = $1
@@ -25,7 +30,23 @@ export async function GET(
 
     const userId = userResult.rows[0].id
 
-    // Get order details
+    // Get order details - first check if order exists at all
+    const orderCheckResult = await query(`
+      SELECT id, user_id FROM orders WHERE id = $1
+    `, [orderId])
+
+    if (!orderCheckResult.rows || orderCheckResult.rows.length === 0) {
+      console.error('Order not found:', orderId)
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    // Check if order belongs to user
+    if (orderCheckResult.rows[0].user_id !== userId) {
+      console.error('Order access denied:', { orderId, orderUserId: orderCheckResult.rows[0].user_id, currentUserId: userId })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    // Get full order details
     const orderResult = await query(`
       SELECT 
         o.*,

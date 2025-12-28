@@ -82,12 +82,20 @@ export default function PaymentPendingPage() {
 
   const fetchOrder = async () => {
     try {
+      if (!orderId || orderId === 'undefined' || orderId === 'null') {
+        setError('Invalid order ID')
+        setLoading(false)
+        return
+      }
+
       const response = await fetch(`/api/orders/${orderId}`)
-      if (response.ok) {
-        const data = await response.json()
+      const data = await response.json()
+      
+      if (response.ok && data.success && data.order) {
         setOrder(data.order)
       } else {
-        setError('Order not found or access denied')
+        console.error('Order fetch error:', data)
+        setError(data.error || 'Order not found or access denied')
       }
     } catch (error) {
       console.error('Error fetching order:', error)

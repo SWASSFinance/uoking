@@ -147,7 +147,39 @@ export async function POST(request: NextRequest) {
     ])
 
     const orderId = orderResult.rows[0].id
-    console.log('Order created with ID:', orderId)
+    console.log('Order created with ID:', orderId, 'for user ID:', userId)
+    
+    // Verify order was created correctly
+    const verifyOrderResult = await query(`
+      SELECT id, user_id, order_number FROM orders WHERE id = $1
+    `, [orderId])
+    
+    if (!verifyOrderResult.rows || verifyOrderResult.rows.length === 0) {
+      console.error('Order verification failed - order not found after creation:', orderId)
+      return NextResponse.json({ 
+        error: 'Order creation failed - order not found after creation',
+        details: 'Please try again'
+      }, { status: 500 })
+    }
+    
+    const verifiedOrder = verifyOrderResult.rows[0]
+    if (verifiedOrder.user_id !== userId) {
+      console.error('Order verification failed - user_id mismatch:', {
+        orderId,
+        expectedUserId: userId,
+        actualUserId: verifiedOrder.user_id
+      })
+      return NextResponse.json({ 
+        error: 'Order creation failed - user mismatch',
+        details: 'Please try again'
+      }, { status: 500 })
+    }
+    
+    console.log('Order verified successfully:', {
+      orderId,
+      orderNumber: verifiedOrder.order_number,
+      userId: verifiedOrder.user_id
+    })
 
     // OPTIMIZED: Batch insert order items in a single query
     if (cartItems.length > 0) {
