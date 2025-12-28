@@ -38,9 +38,9 @@ export async function PUT(
     
     // Validate price - can be string or number
     const priceValue = typeof body.price === 'string' ? parseFloat(body.price) : body.price
-    if (priceValue === undefined || priceValue === null || isNaN(priceValue)) {
+    if (priceValue === undefined || priceValue === null || isNaN(priceValue) || priceValue < 0) {
       return createNoCacheResponse(
-        { error: 'Product price is required and must be a valid number', details: `Received price: ${body.price}` },
+        { error: 'Product price is required and must be a valid positive number', details: `Received price: ${body.price}` },
         400
       )
     }
@@ -61,15 +61,6 @@ export async function PUT(
     }
     
     const { category_ids, class_ids, ...productData } = body
-    
-    // Ensure price is a number
-    const priceValue = typeof productData.price === 'string' ? parseFloat(productData.price) : productData.price
-    if (isNaN(priceValue) || priceValue < 0) {
-      return createNoCacheResponse(
-        { error: 'Invalid price value', details: `Price must be a valid positive number, got: ${productData.price}` },
-        400
-      )
-    }
     
     // Ensure rank is a number
     const rankValue = typeof productData.rank === 'string' ? parseInt(productData.rank) : (productData.rank || 0)
