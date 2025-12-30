@@ -166,37 +166,47 @@ export function AdminHeader() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const [maintenanceMode, setMaintenanceMode] = useState(false)
 
-  // Global cache for maintenance mode
-  let maintenanceModeCache: boolean | null = null
-  let maintenanceModeFetched = false
-
   // Check maintenance mode status
   useEffect(() => {
+    const CACHE_KEY = 'admin-maintenance-mode-cache'
+    const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
     const checkMaintenanceMode = async () => {
       try {
-        // Check cache first
-        if (maintenanceModeCache !== null && maintenanceModeFetched) {
-          setMaintenanceMode(maintenanceModeCache)
-          return
+        // Check localStorage cache first
+        const cachedData = localStorage.getItem(CACHE_KEY)
+        if (cachedData) {
+          try {
+            const { data, timestamp } = JSON.parse(cachedData)
+            if (Date.now() - timestamp < CACHE_DURATION) {
+              setMaintenanceMode(data.maintenance_mode || false)
+              return // Use cached data, don't poll
+            }
+          } catch (e) {
+            // Invalid cache, fetch fresh data
+          }
         }
         
-        maintenanceModeFetched = true
+        // Fetch fresh data
         const response = await fetch('/api/admin/settings')
         if (response.ok) {
           const data = await response.json()
           const mode = data.maintenance_mode || false
           setMaintenanceMode(mode)
-          maintenanceModeCache = mode
+          
+          // Update cache
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: { maintenance_mode: mode },
+            timestamp: Date.now()
+          }))
         }
       } catch (error) {
         console.error('Error checking maintenance mode:', error)
       }
     }
 
+    // Fetch once on mount only - no polling
     checkMaintenanceMode()
-    const interval = setInterval(checkMaintenanceMode, 30000) // Check every 30 seconds instead of 10
-
-    return () => clearInterval(interval)
   }, [])
 
   // Helper functions
