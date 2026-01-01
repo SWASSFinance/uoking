@@ -267,7 +267,7 @@ export function Header() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center h-6">
               <p className="text-xs font-medium text-white text-center">
-                &lt;3 The only site that doesnt dupe or use bannable methods! &lt;3
+                &lt;3 The only site that doesn't dupe or use bannable methods! &lt;3
               </p>
             </div>
           </div>
