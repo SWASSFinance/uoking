@@ -261,7 +261,18 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <div className="sticky top-0 z-50">
+        {/* Trust Banner */}
+        <div className="bg-gradient-to-r from-green-500/90 to-emerald-500/90 dark:from-green-600/90 dark:to-emerald-600/90 backdrop-blur-sm border-b border-green-400/20 dark:border-green-500/20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center h-6">
+              <p className="text-xs font-medium text-white text-center">
+                &lt;3 The only site that doesnt dupe or use bannable methods! &lt;3
+              </p>
+            </div>
+          </div>
+        </div>
+        <header className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -834,12 +845,14 @@ export function Header() {
         </div>
       </div>
 
+      </header>
+      </div>
+
       {/* Search Modal */}
       <SearchModal 
         isOpen={isSearchModalOpen} 
         onClose={() => setIsSearchModalOpen(false)} 
       />
-      </header>
     </>
   )
 }
