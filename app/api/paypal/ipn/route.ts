@@ -84,31 +84,112 @@ export async function POST(request: NextRequest) {
     if (!isValid) {
       console.error('Invalid IPN signature')
       
-      // Send debug email for failed verification
-      try {
-        await sendIPNDebugEmail({
-          ipnLogId,
-          status: 'verification_failed',
-          rawBody: body,
-          parsedData: {
-            paymentStatus,
-            txnId,
-            receiverEmail: receiverEmail || businessEmail,
-            businessEmail,
-            custom,
-            mcGross,
-            mcCurrency
-          },
-          error: 'Invalid IPN signature'
-        })
-      } catch (emailError) {
+      // Send debug email for failed verification (async, don't wait)
+      sendIPNDebugEmail({
+        ipnLogId,
+        status: 'verification_failed',
+        rawBody: body,
+        parsedData: {
+          paymentStatus,
+          txnId,
+          receiverEmail: receiverEmail || businessEmail,
+          businessEmail,
+          custom,
+          mcGross,
+          mcCurrency
+        },
+        error: 'Invalid IPN signature'
+      }).catch(emailError => {
         console.error('Failed to send debug email:', emailError)
-      }
+      })
       
+      // Return error immediately
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
     
     console.log('IPN signature verified successfully')
+    
+    // IMPORTANT: Return 200 OK immediately to PayPal
+    // Process everything else asynchronously to avoid timeout
+    processIPNAsync({
+      body,
+      formData,
+      paymentStatus,
+      txnId,
+      receiverEmail,
+      businessEmail,
+      custom,
+      mcGross,
+      mcCurrency,
+      ipnLogId
+    }).catch(error => {
+      console.error('Error in async IPN processing:', error)
+    })
+    
+    // Return success immediately - PayPal requires quick response
+    return new NextResponse('OK', { status: 200 })
+    
+  } catch (error: any) {
+    console.error('IPN processing error:', error)
+    console.error('Error details:', {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack,
+      name: error?.name
+    })
+    
+    // Update processing status to error
+    if (ipnLogId) {
+      query(`
+        UPDATE paypal_ipn_logs 
+        SET processing_status = 'error', 
+            error_message = $1,
+            processed_at = NOW()
+        WHERE id = $2
+      `, [error?.message || 'Unknown error', ipnLogId]).catch(dbError => {
+        console.error('Failed to update IPN log:', dbError)
+      })
+    }
+    
+    // Send debug email for processing error (async, don't wait)
+    sendIPNDebugEmail({
+      ipnLogId,
+      status: 'processing_error',
+      rawBody: 'Error occurred before body parsing',
+      parsedData: {
+        paymentStatus: 'unknown',
+        txnId: 'unknown',
+        receiverEmail: 'unknown',
+        custom: 'unknown',
+        mcGross: 'unknown',
+        mcCurrency: 'unknown'
+      },
+      error: error?.message || 'Unknown error'
+    }).catch(emailError => {
+      console.error('Failed to send debug email:', emailError)
+    })
+    
+    // Still return 200 to PayPal even on error to prevent retries
+    // PayPal will retry if we return an error status
+    return new NextResponse('OK', { status: 200 })
+  }
+}
+
+// Async function to process IPN after responding to PayPal
+async function processIPNAsync(data: {
+  body: string
+  formData: URLSearchParams
+  paymentStatus: string | null
+  txnId: string | null
+  receiverEmail: string | null
+  businessEmail: string | null
+  custom: string | null
+  mcGross: string | null
+  mcCurrency: string | null
+  ipnLogId: string | null
+}) {
+  const { body, formData, paymentStatus, txnId, receiverEmail, businessEmail, custom, mcGross, mcCurrency, ipnLogId } = data
+  
+  try {
 
     console.log('PayPal IPN received:', {
       paymentStatus,
@@ -127,7 +208,16 @@ export async function POST(request: NextRequest) {
     
     if (!settingsResult.rows || settingsResult.rows.length === 0) {
       console.error('PayPal email not configured')
-      return NextResponse.json({ error: 'PayPal email not configured' }, { status: 500 })
+      if (ipnLogId) {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = 'PayPal email not configured',
+              processed_at = NOW()
+          WHERE id = $1
+        `, [ipnLogId])
+      }
+      return
     }
 
     const configuredPayPalEmail = settingsResult.rows[0].setting_value
@@ -143,18 +233,45 @@ export async function POST(request: NextRequest) {
     
     if (!receivedEmail) {
       console.error('No receiver email found in IPN')
-      return NextResponse.json({ error: 'No receiver email found' }, { status: 400 })
+      if (ipnLogId) {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = 'No receiver email found',
+              processed_at = NOW()
+          WHERE id = $1
+        `, [ipnLogId])
+      }
+      return
     }
     
     if (receivedEmail !== configuredPayPalEmail) {
       console.error('Receiver email mismatch:', receivedEmail, 'vs', configuredPayPalEmail)
       console.error('receiver_email:', receiverEmail, 'business:', businessEmail)
-      return NextResponse.json({ error: 'Receiver email mismatch' }, { status: 400 })
+      if (ipnLogId) {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = 'Receiver email mismatch',
+              processed_at = NOW()
+          WHERE id = $1
+        `, [ipnLogId])
+      }
+      return
     }
 
     if (!custom) {
       console.error('No order ID in IPN')
-      return NextResponse.json({ error: 'No order ID' }, { status: 400 })
+      if (ipnLogId) {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = 'No order ID',
+              processed_at = NOW()
+          WHERE id = $1
+        `, [ipnLogId])
+      }
+      return
     }
 
     // Get order details
@@ -176,7 +293,16 @@ export async function POST(request: NextRequest) {
 
     if (!orderResult.rows || orderResult.rows.length === 0) {
       console.error('Order not found:', custom)
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+      if (ipnLogId) {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = 'Order not found: ' || $1,
+              processed_at = NOW()
+          WHERE id = $2
+        `, [custom, ipnLogId])
+      }
+      return
     }
 
     const order = orderResult.rows[0]
@@ -193,7 +319,16 @@ export async function POST(request: NextRequest) {
     
     if (expectedAmount !== receivedAmount) {
       console.error('Amount mismatch:', expectedAmount, 'vs', receivedAmount)
-      return NextResponse.json({ error: 'Amount mismatch' }, { status: 400 })
+      if (ipnLogId) {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = 'Amount mismatch: expected ' || $1 || ', received ' || $2,
+              processed_at = NOW()
+          WHERE id = $3
+        `, [expectedAmount, receivedAmount, ipnLogId])
+      }
+      return
     }
 
     // Update order based on payment status
@@ -226,7 +361,16 @@ export async function POST(request: NextRequest) {
         break
       default:
         console.log('Unknown payment status:', paymentStatus)
-        return NextResponse.json({ success: true })
+        if (ipnLogId) {
+          await query(`
+            UPDATE paypal_ipn_logs 
+            SET processing_status = 'skipped', 
+                error_message = 'Unknown payment status: ' || $1,
+                processed_at = NOW()
+            WHERE id = $2
+          `, [paymentStatus || 'unknown', ipnLogId])
+        }
+        return
     }
 
     // Update order status
@@ -408,10 +552,9 @@ export async function POST(request: NextRequest) {
     `, [ipnLogId])
     
     console.log('IPN processing completed successfully')
-    return NextResponse.json({ success: true })
-
+    
   } catch (error: any) {
-    console.error('IPN processing error:', error)
+    console.error('IPN async processing error:', error)
     console.error('Error details:', {
       message: error?.message || 'Unknown error',
       stack: error?.stack,
@@ -420,39 +563,36 @@ export async function POST(request: NextRequest) {
     
     // Update processing status to error
     if (ipnLogId) {
-      await query(`
-        UPDATE paypal_ipn_logs 
-        SET processing_status = 'error', 
-            error_message = $1,
-            processed_at = NOW()
-        WHERE id = $2
-      `, [error?.message || 'Unknown error', ipnLogId])
+      try {
+        await query(`
+          UPDATE paypal_ipn_logs 
+          SET processing_status = 'error', 
+              error_message = $1,
+              processed_at = NOW()
+          WHERE id = $2
+        `, [error?.message || 'Unknown error', ipnLogId])
+      } catch (dbError) {
+        console.error('Failed to update IPN log:', dbError)
+      }
     }
     
     // Send debug email for processing error
-    try {
-      await sendIPNDebugEmail({
-        ipnLogId,
-        status: 'processing_error',
-        rawBody: 'Error occurred before body parsing',
-        parsedData: {
-          paymentStatus: 'unknown',
-          txnId: 'unknown',
-          receiverEmail: 'unknown',
-          custom: 'unknown',
-          mcGross: 'unknown',
-          mcCurrency: 'unknown'
-        },
-        error: error?.message || 'Unknown error'
-      })
-    } catch (emailError) {
+    sendIPNDebugEmail({
+      ipnLogId,
+      status: 'processing_error',
+      rawBody: body || 'Error occurred during processing',
+      parsedData: {
+        paymentStatus: paymentStatus || 'unknown',
+        txnId: txnId || 'unknown',
+        receiverEmail: receiverEmail || businessEmail || 'unknown',
+        custom: custom || 'unknown',
+        mcGross: mcGross || 'unknown',
+        mcCurrency: mcCurrency || 'unknown'
+      },
+      error: error?.message || 'Unknown error'
+    }).catch(emailError => {
       console.error('Failed to send debug email:', emailError)
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error', details: error?.message || 'Unknown error' },
-      { status: 500 }
-    )
+    })
   }
 }
 
