@@ -24,7 +24,29 @@ node scripts/apply-performance-indexes.js
 
 **Expected runtime:** 2-5 minutes depending on table sizes
 
-### 2. check-db-performance.js
+### 2. apply-military-status-migration.js
+
+Applies migration to add military status fields (is_veteran, is_serving) to users table.
+
+**Usage:**
+```bash
+# Make sure POSTGRES_URL is set in your environment
+node scripts/apply-military-status-migration.js
+```
+
+**What it does:**
+- Adds `is_veteran` column (boolean, default false)
+- Adds `is_serving` column (boolean, default false)
+- Creates index for efficient veteran queries
+- Adds column comments
+- Verifies migration was successful
+- Shows current statistics
+
+**Expected runtime:** 10-30 seconds
+
+**Safe to run multiple times:** Yes (uses IF NOT EXISTS)
+
+### 3. check-db-performance.js
 
 Checks database performance metrics and identifies issues.
 
@@ -49,12 +71,17 @@ node scripts/check-db-performance.js
    node scripts/apply-performance-indexes.js
    ```
 
-2. **Monitor performance:**
+2. **Apply military status migration (if needed):**
+   ```bash
+   node scripts/apply-military-status-migration.js
+   ```
+
+3. **Monitor performance:**
    ```bash
    node scripts/check-db-performance.js
    ```
 
-3. **Check Neon dashboard:**
+4. **Check Neon dashboard:**
    - Log into your Neon dashboard
    - Monitor CPU usage - should drop from 100% to 15-30%
    - Check query performance improvements

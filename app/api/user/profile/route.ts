@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         u.discord_username, u.main_shard, u.character_names,
         u.status, u.email_verified, u.is_admin, u.created_at, u.last_login_at,
         u.review_count, u.rating_count, u.total_points_earned, u.account_rank,
+        u.is_veteran, u.is_serving,
         up.phone, up.address, up.city, up.state, up.zip_code, up.country, up.timezone,
         up.profile_image_url
       FROM users u
@@ -64,7 +65,9 @@ export async function GET(request: NextRequest) {
       review_count: actualReviewCount,
       rating_count: profileUser.rating_count || 0,
       total_points_earned: profileUser.total_points_earned || 0,
-      account_rank: profileUser.account_rank || 0
+      account_rank: profileUser.account_rank || 0,
+      is_veteran: profileUser.is_veteran || false,
+      is_serving: profileUser.is_serving || false
     })
 
     // Add headers to prevent caching
@@ -109,7 +112,9 @@ export async function PUT(request: NextRequest) {
       zip_code,
       country,
       timezone,
-      profile_image_url
+      profile_image_url,
+      is_veteran,
+      is_serving
     } = body
 
     // Use validated user ID - ensures we only update the authenticated user's profile
@@ -124,9 +129,11 @@ export async function PUT(request: NextRequest) {
         discord_username = $3,
         main_shard = $4,
         character_names = $5,
+        is_veteran = $6,
+        is_serving = $7,
         updated_at = NOW()
-      WHERE id = $6
-    `, [first_name, last_name, discord_username, main_shard, character_names, userId])
+      WHERE id = $8
+    `, [first_name, last_name, discord_username, main_shard, character_names, is_veteran || false, is_serving || false, userId])
 
     // Update or insert user profile
     await query(`

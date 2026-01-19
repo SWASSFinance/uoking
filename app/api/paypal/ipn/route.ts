@@ -448,6 +448,46 @@ async function processIPNAsync(data: {
         }
       }
 
+      // Process military cashback (2% of order total divided among all veterans)
+      try {
+        console.log('Processing military cashback...')
+        const orderTotal = parseFloat(order.total_amount)
+        const militaryCashbackPercentage = 2.0 // 2% of order total
+        const totalMilitaryCashback = (orderTotal * militaryCashbackPercentage) / 100
+        
+        // Get all users who are veterans (is_veteran = true)
+        const veteranUsersResult = await query(`
+          SELECT id FROM users 
+          WHERE is_veteran = true
+        `)
+        
+        if (veteranUsersResult.rows && veteranUsersResult.rows.length > 0) {
+          const veteranCount = veteranUsersResult.rows.length
+          const cashbackPerVeteran = totalMilitaryCashback / veteranCount
+          
+          console.log(`Distributing $${totalMilitaryCashback} military cashback among ${veteranCount} veterans ($${cashbackPerVeteran.toFixed(4)} each)`)
+          
+          // Update each veteran's cashback balance
+          for (const veteran of veteranUsersResult.rows) {
+            // Ensure user_points record exists
+            await query(`
+              INSERT INTO user_points (user_id, referral_cash, current_points, lifetime_points, created_at, updated_at)
+              VALUES ($1, $2, 0, 0, NOW(), NOW())
+              ON CONFLICT (user_id) DO UPDATE SET
+                referral_cash = user_points.referral_cash + $2,
+                updated_at = NOW()
+            `, [veteran.id, cashbackPerVeteran])
+          }
+          
+          console.log(`Military cashback distributed successfully for order ${custom}`)
+        } else {
+          console.log('No veteran users found, skipping military cashback distribution')
+        }
+      } catch (militaryError) {
+        console.error('Error processing military cashback:', militaryError)
+        // Don't fail IPN processing if military cashback fails
+      }
+
       // Send order confirmation email
       try {
         console.log('Sending order confirmation email...')

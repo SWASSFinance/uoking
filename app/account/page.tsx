@@ -116,6 +116,8 @@ interface UserProfile {
   rating_count?: number
   total_points_earned?: number
   account_rank?: number
+  is_veteran?: boolean
+  is_serving?: boolean
 }
 
 export default function AccountPage() {
@@ -158,7 +160,9 @@ export default function AccountPage() {
     zip_code: "",
     country: "United States",
     timezone: "",
-    profile_image_url: ""
+    profile_image_url: "",
+    is_veteran: false,
+    is_serving: false
   })
 
   // Redirect if not authenticated
@@ -323,7 +327,9 @@ export default function AccountPage() {
           zip_code: profileData.zip_code || "",
           country: profileData.country || "United States",
           timezone: profileData.timezone || "",
-          profile_image_url: profileData.profile_image_url || ""
+          profile_image_url: profileData.profile_image_url || "",
+          is_veteran: profileData.is_veteran || false,
+          is_serving: profileData.is_serving || false
         })
       }
 
@@ -1249,6 +1255,46 @@ export default function AccountPage() {
                         ) : (
                           <p className="mt-1 text-gray-900">{userProfile.timezone || 'Not set'}</p>
                         )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Military Status */}
+                  <div className="border-t pt-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Military Status</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Check the boxes below if you are a military veteran or currently serving. This makes you eligible for our military cashback program.
+                    </p>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="is_veteran"
+                          checked={isEditing ? editForm.is_veteran : (userProfile?.is_veteran || false)}
+                          onCheckedChange={(checked) => {
+                            if (isEditing) {
+                              setEditForm({...editForm, is_veteran: checked})
+                            }
+                          }}
+                          disabled={!isEditing}
+                        />
+                        <Label htmlFor="is_veteran" className="text-gray-700 font-medium cursor-pointer">
+                          I am a military veteran
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="is_serving"
+                          checked={isEditing ? editForm.is_serving : (userProfile?.is_serving || false)}
+                          onCheckedChange={(checked) => {
+                            if (isEditing) {
+                              setEditForm({...editForm, is_serving: checked})
+                            }
+                          }}
+                          disabled={!isEditing}
+                        />
+                        <Label htmlFor="is_serving" className="text-gray-700 font-medium cursor-pointer">
+                          I am currently serving in the military
+                        </Label>
                       </div>
                     </div>
                   </div>

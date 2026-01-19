@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { createNoCacheResponse } from '@/lib/api-utils'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: couponId } = await params
     const session = await auth()
     
     if (!session?.user?.isAdmin) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Unauthorized' },
-        { status: 401 }
+        401
       )
     }
 
@@ -30,21 +32,21 @@ export async function PUT(
 
     // Validate required fields
     if (!code || !description || !discount_type || discount_value === undefined) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Missing required fields' },
-        { status: 400 }
+        400
       )
     }
 
     // Check if coupon code already exists (excluding current coupon)
     const existingCoupon = await query(`
       SELECT id FROM coupons WHERE code = $1 AND id != $2
-    `, [code.toUpperCase(), params.id])
+    `, [code.toUpperCase(), couponId])
 
     if (existingCoupon.rows && existingCoupon.rows.length > 0) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Coupon code already exists' },
-        { status: 400 }
+        400
       )
     }
 
@@ -77,63 +79,64 @@ export async function PUT(
       max_uses,
       is_active,
       valid_until || null,
-      params.id
+      couponId
     ])
 
     if (!result.rows || result.rows.length === 0) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Coupon not found' },
-        { status: 404 }
+        404
       )
     }
 
-    return NextResponse.json(result.rows[0])
+    return createNoCacheResponse(result.rows[0])
   } catch (error) {
     console.error('Error updating coupon:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to update coupon' },
-      { status: 500 }
+      500
     )
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: couponId } = await params
     const session = await auth()
     
     if (!session?.user?.isAdmin) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Unauthorized' },
-        { status: 401 }
+        401
       )
     }
 
     // Delete coupon usage records first (due to foreign key constraint)
     await query(`
       DELETE FROM coupon_usage WHERE coupon_id = $1
-    `, [params.id])
+    `, [couponId])
 
     // Delete the coupon
     const result = await query(`
       DELETE FROM coupons WHERE id = $1 RETURNING id
-    `, [params.id])
+    `, [couponId])
 
     if (!result.rows || result.rows.length === 0) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Coupon not found' },
-        { status: 404 }
+        404
       )
     }
 
-    return NextResponse.json({ success: true })
+    return createNoCacheResponse({ success: true })
   } catch (error) {
     console.error('Error deleting coupon:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to delete coupon' },
-      { status: 500 }
+      500
     )
   }
 } 

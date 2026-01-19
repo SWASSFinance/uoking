@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     
     if (!session?.user?.isAdmin) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Unauthorized' },
-        { status: 401 }
+        401
       )
     }
 
@@ -22,12 +23,12 @@ export async function GET(request: NextRequest) {
       ORDER BY created_at DESC
     `)
 
-    return NextResponse.json(result.rows || [])
+    return createNoCacheResponse(result.rows || [])
   } catch (error) {
     console.error('Error fetching coupons:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to fetch coupons' },
-      { status: 500 }
+      500
     )
   }
 }
@@ -37,9 +38,9 @@ export async function POST(request: NextRequest) {
     const session = await auth()
     
     if (!session?.user?.isAdmin) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Unauthorized' },
-        { status: 401 }
+        401
       )
     }
 
@@ -57,9 +58,9 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!code || !description || !discount_type || discount_value === undefined) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Missing required fields' },
-        { status: 400 }
+        400
       )
     }
 
@@ -69,9 +70,9 @@ export async function POST(request: NextRequest) {
     `, [code.toUpperCase()])
 
     if (existingCoupon.rows && existingCoupon.rows.length > 0) {
-      return NextResponse.json(
+      return createNoCacheResponse(
         { error: 'Coupon code already exists' },
-        { status: 400 }
+        400
       )
     }
 
@@ -96,12 +97,12 @@ export async function POST(request: NextRequest) {
       valid_until || null
     ])
 
-    return NextResponse.json(result.rows[0])
+    return createNoCacheResponse(result.rows[0])
   } catch (error) {
     console.error('Error creating coupon:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to create coupon' },
-      { status: 500 }
+      500
     )
   }
 } 
