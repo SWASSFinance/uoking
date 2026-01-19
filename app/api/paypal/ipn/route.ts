@@ -448,27 +448,28 @@ async function processIPNAsync(data: {
         }
       }
 
-      // Process military cashback (2% of order total divided among all veterans)
+      // Process military cashback (2% of order total divided among all eligible military users)
       try {
         console.log('Processing military cashback...')
         const orderTotal = parseFloat(order.total_amount)
         const militaryCashbackPercentage = 2.0 // 2% of order total
         const totalMilitaryCashback = (orderTotal * militaryCashbackPercentage) / 100
         
-        // Get all users who are veterans (is_veteran = true)
-        const veteranUsersResult = await query(`
-          SELECT id FROM users 
-          WHERE is_veteran = true
+        // Get all users who are veterans OR currently serving (or both)
+        // Each user gets an equal share regardless of whether they're veteran, serving, or both
+        const militaryUsersResult = await query(`
+          SELECT id, is_veteran, is_serving FROM users 
+          WHERE is_veteran = true OR is_serving = true
         `)
         
-        if (veteranUsersResult.rows && veteranUsersResult.rows.length > 0) {
-          const veteranCount = veteranUsersResult.rows.length
-          const cashbackPerVeteran = totalMilitaryCashback / veteranCount
+        if (militaryUsersResult.rows && militaryUsersResult.rows.length > 0) {
+          const militaryUserCount = militaryUsersResult.rows.length
+          const cashbackPerUser = totalMilitaryCashback / militaryUserCount
           
-          console.log(`Distributing $${totalMilitaryCashback} military cashback among ${veteranCount} veterans ($${cashbackPerVeteran.toFixed(4)} each)`)
+          console.log(`Distributing $${totalMilitaryCashback.toFixed(2)} military cashback among ${militaryUserCount} eligible users ($${cashbackPerUser.toFixed(4)} each)`)
           
-          // Update each veteran's cashback balance
-          for (const veteran of veteranUsersResult.rows) {
+          // Update each eligible user's cashback balance
+          for (const user of militaryUsersResult.rows) {
             // Ensure user_points record exists
             await query(`
               INSERT INTO user_points (user_id, referral_cash, current_points, lifetime_points, created_at, updated_at)
@@ -476,12 +477,12 @@ async function processIPNAsync(data: {
               ON CONFLICT (user_id) DO UPDATE SET
                 referral_cash = user_points.referral_cash + $2,
                 updated_at = NOW()
-            `, [veteran.id, cashbackPerVeteran])
+            `, [user.id, cashbackPerUser])
           }
           
           console.log(`Military cashback distributed successfully for order ${custom}`)
         } else {
-          console.log('No veteran users found, skipping military cashback distribution')
+          console.log('No eligible military users found (veterans or currently serving), skipping military cashback distribution')
         }
       } catch (militaryError) {
         console.error('Error processing military cashback:', militaryError)
