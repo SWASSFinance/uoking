@@ -30,6 +30,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
+import { isInAppBrowser, getBrowserName } from "@/lib/detect-in-app-browser"
 
 export default function SignUpPage() {
   const { toast } = useToast()
@@ -48,6 +49,7 @@ export default function SignUpPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [referralValid, setReferralValid] = useState<boolean | null>(null)
+  const [showInAppBrowserWarning, setShowInAppBrowserWarning] = useState(false)
 
   // Load referral code from URL params
   useEffect(() => {
@@ -57,6 +59,13 @@ export default function SignUpPage() {
       validateReferralCode(ref)
     }
   }, [searchParams])
+
+  // Check if user is in an in-app browser
+  useEffect(() => {
+    if (isInAppBrowser()) {
+      setShowInAppBrowserWarning(true)
+    }
+  }, [])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -426,11 +435,33 @@ export default function SignUpPage() {
                 </div>
               </div>
 
+              {showInAppBrowserWarning && (
+                <Alert className="bg-amber-50 border-amber-200">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-800">
+                    <strong>In-App Browser Detected:</strong> Google sign-in may not work in {getBrowserName()}. 
+                    Please open this page in your regular browser (Chrome, Safari, Firefox) to use Google sign-in.
+                    <br />
+                    <span className="text-sm mt-1 block">
+                      You can copy the URL and paste it into your browser, or use Discord sign-in which works in all browsers.
+                    </span>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <Button 
                   variant="outline" 
                   className="border-gray-300 hover:bg-gray-50"
                   onClick={() => {
+                    if (isInAppBrowser()) {
+                      toast({
+                        title: "Browser Not Supported",
+                        description: "Google sign-in requires a secure browser. Please open this page in Chrome, Safari, or Firefox.",
+                        variant: "destructive",
+                      })
+                      return
+                    }
                     const ref = searchParams.get('ref')
                     const callbackUrl = ref ? `/login/callback?ref=${ref}` : '/login/callback'
                     signIn('google', { callbackUrl })

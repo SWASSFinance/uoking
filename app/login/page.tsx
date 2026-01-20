@@ -4,6 +4,7 @@ import { useState } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { isInAppBrowser, getBrowserName } from "@/lib/detect-in-app-browser"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -106,6 +107,17 @@ export default function LoginPage() {
   }
 
   const handleOAuthSignIn = async (provider: 'google' | 'discord') => {
+    // Check if user is in in-app browser and trying to use Google
+    if (provider === 'google' && isInAppBrowser()) {
+      toast({
+        title: "Browser Not Supported",
+        description: `Google sign-in requires a secure browser. Please open this page in Chrome, Safari, or Firefox instead of ${getBrowserName()}.`,
+        variant: "destructive",
+      })
+      setIsOAuthLoading(false)
+      return
+    }
+
     setIsOAuthLoading(true)
     
     try {
