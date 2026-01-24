@@ -108,6 +108,13 @@ export default function MailchimpAdminPage() {
   const [importing, setImporting] = useState(false)
   const [importResults, setImportResults] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'import' | 'health'>('overview')
+  
+  // Single email test import state
+  const [testImportEmail, setTestImportEmail] = useState('')
+  const [testImportFirstName, setTestImportFirstName] = useState('')
+  const [testImportLastName, setTestImportLastName] = useState('')
+  const [testImporting, setTestImporting] = useState(false)
+  const [testImportResult, setTestImportResult] = useState<any>(null)
 
   // Test form state
   const [testForm, setTestForm] = useState({
@@ -399,6 +406,91 @@ export default function MailchimpAdminPage() {
       })
     } finally {
       setImporting(false)
+    }
+  }
+
+  const handleTestImport = async () => {
+    if (!testImportEmail) {
+      toast({
+        title: "Error",
+        description: "Email is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Skip deleted emails
+    if (testImportEmail.toLowerCase().startsWith('deleted_')) {
+      toast({
+        title: "Error",
+        description: "Cannot import emails starting with 'deleted_'",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setTestImporting(true)
+      setTestImportResult(null)
+      
+      const response = await fetch('/api/admin/mailchimp/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: testImportEmail,
+          firstName: testImportFirstName,
+          lastName: testImportLastName,
+          characterName: '',
+          mainShard: '',
+          source: 'admin-test-import',
+          tags: 'test-import'
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setTestImportResult({
+          success: true,
+          message: data.message || "Email imported successfully",
+          email: testImportEmail
+        })
+        toast({
+          title: "Success",
+          description: "Email imported to Mailchimp successfully",
+        })
+        loadStats()
+        // Clear form
+        setTestImportEmail('')
+        setTestImportFirstName('')
+        setTestImportLastName('')
+      } else {
+        setTestImportResult({
+          success: false,
+          error: data.error || data.details || "Failed to import email",
+          email: testImportEmail
+        })
+        toast({
+          title: "Import Failed",
+          description: data.error || data.details || "Failed to import email",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      setTestImportResult({
+        success: false,
+        error: error.message || "Failed to import email",
+        email: testImportEmail
+      })
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to import email",
+        variant: "destructive",
+      })
+    } finally {
+      setTestImporting(false)
     }
   }
 
@@ -1106,11 +1198,105 @@ export default function MailchimpAdminPage() {
           </TabsContent>
 
           <TabsContent value="import" className="space-y-6">
+            {/* Single Email Test Import */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Test Single Email Import
+                </CardTitle>
+                <CardDescription>Test importing a single email to Mailchimp (for debugging)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="test-email">Email *</Label>
+                    <Input
+                      id="test-email"
+                      type="email"
+                      placeholder="test@example.com"
+                      value={testImportEmail}
+                      onChange={(e) => setTestImportEmail(e.target.value)}
+                      disabled={testImporting}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="test-first-name">First Name</Label>
+                      <Input
+                        id="test-first-name"
+                        type="text"
+                        placeholder="John"
+                        value={testImportFirstName}
+                        onChange={(e) => setTestImportFirstName(e.target.value)}
+                        disabled={testImporting}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="test-last-name">Last Name</Label>
+                      <Input
+                        id="test-last-name"
+                        type="text"
+                        placeholder="Doe"
+                        value={testImportLastName}
+                        onChange={(e) => setTestImportLastName(e.target.value)}
+                        disabled={testImporting}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleTestImport}
+                    disabled={testImporting || !testImportEmail}
+                    className="w-full"
+                  >
+                    {testImporting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Import Single Email
+                      </>
+                    )}
+                  </Button>
+                  
+                  {testImportResult && (
+                    <div className={`mt-4 p-4 rounded-lg ${
+                      testImportResult.success 
+                        ? 'bg-green-50 border border-green-200' 
+                        : 'bg-red-50 border border-red-200'
+                    }`}>
+                      <div className={`font-semibold ${
+                        testImportResult.success ? 'text-green-800' : 'text-red-800'
+                      }`}>
+                        {testImportResult.success ? '✓ Success' : '✗ Failed'}
+                      </div>
+                      <div className={`text-sm mt-1 ${
+                        testImportResult.success ? 'text-green-700' : 'text-red-700'
+                      }`}>
+                        {testImportResult.success 
+                          ? testImportResult.message 
+                          : testImportResult.error}
+                      </div>
+                      {testImportResult.email && (
+                        <div className="text-xs text-gray-600 mt-2">
+                          Email: {testImportResult.email}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Bulk Import */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Import from Database
+                  Bulk Import from Database
                 </CardTitle>
                 <CardDescription>Import missing users/orders into Mailchimp with email validation</CardDescription>
               </CardHeader>
