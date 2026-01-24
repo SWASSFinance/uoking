@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         LEFT JOIN user_profiles up ON u.id = up.user_id
         WHERE u.email IS NOT NULL 
           AND u.email != ''
+          AND u.email NOT LIKE 'deleted_%'
           AND u.status = 'active'
         ORDER BY u.created_at DESC
       `)
@@ -61,23 +62,23 @@ export async function POST(request: NextRequest) {
       // Prefer payer_email if available, as it's the actual payment email
       // Handle case where payer_email column might not exist yet
       try {
-        const result = await query(`
-          SELECT DISTINCT
-            o.id as order_id,
-            COALESCE(o.payer_email, u.email) as email,
-            u.first_name,
-            u.last_name,
-            o.created_at,
-            o.total_amount,
-            o.payer_email,
-            u.email as user_email
-          FROM orders o
-          JOIN users u ON o.user_id = u.id
-          WHERE (o.payer_email IS NOT NULL AND o.payer_email != '') 
-             OR (u.email IS NOT NULL AND u.email != '')
-          AND o.status = 'completed'
-          ORDER BY o.created_at DESC
-        `)
+          const result = await query(`
+            SELECT DISTINCT
+              o.id as order_id,
+              COALESCE(o.payer_email, u.email) as email,
+              u.first_name,
+              u.last_name,
+              o.created_at,
+              o.total_amount,
+              o.payer_email,
+              u.email as user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE (o.payer_email IS NOT NULL AND o.payer_email != '' AND o.payer_email NOT LIKE 'deleted_%') 
+               OR (u.email IS NOT NULL AND u.email != '' AND u.email NOT LIKE 'deleted_%')
+            AND o.status = 'completed'
+            ORDER BY o.created_at DESC
+          `)
         dbResults = result.rows || []
       } catch (error: any) {
         // If payer_email column doesn't exist, fall back to user email only
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
             JOIN users u ON o.user_id = u.id
             WHERE u.email IS NOT NULL 
               AND u.email != ''
+              AND u.email NOT LIKE 'deleted_%'
               AND o.status = 'completed'
             ORDER BY o.created_at DESC
           `)
@@ -115,6 +117,9 @@ export async function POST(request: NextRequest) {
 
     // Filter based on options
     let toImport = validationResults.filter(v => {
+      // Skip deleted emails (emails starting with "deleted_")
+      if (v.email.toLowerCase().startsWith('deleted_')) return false
+      
       if (!v.validation.isValid && skipInvalid) return false
       if (v.validation.isDisposable && skipDisposable) return false
       if (v.validation.hasInvalidPattern && skipInvalid) return false

@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         FROM users u
         WHERE u.email IS NOT NULL 
           AND u.email != ''
+          AND u.email NOT LIKE 'deleted_%'
           AND u.status = 'active'
         ORDER BY u.created_at DESC
         LIMIT $1
@@ -53,22 +54,22 @@ export async function GET(request: NextRequest) {
       // Prefer payer_email if available, as it's the actual payment email
       // Handle case where payer_email column might not exist yet
       try {
-        const result = await query(`
-          SELECT DISTINCT
-            COALESCE(o.payer_email, u.email) as email,
-            u.first_name,
-            u.last_name,
-            o.created_at,
-            o.payer_email,
-            u.email as user_email
-          FROM orders o
-          JOIN users u ON o.user_id = u.id
-          WHERE (o.payer_email IS NOT NULL AND o.payer_email != '') 
-             OR (u.email IS NOT NULL AND u.email != '')
-          AND o.status = 'completed'
-          ORDER BY o.created_at DESC
-          LIMIT $1
-        `, [limit])
+          const result = await query(`
+            SELECT DISTINCT
+              COALESCE(o.payer_email, u.email) as email,
+              u.first_name,
+              u.last_name,
+              o.created_at,
+              o.payer_email,
+              u.email as user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE (o.payer_email IS NOT NULL AND o.payer_email != '' AND o.payer_email NOT LIKE 'deleted_%') 
+               OR (u.email IS NOT NULL AND u.email != '' AND u.email NOT LIKE 'deleted_%')
+            AND o.status = 'completed'
+            ORDER BY o.created_at DESC
+            LIMIT $1
+          `, [limit])
         dbRecords = result.rows || []
       } catch (error: any) {
         // If payer_email column doesn't exist, fall back to user email only
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest) {
             JOIN users u ON o.user_id = u.id
             WHERE u.email IS NOT NULL 
               AND u.email != ''
+              AND u.email NOT LIKE 'deleted_%'
               AND o.status = 'completed'
             ORDER BY o.created_at DESC
             LIMIT $1
