@@ -25,10 +25,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get Mailchimp list statistics
-    const listStats = await getMailchimpListStats()
-    const apiStats = getMailchimpStats()
-
     // Check environment variables and extract server prefix if needed
     const apiKeyRaw = process.env.MAILCHIMP_API_KEY || ''
     let serverPrefix = process.env.MAILCHIMP_SERVER_PREFIX || ''
@@ -52,15 +48,103 @@ export async function GET(request: NextRequest) {
       serverPrefix: serverPrefix || 'Not set',
       listId: process.env.MAILCHIMP_LIST_ID || 'Not set',
       apiKeyPrefix: apiKeyRaw ? `${apiKeyRaw.substring(0, 10)}...` : 'Not set',
+      apiKeyLength: apiKeyRaw.length,
       apiKeyFormat: apiKeyRaw && !process.env.MAILCHIMP_SERVER_PREFIX && serverPrefix 
         ? 'Extracted from API key' 
-        : 'Separate variables'
+        : 'Separate variables',
+      errors: [] as string[]
+    }
+
+    // Validate configuration before making API calls
+    if (!apiKeyRaw) {
+      config.errors.push('MAILCHIMP_API_KEY environment variable is not set')
+    } else if (apiKeyRaw.length < 10) {
+      config.errors.push(`MAILCHIMP_API_KEY appears to be invalid (too short: ${apiKeyRaw.length} characters)`)
+    }
+
+    if (!serverPrefix) {
+      config.errors.push('Server prefix could not be determined. MAILCHIMP_SERVER_PREFIX is not set and could not be extracted from API key.')
+    } else if (!/^us\d+$/.test(serverPrefix)) {
+      config.errors.push(`Server prefix "${serverPrefix}" does not match expected format (us followed by digits)`)
+    }
+
+    if (!process.env.MAILCHIMP_LIST_ID) {
+      config.errors.push('MAILCHIMP_LIST_ID environment variable is not set')
+    } else if (process.env.MAILCHIMP_LIST_ID.length < 3) {
+      config.errors.push(`MAILCHIMP_LIST_ID appears to be invalid (too short: ${process.env.MAILCHIMP_LIST_ID.length} characters)`)
+    }
+
+    // If there are configuration errors, return them without trying to call Mailchimp
+    if (config.errors.length > 0) {
+      return createNoCacheResponse({
+        config,
+        apiStats: {
+          totalApiCalls: 0,
+          rateLimitedCalls: 0,
+          activeRateLimits: 0
+        },
+        listStats: null,
+        error: 'Configuration errors detected',
+        errorDetails: config.errors
+      })
+    }
+
+    // Try to get Mailchimp list statistics
+    let listStats = null
+    let apiStats = null
+    let apiError = null
+
+    try {
+      apiStats = getMailchimpStats()
+    } catch (error: any) {
+      console.error('Error getting API stats:', error)
+      apiError = error.message || 'Failed to get API statistics'
+    }
+
+    try {
+      listStats = await getMailchimpListStats()
+    } catch (error: any) {
+      console.error('Error getting Mailchimp list stats:', error)
+      
+      // Provide detailed error information
+      let errorMessage = error.message || 'Unknown error'
+      let errorDetails = null
+
+      // Try to extract more details from the error
+      if (error.message) {
+        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          errorMessage = 'Authentication failed - Invalid API key'
+          errorDetails = 'The API key may be incorrect or expired. Please verify your MAILCHIMP_API_KEY in .env.local'
+        } else if (error.message.includes('404') || error.message.includes('Not Found')) {
+          errorMessage = 'List not found'
+          errorDetails = `The List ID "${process.env.MAILCHIMP_LIST_ID}" was not found. Please verify your MAILCHIMP_LIST_ID in .env.local`
+        } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+          errorMessage = 'Access forbidden'
+          errorDetails = 'The API key does not have permission to access this list. Check your Mailchimp account permissions.'
+        } else if (error.message.includes('rate limit')) {
+          errorMessage = 'Rate limit exceeded'
+          errorDetails = 'Too many API requests. Please wait a moment and try again.'
+        }
+      }
+
+      apiError = {
+        message: errorMessage,
+        details: errorDetails,
+        originalError: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }
     }
 
     return createNoCacheResponse({
       listStats,
-      apiStats,
-      config
+      apiStats: apiStats || {
+        totalApiCalls: 0,
+        rateLimitedCalls: 0,
+        activeRateLimits: 0
+      },
+      config,
+      error: apiError ? apiError.message : null,
+      errorDetails: apiError
     })
 
   } catch (error: any) {
@@ -69,7 +153,15 @@ export async function GET(request: NextRequest) {
       { 
         error: 'Failed to get Mailchimp statistics',
         details: error.message || 'Unknown error',
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        config: {
+          hasApiKey: !!process.env.MAILCHIMP_API_KEY,
+          hasServerPrefix: !!process.env.MAILCHIMP_SERVER_PREFIX,
+          hasListId: !!process.env.MAILCHIMP_LIST_ID,
+          serverPrefix: process.env.MAILCHIMP_SERVER_PREFIX || 'Not set',
+          listId: process.env.MAILCHIMP_LIST_ID || 'Not set',
+          apiKeyPrefix: process.env.MAILCHIMP_API_KEY ? `${process.env.MAILCHIMP_API_KEY.substring(0, 10)}...` : 'Not set'
+        }
       },
       { status: 500 }
     )

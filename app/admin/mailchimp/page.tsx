@@ -32,7 +32,7 @@ interface MailchimpStats {
     cleanedCount: number
     openRate: number
     clickRate: number
-  }
+  } | null
   apiStats: {
     totalApiCalls: number
     rateLimitedCalls: number
@@ -45,6 +45,16 @@ interface MailchimpStats {
     serverPrefix: string
     listId: string
     apiKeyPrefix: string
+    apiKeyLength?: number
+    apiKeyFormat?: string
+    errors?: string[]
+  }
+  error?: string | null
+  errorDetails?: {
+    message: string
+    details?: string
+    originalError?: string
+    stack?: string
   }
 }
 
@@ -103,22 +113,41 @@ export default function MailchimpAdminPage() {
       const response = await fetch('/api/admin/mailchimp/stats', {
         cache: 'no-store'
       })
+      const data = await response.json()
+      
       if (response.ok) {
-        const data = await response.json()
         setStats(data)
+        
+        // Show warnings if there are configuration errors
+        if (data.config?.errors && data.config.errors.length > 0) {
+          toast({
+            title: "Configuration Issues",
+            description: `${data.config.errors.length} configuration error(s) found. Check the Configuration Status section below.`,
+            variant: "destructive",
+          })
+        }
+        
+        // Show API errors if any
+        if (data.error) {
+          toast({
+            title: "API Error",
+            description: data.errorDetails?.details || data.error,
+            variant: "destructive",
+          })
+        }
       } else {
-        const error = await response.json()
+        setStats(data) // Still set stats to show config even on error
         toast({
           title: "Error",
-          description: error.error || "Failed to load Mailchimp statistics",
+          description: data.error || data.details || "Failed to load Mailchimp statistics",
           variant: "destructive",
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading stats:', error)
       toast({
         title: "Error",
-        description: "Failed to load Mailchimp statistics",
+        description: error.message || "Failed to load Mailchimp statistics",
         variant: "destructive",
       })
     } finally {
@@ -304,7 +333,20 @@ export default function MailchimpAdminPage() {
                   </div>
                 </div>
 
-                {!stats.config.hasApiKey || !stats.config.hasServerPrefix || !stats.config.hasListId ? (
+                {stats.config.errors && stats.config.errors.length > 0 ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Configuration Errors</AlertTitle>
+                    <AlertDescription className="space-y-2">
+                      <div>The following configuration issues were detected:</div>
+                      <ul className="list-disc list-inside space-y-1">
+                        {stats.config.errors.map((error: string, idx: number) => (
+                          <li key={idx} className="text-sm">{error}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                ) : !stats.config.hasApiKey || !stats.config.hasServerPrefix || !stats.config.hasListId ? (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Configuration Incomplete</AlertTitle>
@@ -318,6 +360,28 @@ export default function MailchimpAdminPage() {
                     <AlertTitle>Configuration Complete</AlertTitle>
                     <AlertDescription>
                       All Mailchimp environment variables are configured.
+                      {stats.config.apiKeyFormat && (
+                        <span className="block mt-1 text-xs text-gray-600">
+                          Server prefix: {stats.config.apiKeyFormat}
+                        </span>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {stats.errorDetails && (
+                  <Alert variant="destructive" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>API Error: {stats.errorDetails.message}</AlertTitle>
+                    <AlertDescription className="space-y-2">
+                      {stats.errorDetails.details && (
+                        <div>{stats.errorDetails.details}</div>
+                      )}
+                      {stats.errorDetails.originalError && process.env.NODE_ENV === 'development' && (
+                        <div className="text-xs mt-2 p-2 bg-gray-100 rounded">
+                          <strong>Original Error:</strong> {stats.errorDetails.originalError}
+                        </div>
+                      )}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -380,10 +444,18 @@ export default function MailchimpAdminPage() {
                     Refresh Stats
                   </Button>
                 </div>
+              ) : stats?.errorDetails ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>{stats.errorDetails.message}</AlertTitle>
+                  <AlertDescription>
+                    {stats.errorDetails.details || 'Failed to load statistics'}
+                  </AlertDescription>
+                </Alert>
               ) : (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>Failed to load statistics</AlertDescription>
+                  <AlertDescription>Failed to load statistics. Check configuration above.</AlertDescription>
                 </Alert>
               )}
             </CardContent>
