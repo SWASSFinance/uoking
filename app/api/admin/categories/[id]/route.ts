@@ -3,11 +3,11 @@ import { updateCategory, deleteCategory } from '@/lib/db'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
-    const categoryId = params.id
+    const { id: categoryId } = await params
     
     console.log('Updating category:', categoryId)
     console.log('Category data:', JSON.stringify(body, null, 2))
@@ -58,10 +58,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const categoryId = params.id
+    const { id: categoryId } = await params
     await deleteCategory(categoryId)
     return NextResponse.json({ success: true, id: categoryId })
   } catch (error) {
