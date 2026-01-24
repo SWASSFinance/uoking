@@ -107,6 +107,7 @@ export default function MailchimpAdminPage() {
   const [loadingSync, setLoadingSync] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResults, setImportResults] = useState<any>(null)
+  const [importProgress, setImportProgress] = useState<{current: number, total: number} | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'import' | 'health'>('overview')
   
   // Single email test import state
@@ -115,6 +116,9 @@ export default function MailchimpAdminPage() {
   const [testImportLastName, setTestImportLastName] = useState('')
   const [testImporting, setTestImporting] = useState(false)
   const [testImportResult, setTestImportResult] = useState<any>(null)
+  
+  // Import one email state
+  const [importingOne, setImportingOne] = useState<string | null>(null)
 
   // Test form state
   const [testForm, setTestForm] = useState({
@@ -368,6 +372,7 @@ export default function MailchimpAdminPage() {
     try {
       setImporting(true)
       setImportResults(null)
+      setImportProgress({ current: 0, total: 0 })
       
       const response = await fetch('/api/admin/mailchimp/import-users', {
         method: 'POST',
@@ -385,13 +390,16 @@ export default function MailchimpAdminPage() {
 
       if (response.ok) {
         setImportResults(data)
+        setImportProgress(null)
         toast({
           title: "Import Complete",
           description: `Successfully imported ${data.results.imported} emails from ${source}`,
         })
         loadStats()
         loadListHealth()
+        loadSyncStatus(source) // Refresh sync status
       } else {
+        setImportProgress(null)
         toast({
           title: "Import Failed",
           description: data.error || "Failed to import emails",
@@ -399,6 +407,7 @@ export default function MailchimpAdminPage() {
         })
       }
     } catch (error: any) {
+      setImportProgress(null)
       toast({
         title: "Import Failed",
         description: error.message || "Failed to import emails",
@@ -406,6 +415,58 @@ export default function MailchimpAdminPage() {
       })
     } finally {
       setImporting(false)
+    }
+  }
+
+  const handleImportOne = async (email: string, firstName?: string, lastName?: string) => {
+    if (!email) return
+    
+    try {
+      setImportingOne(email)
+      
+      const response = await fetch('/api/admin/mailchimp/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          firstName: firstName || '',
+          lastName: lastName || '',
+          characterName: '',
+          mainShard: '',
+          source: 'admin-import-one',
+          tags: 'imported-from-sync'
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: `${email} imported successfully`,
+        })
+        // Refresh sync status to update the list
+        if (syncStatus?.source) {
+          loadSyncStatus(syncStatus.source)
+        }
+        loadStats()
+      } else {
+        toast({
+          title: "Import Failed",
+          description: data.error || data.details || `Failed to import ${email}`,
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Import Failed",
+        description: error.message || `Failed to import ${email}`,
+        variant: "destructive",
+      })
+    } finally {
+      setImportingOne(null)
     }
   }
 
@@ -1180,13 +1241,44 @@ export default function MailchimpAdminPage() {
                           <AlertTitle>Missing Emails Found</AlertTitle>
                           <AlertDescription>
                             {syncStatus.missingEmails.length} emails from {syncStatus.source} are not in Mailchimp.
-                            Go to the "Import & Clean" tab to import them.
+                            Click "Import One" next to each email to import individually.
                           </AlertDescription>
                         </Alert>
-                        <div className="mt-2 max-h-40 overflow-y-auto">
-                          <div className="text-sm text-gray-600">
-                            {syncStatus.missingEmails.slice(0, 20).join(', ')}
-                            {syncStatus.missingEmails.length > 20 && ` ... and ${syncStatus.missingEmails.length - 20} more`}
+                        <div className="mt-4 max-h-96 overflow-y-auto border rounded-lg p-4 bg-gray-50">
+                          <div className="space-y-2">
+                            {syncStatus.missingEmails.slice(0, 100).map((email: string, index: number) => {
+                              // Try to find user info from syncStatus
+                              const userInfo = syncStatus.syncStatus?.find((s: any) => s.email === email)
+                              return (
+                                <div key={index} className="flex items-center justify-between p-2 bg-white rounded border hover:bg-gray-50">
+                                  <span className="text-sm text-gray-700 flex-1">{email}</span>
+                                  <Button
+                                    onClick={() => handleImportOne(email, userInfo?.firstName, userInfo?.lastName)}
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={importingOne === email || !!importingOne}
+                                    className="ml-2"
+                                  >
+                                    {importingOne === email ? (
+                                      <>
+                                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                        Importing...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Upload className="h-3 w-3 mr-1" />
+                                        Import One
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              )
+                            })}
+                            {syncStatus.missingEmails.length > 100 && (
+                              <div className="text-sm text-gray-500 text-center pt-2">
+                                ... and {syncStatus.missingEmails.length - 100} more (showing first 100)
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1362,6 +1454,20 @@ export default function MailchimpAdminPage() {
                   </Button>
                 </div>
 
+                {importing && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                      <span className="text-sm text-blue-700">Importing emails... This may take a while. Please wait.</span>
+                    </div>
+                    {importProgress && (
+                      <div className="mt-2 text-xs text-blue-600">
+                        Processing... (This can take several minutes for large imports)
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 {importResults && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
                     <div className="font-semibold">Import Results:</div>
@@ -1371,9 +1477,14 @@ export default function MailchimpAdminPage() {
                       <div className="text-orange-600">Skipped: {importResults.results.skipped}</div>
                       <div className="text-red-600">Failed: {importResults.results.failed}</div>
                       {importResults.results.errors && importResults.results.errors.length > 0 && (
-                        <div className="mt-2 text-xs text-red-600">
-                          Errors: {importResults.results.errors.slice(0, 5).join(', ')}
-                          {importResults.results.errors.length > 5 && ` ... and ${importResults.results.errors.length - 5} more`}
+                        <div className="mt-2 text-xs text-red-600 max-h-32 overflow-y-auto">
+                          <div className="font-semibold mb-1">Errors:</div>
+                          {importResults.results.errors.slice(0, 10).map((error: string, idx: number) => (
+                            <div key={idx}>{error}</div>
+                          ))}
+                          {importResults.results.errors.length > 10 && (
+                            <div>... and {importResults.results.errors.length - 10} more errors</div>
+                          )}
                         </div>
                       )}
                     </div>
