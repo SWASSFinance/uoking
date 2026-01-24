@@ -28,7 +28,8 @@ import {
   BookOpen,
   Menu,
   X,
-  Crown
+  Crown,
+  Mail
 } from "lucide-react"
 
 // Organized navigation structure
@@ -155,6 +156,11 @@ const navigationSections = [
         name: "Test Email",
         href: "/admin/test-email",
         icon: MessageCircle
+      },
+      {
+        name: "Mailchimp",
+        href: "/admin/mailchimp",
+        icon: Mail
       }
     ]
   }

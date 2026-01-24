@@ -4,7 +4,7 @@ import { query } from '@/lib/db'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -36,7 +36,14 @@ export async function PUT(
       )
     }
 
-    const reviewId = params.id
+    const { id: reviewId } = await params
+    
+    if (!reviewId) {
+      return NextResponse.json(
+        { error: 'Review ID is required' },
+        { status: 400 }
+      )
+    }
     const newStatus = action === 'approve' ? 'approved' : 'rejected'
 
     // Update review status
@@ -107,7 +114,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -129,7 +136,14 @@ export async function DELETE(
       )
     }
 
-    const reviewId = params.id
+    const { id: reviewId } = await params
+    
+    if (!reviewId) {
+      return NextResponse.json(
+        { error: 'Review ID is required' },
+        { status: 400 }
+      )
+    }
 
     // Get review details before deletion for user count updates
     const reviewResult = await query(`
