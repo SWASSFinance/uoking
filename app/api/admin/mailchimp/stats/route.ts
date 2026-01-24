@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user?.email) {
       return createNoCacheResponse(
         { error: 'Authentication required' },
-        { status: 401 }
+        401
       )
     }
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     if (!userResult.rows.length || !userResult.rows[0].is_admin) {
       return createNoCacheResponse(
         { error: 'Admin access required' },
-        { status: 403 }
+        403
       )
     }
 
@@ -115,9 +115,9 @@ export async function GET(request: NextRequest) {
         if (error.message.includes('401') || error.message.includes('Unauthorized')) {
           errorMessage = 'Authentication failed - Invalid API key'
           errorDetails = 'The API key may be incorrect or expired. Please verify your MAILCHIMP_API_KEY in .env.local'
-        } else if (error.message.includes('404') || error.message.includes('Not Found')) {
-          errorMessage = 'List not found'
-          errorDetails = `The List ID "${process.env.MAILCHIMP_LIST_ID}" was not found. Please verify your MAILCHIMP_LIST_ID in .env.local`
+        } else if (error.message.includes('404') || error.message.includes('Not Found') || error.message.includes('could not be found')) {
+          errorMessage = 'List ID not found'
+          errorDetails = `The List ID "${process.env.MAILCHIMP_LIST_ID}" was not found in your Mailchimp account. This usually means the List ID is incorrect. Check the "Find Your List ID" section above to see your available lists.`
         } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
           errorMessage = 'Access forbidden'
           errorDetails = 'The API key does not have permission to access this list. Check your Mailchimp account permissions.'
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
           apiKeyPrefix: process.env.MAILCHIMP_API_KEY ? `${process.env.MAILCHIMP_API_KEY.substring(0, 10)}...` : 'Not set'
         }
       },
-      { status: 500 }
+      500
     )
   }
 }
