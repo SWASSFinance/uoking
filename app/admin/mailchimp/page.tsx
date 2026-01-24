@@ -323,6 +323,85 @@ export default function MailchimpAdminPage() {
     }
   }
 
+  const loadListHealth = async () => {
+    try {
+      setLoadingHealth(true)
+      const response = await fetch('/api/admin/mailchimp/list-health', {
+        cache: 'no-store'
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setListHealth(data)
+      }
+    } catch (error) {
+      console.error('Error loading list health:', error)
+    } finally {
+      setLoadingHealth(false)
+    }
+  }
+
+  const loadSyncStatus = async (source: 'users' | 'orders' = 'users') => {
+    try {
+      setLoadingSync(true)
+      const response = await fetch(`/api/admin/mailchimp/sync-status?source=${source}&limit=500`, {
+        cache: 'no-store'
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setSyncStatus({ ...data, source })
+      }
+    } catch (error) {
+      console.error('Error loading sync status:', error)
+    } finally {
+      setLoadingSync(false)
+    }
+  }
+
+  const handleImport = async (source: 'users' | 'orders', skipInvalid: boolean, skipDisposable: boolean) => {
+    try {
+      setImporting(true)
+      setImportResults(null)
+      
+      const response = await fetch('/api/admin/mailchimp/import-users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source,
+          skipInvalid,
+          skipDisposable
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setImportResults(data)
+        toast({
+          title: "Import Complete",
+          description: `Successfully imported ${data.results.imported} emails from ${source}`,
+        })
+        loadStats()
+        loadListHealth()
+      } else {
+        toast({
+          title: "Import Failed",
+          description: data.error || "Failed to import emails",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to import emails",
+        variant: "destructive",
+      })
+    } finally {
+      setImporting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader />
