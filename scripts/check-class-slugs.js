@@ -20,7 +20,7 @@ async function checkClassSlugs() {
       connectionString = args[0];
     }
   }
-  
+   
   if (!connectionString) {
     console.error('❌ Error: POSTGRES_URL not provided');
     console.error('\nUsage:');
