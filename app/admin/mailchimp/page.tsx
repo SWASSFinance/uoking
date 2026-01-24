@@ -313,8 +313,8 @@ export default function MailchimpAdminPage() {
           <p className="text-gray-600">Test and debug Mailchimp email integration</p>
         </div>
 
-        {/* Available Lists - Show when List ID error occurs */}
-        {stats?.errorDetails && (
+        {/* Available Lists - Always show if there's an error or if user wants to check */}
+        {((stats?.errorDetails || (stats?.error && stats.error.includes('List ID'))) || availableLists.length > 0) && (
           <Card className="mb-6 border-orange-200 bg-orange-50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-800">
@@ -322,7 +322,7 @@ export default function MailchimpAdminPage() {
                 Find Your List ID
               </CardTitle>
               <CardDescription className="text-orange-700">
-                The List ID "{stats.config.listId}" was not found. Here are your available Mailchimp lists:
+                The List ID "{stats?.config?.listId || 'Not set'}" was not found. {availableLists.length === 0 ? 'Click the button below to load your available Mailchimp lists:' : 'Here are your available Mailchimp lists:'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -336,7 +336,7 @@ export default function MailchimpAdminPage() {
                     <div
                       key={list.id}
                       className={`p-3 rounded border ${
-                        list.id === stats.config.listId
+                        list.id === stats?.config?.listId
                           ? 'bg-green-100 border-green-300'
                           : 'bg-white border-gray-200'
                       }`}
@@ -345,13 +345,13 @@ export default function MailchimpAdminPage() {
                         <div>
                           <div className="font-semibold text-gray-900">{list.name}</div>
                           <div className="text-sm text-gray-600 mt-1">
-                            ID: <code className="bg-gray-100 px-1 py-0.5 rounded">{list.id}</code>
+                            ID: <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">{list.id}</code>
                             {list.memberCount > 0 && (
                               <span className="ml-2">• {list.memberCount.toLocaleString()} members</span>
                             )}
                           </div>
                         </div>
-                        {list.id === stats.config.listId && (
+                        {list.id === stats?.config?.listId && (
                           <Badge variant="default" className="bg-green-600">
                             Current
                           </Badge>
@@ -362,17 +362,37 @@ export default function MailchimpAdminPage() {
                   <Alert className="mt-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      <strong>To fix:</strong> Copy the correct List ID above and update your <code className="bg-gray-100 px-1 py-0.5 rounded">MAILCHIMP_LIST_ID</code> in <code className="bg-gray-100 px-1 py-0.5 rounded">.env.local</code>, then restart your server.
+                      <strong>To fix:</strong> Copy the correct List ID above and update your <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">MAILCHIMP_LIST_ID</code> in <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">.env.local</code>, then restart your server.
                     </AlertDescription>
                   </Alert>
                 </div>
               ) : (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Could not load available lists. Check your API key permissions.
-                  </AlertDescription>
-                </Alert>
+                <div className="space-y-3">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Lists haven't been loaded yet. Click the button below to fetch your available Mailchimp lists.
+                    </AlertDescription>
+                  </Alert>
+                  <Button
+                    onClick={loadAvailableLists}
+                    variant="default"
+                    className="w-full"
+                    disabled={loadingLists}
+                  >
+                    {loadingLists ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Loading Lists...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4 mr-2" />
+                        Load Available Lists
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
               <Button
                 onClick={loadAvailableLists}
