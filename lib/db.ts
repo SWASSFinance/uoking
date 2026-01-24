@@ -1301,6 +1301,11 @@ export async function updateCategory(id: string, categoryData: any) {
       categoryData.meta_description || '',
       id
     ])
+    
+    if (!result.rows[0]) {
+      throw new Error(`Category with ID ${id} not found`)
+    }
+    
     return result.rows[0]
   } catch (error) {
     console.error('Error updating category:', error)

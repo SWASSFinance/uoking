@@ -31,6 +31,13 @@ export async function PUT(
     
     const category = await updateCategory(categoryId, categoryData)
     
+    if (!category) {
+      return NextResponse.json(
+        { error: 'Failed to update category', details: 'Category not found' },
+        { status: 404 }
+      )
+    }
+    
     // Convert dates to strings for JSON serialization
     const serializedCategory = {
       ...category,

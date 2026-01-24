@@ -87,22 +87,22 @@ export async function POST(request: NextRequest) {
       
       // Send debug email for failed verification (async, don't wait)
       sendIPNDebugEmail({
-        ipnLogId,
-        status: 'verification_failed',
-        rawBody: body,
-        parsedData: {
-          paymentStatus,
-          txnId,
-          receiverEmail: receiverEmail || businessEmail,
-          businessEmail,
-          custom,
-          mcGross,
-          mcCurrency
-        },
-        error: 'Invalid IPN signature'
+          ipnLogId,
+          status: 'verification_failed',
+          rawBody: body,
+          parsedData: {
+            paymentStatus,
+            txnId,
+            receiverEmail: receiverEmail || businessEmail,
+            businessEmail,
+            custom,
+            mcGross,
+            mcCurrency
+          },
+          error: 'Invalid IPN signature'
       }).catch(emailError => {
         console.error('Failed to send debug email:', emailError)
-      })
+        })
       
       // Return error immediately
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
@@ -407,15 +407,15 @@ async function processIPNAsync(data: {
         }
       })
     } else {
-      await query(`
-        UPDATE orders 
-        SET 
-          status = $1,
-          payment_status = $2,
-          payment_transaction_id = $3,
-          updated_at = NOW()
-        WHERE id = $4
-      `, [newStatus, paymentStatusDB, txnId, custom])
+    await query(`
+      UPDATE orders 
+      SET 
+        status = $1,
+        payment_status = $2,
+        payment_transaction_id = $3,
+        updated_at = NOW()
+      WHERE id = $4
+    `, [newStatus, paymentStatusDB, txnId, custom])
     }
 
     // If payment completed, process referral cashback
@@ -634,7 +634,7 @@ async function processIPNAsync(data: {
     `, [ipnLogId])
     
     console.log('IPN processing completed successfully')
-    
+
   } catch (error: any) {
     console.error('IPN async processing error:', error)
     console.error('Error details:', {
@@ -646,13 +646,13 @@ async function processIPNAsync(data: {
     // Update processing status to error
     if (ipnLogId) {
       try {
-        await query(`
-          UPDATE paypal_ipn_logs 
-          SET processing_status = 'error', 
-              error_message = $1,
-              processed_at = NOW()
-          WHERE id = $2
-        `, [error?.message || 'Unknown error', ipnLogId])
+      await query(`
+        UPDATE paypal_ipn_logs 
+        SET processing_status = 'error', 
+            error_message = $1,
+            processed_at = NOW()
+        WHERE id = $2
+      `, [error?.message || 'Unknown error', ipnLogId])
       } catch (dbError) {
         console.error('Failed to update IPN log:', dbError)
       }
@@ -660,18 +660,18 @@ async function processIPNAsync(data: {
     
     // Send debug email for processing error
     sendIPNDebugEmail({
-      ipnLogId,
-      status: 'processing_error',
+        ipnLogId,
+        status: 'processing_error',
       rawBody: body || 'Error occurred during processing',
-      parsedData: {
+        parsedData: {
         paymentStatus: paymentStatus || 'unknown',
         txnId: txnId || 'unknown',
         receiverEmail: receiverEmail || businessEmail || 'unknown',
         custom: custom || 'unknown',
         mcGross: mcGross || 'unknown',
         mcCurrency: mcCurrency || 'unknown'
-      },
-      error: error?.message || 'Unknown error'
+        },
+        error: error?.message || 'Unknown error'
     }).catch(emailError => {
       console.error('Failed to send debug email:', emailError)
     })
