@@ -161,11 +161,8 @@ export async function addToMailchimpList(
     // Mailchimp API v3 uses Basic auth: base64(apikey:apikey)
     const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
     
-    let response: Response
-    let shouldUpdate = false
-    
     try {
-      response = await retryWithBackoff(async () => {
+      const response = await retryWithBackoff(async () => {
         const res = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members`, {
           method: 'POST',
           headers: {
@@ -182,7 +179,6 @@ export async function addToMailchimpList(
           
           // Handle "Member Exists" error - don't retry, update instead
           if (res.status === 400 && errorData.title === 'Member Exists') {
-            shouldUpdate = true
             throw new Error('MEMBER_EXISTS') // Special error to trigger update
           }
           
@@ -191,22 +187,22 @@ export async function addToMailchimpList(
         
         return res
       })
+
+      const result = await response.json()
+      console.log(`Successfully added ${email} to Mailchimp list:`, result.id)
+
+      return {
+        success: true,
+        memberId: result.id,
+        email: result.email_address,
+        status: result.status
+      }
     } catch (error: any) {
       // Handle "Member Exists" case - update existing member
       if (error.message === 'MEMBER_EXISTS' || error.message?.includes('Member Exists')) {
         return await updateMailchimpMember(email, data)
       }
       throw error
-    }
-
-    const result = await response.json()
-    console.log(`Successfully added ${email} to Mailchimp list:`, result.id)
-
-    return {
-      success: true,
-      memberId: result.id,
-      email: result.email_address,
-      status: result.status
     }
 
   } catch (error) {
