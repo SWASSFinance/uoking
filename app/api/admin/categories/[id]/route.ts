@@ -30,11 +30,20 @@ export async function PUT(
     }
     
     const category = await updateCategory(categoryId, categoryData)
-    return NextResponse.json(category)
+    
+    // Convert dates to strings for JSON serialization
+    const serializedCategory = {
+      ...category,
+      created_at: category.created_at ? new Date(category.created_at).toISOString() : null,
+      updated_at: category.updated_at ? new Date(category.updated_at).toISOString() : null
+    }
+    
+    return NextResponse.json(serializedCategory)
   } catch (error) {
     console.error('Error updating category:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: 'Failed to update category', details: (error as Error).message },
+      { error: 'Failed to update category', details: errorMessage },
       { status: 500 }
     )
   }
