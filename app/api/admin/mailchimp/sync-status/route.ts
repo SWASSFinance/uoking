@@ -51,23 +51,49 @@ export async function GET(request: NextRequest) {
     } else if (source === 'orders') {
       // Get both user email and payer email (PayPal payment email)
       // Prefer payer_email if available, as it's the actual payment email
-      const result = await query(`
-        SELECT DISTINCT
-          COALESCE(o.payer_email, u.email) as email,
-          u.first_name,
-          u.last_name,
-          o.created_at,
-          o.payer_email,
-          u.email as user_email
-        FROM orders o
-        JOIN users u ON o.user_id = u.id
-        WHERE (o.payer_email IS NOT NULL AND o.payer_email != '') 
-           OR (u.email IS NOT NULL AND u.email != '')
-        AND o.status = 'completed'
-        ORDER BY o.created_at DESC
-        LIMIT $1
-      `, [limit])
-      dbRecords = result.rows || []
+      // Handle case where payer_email column might not exist yet
+      try {
+        const result = await query(`
+          SELECT DISTINCT
+            COALESCE(o.payer_email, u.email) as email,
+            u.first_name,
+            u.last_name,
+            o.created_at,
+            o.payer_email,
+            u.email as user_email
+          FROM orders o
+          JOIN users u ON o.user_id = u.id
+          WHERE (o.payer_email IS NOT NULL AND o.payer_email != '') 
+             OR (u.email IS NOT NULL AND u.email != '')
+          AND o.status = 'completed'
+          ORDER BY o.created_at DESC
+          LIMIT $1
+        `, [limit])
+        dbRecords = result.rows || []
+      } catch (error: any) {
+        // If payer_email column doesn't exist, fall back to user email only
+        if (error.message?.includes('payer_email')) {
+          console.warn('payer_email column not found, using user email only')
+          const result = await query(`
+            SELECT DISTINCT
+              u.email,
+              u.first_name,
+              u.last_name,
+              o.created_at,
+              u.email as user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE u.email IS NOT NULL 
+              AND u.email != ''
+              AND o.status = 'completed'
+            ORDER BY o.created_at DESC
+            LIMIT $1
+          `, [limit])
+          dbRecords = result.rows || []
+        } else {
+          throw error
+        }
+      }
     }
 
     // Check Mailchimp status for each
