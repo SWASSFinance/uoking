@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,12 +45,12 @@ export async function GET(request: NextRequest) {
       ORDER BY pr.created_at DESC
     `)
 
-    return NextResponse.json({ reviews: result.rows })
+    return createNoCacheResponse({ reviews: result.rows })
   } catch (error) {
     console.error('Error fetching reviews:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to fetch reviews' },
-      { status: 500 }
+      500
     )
   }
 } 

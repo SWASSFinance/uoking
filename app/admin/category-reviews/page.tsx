@@ -34,6 +34,7 @@ interface CategoryReview {
   status: string
   created_at: string
   category_name: string
+  category_slug?: string
   category_image?: string
   user_username: string
   user_email: string
@@ -51,7 +52,12 @@ export default function AdminCategoryReviewsPage() {
 
   const loadReviews = async () => {
     try {
-      const response = await fetch('/api/admin/category-reviews')
+      const response = await fetch('/api/admin/category-reviews', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setReviews(data.reviews || [])
@@ -321,9 +327,12 @@ export default function AdminCategoryReviewsPage() {
                               <div className="flex items-start justify-between mb-3">
                                 <div>
                                   <h3 className="font-semibold text-gray-900 mb-1">
-                                    <Link href={`/UO/${review.category_name.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-blue-600">
+                                    <Link href={`/UO/${review.category_slug || review.category_name.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-blue-600">
                                       {review.category_name}
                                     </Link>
+                                    {review.category_slug && (
+                                      <span className="text-xs text-gray-500 ml-2">({review.category_slug})</span>
+                                    )}
                                   </h3>
                                   <div className="flex items-center space-x-2 mb-2">
                                     <div className="flex items-center">

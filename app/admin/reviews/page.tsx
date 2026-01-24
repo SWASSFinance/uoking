@@ -51,7 +51,12 @@ export default function AdminReviewsPage() {
 
   const loadReviews = async () => {
     try {
-      const response = await fetch('/api/admin/reviews')
+      const response = await fetch('/api/admin/reviews', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setReviews(data.reviews || [])

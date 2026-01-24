@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { createNoCacheResponse } from '@/lib/api-utils'
 
 export async function PUT(
   request: NextRequest,
@@ -101,7 +102,7 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json({ 
+    return createNoCacheResponse({ 
       success: true, 
       message: `Review ${action}d successfully`,
       review: result.rows[0]

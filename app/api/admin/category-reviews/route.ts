@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
+import { createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
         cr.status,
         cr.created_at,
         c.name as category_name,
+        c.slug as category_slug,
         c.image_url as category_image,
         u.username as user_username,
         u.email as user_email
@@ -44,12 +46,12 @@ export async function GET(request: NextRequest) {
       ORDER BY cr.created_at DESC
     `)
 
-    return NextResponse.json({ reviews: result.rows })
+    return createNoCacheResponse({ reviews: result.rows })
   } catch (error) {
     console.error('Error fetching category reviews:', error)
-    return NextResponse.json(
+    return createNoCacheResponse(
       { error: 'Failed to fetch category reviews' },
-      { status: 500 }
+      500
     )
   }
 }
