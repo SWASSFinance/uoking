@@ -1,12 +1,34 @@
 import crypto from 'crypto'
 
 // Mailchimp API configuration
-const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY
-const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX // e.g., 'us1'
+const MAILCHIMP_API_KEY_RAW = process.env.MAILCHIMP_API_KEY || ''
+const MAILCHIMP_SERVER_PREFIX_ENV = process.env.MAILCHIMP_SERVER_PREFIX
 const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_LIST_ID
 
+// Extract server prefix from API key if it's in the format: {key}-{server}
+// Mailchimp API keys can be: "key-us18" or just "key" with separate server prefix
+// For authentication, we use the FULL API key (including server prefix)
+// For the API URL, we need just the server prefix part
+let MAILCHIMP_SERVER_PREFIX = MAILCHIMP_SERVER_PREFIX_ENV
+const MAILCHIMP_API_KEY = MAILCHIMP_API_KEY_RAW // Always use full key for auth
+
+if (MAILCHIMP_API_KEY_RAW && !MAILCHIMP_SERVER_PREFIX_ENV) {
+  // Try to extract server prefix from API key (format: key-server)
+  const parts = MAILCHIMP_API_KEY_RAW.split('-')
+  if (parts.length >= 2) {
+    // Last part is typically the server prefix (e.g., us18, us1, etc.)
+    const possibleServer = parts[parts.length - 1]
+    // Check if it looks like a server prefix (starts with 'us' followed by digits)
+    if (/^us\d+$/.test(possibleServer)) {
+      MAILCHIMP_SERVER_PREFIX = possibleServer
+    }
+  }
+}
+
 // Mailchimp API base URL
-const MAILCHIMP_API_URL = `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0`
+const MAILCHIMP_API_URL = MAILCHIMP_SERVER_PREFIX 
+  ? `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0`
+  : ''
 
 // Rate limiting for Mailchimp API calls
 const mailchimpRateLimits = new Map<string, { count: number; resetTime: number }>()
@@ -88,10 +110,12 @@ export async function addToMailchimpList(
     }
 
     // Make API request to Mailchimp
+    // Mailchimp API v3 uses Basic auth: base64(apikey:apikey)
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
     const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${MAILCHIMP_API_KEY}`,
+        'Authorization': `Basic ${authString}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(subscriberData)
@@ -154,10 +178,11 @@ async function updateMailchimpMember(
       ]
     }
 
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
     const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members/${emailHash}`, {
       method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${MAILCHIMP_API_KEY}`,
+        'Authorization': `Basic ${authString}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(updateData)
@@ -194,10 +219,11 @@ export async function removeFromMailchimpList(email: string) {
 
     const emailHash = generateEmailHash(email)
 
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
     const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members/${emailHash}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${MAILCHIMP_API_KEY}`
+        'Authorization': `Basic ${authString}`
       }
     })
 
@@ -228,10 +254,11 @@ export async function getMailchimpSubscriber(email: string) {
 
     const emailHash = generateEmailHash(email)
 
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
     const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members/${emailHash}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${MAILCHIMP_API_KEY}`
+        'Authorization': `Basic ${authString}`
       }
     })
 
@@ -304,10 +331,11 @@ export async function getMailchimpListStats() {
       throw new Error('Mailchimp configuration is missing.')
     }
 
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
     const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${MAILCHIMP_API_KEY}`
+        'Authorization': `Basic ${authString}`
       }
     })
 

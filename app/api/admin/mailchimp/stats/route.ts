@@ -29,14 +29,32 @@ export async function GET(request: NextRequest) {
     const listStats = await getMailchimpListStats()
     const apiStats = getMailchimpStats()
 
-    // Check environment variables
+    // Check environment variables and extract server prefix if needed
+    const apiKeyRaw = process.env.MAILCHIMP_API_KEY || ''
+    let serverPrefix = process.env.MAILCHIMP_SERVER_PREFIX || ''
+    
+    // If server prefix not set, try to extract from API key
+    if (apiKeyRaw && !serverPrefix) {
+      const parts = apiKeyRaw.split('-')
+      if (parts.length >= 2) {
+        const possibleServer = parts[parts.length - 1]
+        // Check if it looks like a server prefix (starts with 'us' followed by digits)
+        if (/^us\d+$/.test(possibleServer)) {
+          serverPrefix = possibleServer
+        }
+      }
+    }
+
     const config = {
-      hasApiKey: !!process.env.MAILCHIMP_API_KEY,
-      hasServerPrefix: !!process.env.MAILCHIMP_SERVER_PREFIX,
+      hasApiKey: !!apiKeyRaw,
+      hasServerPrefix: !!serverPrefix,
       hasListId: !!process.env.MAILCHIMP_LIST_ID,
-      serverPrefix: process.env.MAILCHIMP_SERVER_PREFIX || 'Not set',
+      serverPrefix: serverPrefix || 'Not set',
       listId: process.env.MAILCHIMP_LIST_ID || 'Not set',
-      apiKeyPrefix: process.env.MAILCHIMP_API_KEY ? `${process.env.MAILCHIMP_API_KEY.substring(0, 10)}...` : 'Not set'
+      apiKeyPrefix: apiKeyRaw ? `${apiKeyRaw.substring(0, 10)}...` : 'Not set',
+      apiKeyFormat: apiKeyRaw && !process.env.MAILCHIMP_SERVER_PREFIX && serverPrefix 
+        ? 'Extracted from API key' 
+        : 'Separate variables'
     }
 
     return createNoCacheResponse({
