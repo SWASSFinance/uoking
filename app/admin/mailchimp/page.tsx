@@ -20,9 +20,19 @@ import {
   Users,
   BarChart3,
   Settings,
-  Loader2
+  Loader2,
+  Download,
+  Upload,
+  Shield,
+  Activity,
+  Database,
+  Trash2,
+  Filter,
+  ShoppingCart
 } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Switch } from "@/components/ui/switch"
 
 interface MailchimpStats {
   listStats: {
@@ -89,6 +99,15 @@ export default function MailchimpAdminPage() {
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [availableLists, setAvailableLists] = useState<any[]>([])
   const [loadingLists, setLoadingLists] = useState(false)
+  
+  // Management features state
+  const [listHealth, setListHealth] = useState<any>(null)
+  const [loadingHealth, setLoadingHealth] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<any>(null)
+  const [loadingSync, setLoadingSync] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [importResults, setImportResults] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'import' | 'health'>('overview')
 
   // Test form state
   const [testForm, setTestForm] = useState({
@@ -309,9 +328,19 @@ export default function MailchimpAdminPage() {
       <AdminHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mailchimp Integration</h1>
-          <p className="text-gray-600">Test and debug Mailchimp email integration</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mailchimp Management</h1>
+          <p className="text-gray-600">Complete Mailchimp list management, sync, and email quality control</p>
         </div>
+
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="sync">Sync Status</TabsTrigger>
+            <TabsTrigger value="import">Import & Clean</TabsTrigger>
+            <TabsTrigger value="health">List Health</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
 
         {/* Available Lists - Show when List ID error or if lists are loaded */}
         {((stats?.errorDetails || (stats?.error && (stats.error.includes('List ID') || stats.error.includes('List ID')))) || availableLists.length > 0) && (
@@ -917,6 +946,248 @@ export default function MailchimpAdminPage() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="sync" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Database vs Mailchimp Sync Status
+                </CardTitle>
+                <CardDescription>Compare your database users/orders with Mailchimp subscribers</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => loadSyncStatus('users')}
+                    disabled={loadingSync}
+                    variant="outline"
+                  >
+                    {loadingSync ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Users className="h-4 w-4 mr-2" />
+                    )}
+                    Check Users Sync
+                  </Button>
+                  <Button
+                    onClick={() => loadSyncStatus('orders')}
+                    disabled={loadingSync}
+                    variant="outline"
+                  >
+                    {loadingSync ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                    )}
+                    Check Orders Sync
+                  </Button>
+                </div>
+
+                {syncStatus && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-700">{syncStatus.total}</div>
+                        <div className="text-sm text-blue-600">Total in Database</div>
+                      </div>
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-700">{syncStatus.inMailchimp}</div>
+                        <div className="text-sm text-green-600">In Mailchimp</div>
+                      </div>
+                      <div className="p-4 bg-orange-50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-700">{syncStatus.missingInMailchimp}</div>
+                        <div className="text-sm text-orange-600">Missing in Mailchimp</div>
+                      </div>
+                    </div>
+
+                    {syncStatus.missingEmails && syncStatus.missingEmails.length > 0 && (
+                      <div>
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Missing Emails Found</AlertTitle>
+                          <AlertDescription>
+                            {syncStatus.missingEmails.length} emails from {syncStatus.source} are not in Mailchimp.
+                            Go to the "Import & Clean" tab to import them.
+                          </AlertDescription>
+                        </Alert>
+                        <div className="mt-2 max-h-40 overflow-y-auto">
+                          <div className="text-sm text-gray-600">
+                            {syncStatus.missingEmails.slice(0, 20).join(', ')}
+                            {syncStatus.missingEmails.length > 20 && ` ... and ${syncStatus.missingEmails.length - 20} more`}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="import" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Import from Database
+                </CardTitle>
+                <CardDescription>Import missing users/orders into Mailchimp with email validation</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Import Options</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="skip-invalid" className="text-sm">Skip Invalid Emails</Label>
+                      <Switch id="skip-invalid" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="skip-disposable" className="text-sm">Skip Disposable Emails</Label>
+                      <Switch id="skip-disposable" defaultChecked />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => {
+                      const skipInvalid = (document.getElementById('skip-invalid') as HTMLInputElement)?.checked ?? true
+                      const skipDisposable = (document.getElementById('skip-disposable') as HTMLInputElement)?.checked ?? true
+                      handleImport('users', skipInvalid, skipDisposable)
+                    }}
+                    disabled={importing}
+                    className="w-full"
+                    variant="default"
+                  >
+                    {importing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Users className="h-4 w-4 mr-2" />
+                        Import Users
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const skipInvalid = (document.getElementById('skip-invalid') as HTMLInputElement)?.checked ?? true
+                      const skipDisposable = (document.getElementById('skip-disposable') as HTMLInputElement)?.checked ?? true
+                      handleImport('orders', skipInvalid, skipDisposable)
+                    }}
+                    disabled={importing}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    {importing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Import Order Customers
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {importResults && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
+                    <div className="font-semibold">Import Results:</div>
+                    <div className="text-sm space-y-1">
+                      <div>Total Found: {importResults.results.total}</div>
+                      <div className="text-green-600">Imported: {importResults.results.imported}</div>
+                      <div className="text-orange-600">Skipped: {importResults.results.skipped}</div>
+                      <div className="text-red-600">Failed: {importResults.results.failed}</div>
+                      {importResults.results.errors && importResults.results.errors.length > 0 && (
+                        <div className="mt-2 text-xs text-red-600">
+                          Errors: {importResults.results.errors.slice(0, 5).join(', ')}
+                          {importResults.results.errors.length > 5 && ` ... and ${importResults.results.errors.length - 5} more`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="health" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  List Health Dashboard
+                </CardTitle>
+                <CardDescription>Monitor email quality, bounces, and list health</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={loadListHealth}
+                  disabled={loadingHealth}
+                  variant="outline"
+                  className="mb-4"
+                >
+                  {loadingHealth ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Health Data
+                    </>
+                  )}
+                </Button>
+
+                {listHealth && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-700">{listHealth.subscribed.count}</div>
+                        <div className="text-sm text-green-600">Subscribed</div>
+                      </div>
+                      <div className="p-4 bg-yellow-50 rounded-lg">
+                        <div className="text-2xl font-bold text-yellow-700">{listHealth.pending.count}</div>
+                        <div className="text-sm text-yellow-600">Pending</div>
+                      </div>
+                      <div className="p-4 bg-red-50 rounded-lg">
+                        <div className="text-2xl font-bold text-red-700">{listHealth.unsubscribed.count}</div>
+                        <div className="text-sm text-red-600">Unsubscribed</div>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-700">{listHealth.cleaned.count}</div>
+                        <div className="text-sm text-gray-600">Cleaned</div>
+                      </div>
+                      <div className="p-4 bg-orange-50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-700">{listHealth.bounced.count}</div>
+                        <div className="text-sm text-orange-600">Bounced</div>
+                      </div>
+                    </div>
+
+                    {(listHealth.bounced.count > 0 || listHealth.cleaned.count > 0) && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>List Health Issues</AlertTitle>
+                        <AlertDescription>
+                          You have {listHealth.bounced.count} bounced emails and {listHealth.cleaned.count} cleaned emails.
+                          These should be removed to maintain list quality.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   )
