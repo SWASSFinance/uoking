@@ -98,30 +98,46 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Check Mailchimp status for each
-    const syncStatus = await Promise.all(
-      dbRecords.map(async (record) => {
-        try {
-          const subscriber = await getMailchimpSubscriber(record.email)
-          return {
-            email: record.email,
-            inMailchimp: !!subscriber,
-            mailchimpStatus: subscriber?.status || null,
-            inDatabase: true,
-            source: source === 'users' ? 'users' : 'orders'
-          }
-        } catch (error) {
-          return {
-            email: record.email,
-            inMailchimp: false,
-            mailchimpStatus: null,
-            inDatabase: true,
-            source: source === 'users' ? 'users' : 'orders',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          }
+    // Check Mailchimp status for each with rate limiting (500ms between requests)
+    const syncStatus = []
+    for (let i = 0; i < dbRecords.length; i++) {
+      const record = dbRecords[i]
+      
+      // Add delay between requests (except for the first one)
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+      
+      try {
+        const subscriber = await getMailchimpSubscriber(record.email)
+        syncStatus.push({
+          email: record.email,
+          inMailchimp: !!subscriber,
+          mailchimpStatus: subscriber?.status || null,
+          inDatabase: true,
+          source: source === 'users' ? 'users' : 'orders'
+        })
+      } catch (error) {
+        syncStatus.push({
+          email: record.email,
+          inMailchimp: false,
+          mailchimpStatus: null,
+          inDatabase: true,
+          source: source === 'users' ? 'users' : 'orders',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+        
+        // If we hit rate limit, add extra delay before continuing
+        if (error instanceof Error && (
+          error.message.includes('rate limit') || 
+          error.message.includes('simultaneous connections') ||
+          error.message.includes('exceeded the limit')
+        )) {
+          console.log(`Rate limit detected at ${i + 1}/${dbRecords.length}, waiting 5 seconds...`)
+          await new Promise(resolve => setTimeout(resolve, 5000))
         }
-      })
-    )
+      }
+    }
 
     const missingInMailchimp = syncStatus.filter(s => !s.inMailchimp)
     const inMailchimp = syncStatus.filter(s => s.inMailchimp)
