@@ -52,6 +52,54 @@ function checkMailchimpRateLimit(limit: number = 10, windowMs: number = 60000): 
   return true
 }
 
+// Retry utility with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000,
+  maxDelay: number = 10000
+): Promise<T> {
+  let lastError: Error | null = null
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (error: any) {
+      lastError = error
+      
+      // Check if error is retryable (503, 429, network errors)
+      const isRetryable = 
+        error.message?.includes('503') ||
+        error.message?.includes('429') ||
+        error.message?.includes('akamai_503') ||
+        error.message?.includes('rate limit') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('ECONNRESET') ||
+        error.message?.includes('ETIMEDOUT')
+      
+      if (!isRetryable || attempt === maxRetries) {
+        throw error
+      }
+      
+      // Calculate delay with exponential backoff and jitter
+      const delay = Math.min(
+        initialDelay * Math.pow(2, attempt) + Math.random() * 1000,
+        maxDelay
+      )
+      
+      console.log(`Mailchimp API retry attempt ${attempt + 1}/${maxRetries} after ${Math.round(delay)}ms delay`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  
+  throw lastError || new Error('Retry failed')
+}
+
+// Sleep utility
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 // Generate MD5 hash for email (required by Mailchimp)
 function generateEmailHash(email: string): string {
   return crypto.createHash('md5').update(email.toLowerCase()).digest('hex')
@@ -109,28 +157,46 @@ export async function addToMailchimpList(
       ]
     }
 
-    // Make API request to Mailchimp
+    // Make API request to Mailchimp with retry logic
     // Mailchimp API v3 uses Basic auth: base64(apikey:apikey)
     const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
-    const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(subscriberData)
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      
-      // Handle specific Mailchimp errors
-      if (response.status === 400 && errorData.title === 'Member Exists') {
-        // Update existing member instead
+    
+    let response: Response
+    let shouldUpdate = false
+    
+    try {
+      response = await retryWithBackoff(async () => {
+        const res = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authString}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(subscriberData),
+          signal: AbortSignal.timeout(30000) // 30 second timeout
+        })
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}))
+          const errorMessage = errorData.detail || errorData.title || `HTTP ${res.status}`
+          
+          // Handle "Member Exists" error - don't retry, update instead
+          if (res.status === 400 && errorData.title === 'Member Exists') {
+            shouldUpdate = true
+            throw new Error('MEMBER_EXISTS') // Special error to trigger update
+          }
+          
+          throw new Error(`Mailchimp API error: ${errorMessage}`)
+        }
+        
+        return res
+      })
+    } catch (error: any) {
+      // Handle "Member Exists" case - update existing member
+      if (error.message === 'MEMBER_EXISTS' || error.message?.includes('Member Exists')) {
         return await updateMailchimpMember(email, data)
       }
-      
-      throw new Error(`Mailchimp API error: ${errorData.detail || errorData.title || 'Unknown error'}`)
+      throw error
     }
 
     const result = await response.json()
@@ -179,19 +245,25 @@ async function updateMailchimpMember(
     }
 
     const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
-    const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members/${emailHash}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(updateData)
+    const response = await retryWithBackoff(async () => {
+      const res = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members/${emailHash}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData),
+        signal: AbortSignal.timeout(30000) // 30 second timeout
+      })
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        const errorMessage = errorData.detail || errorData.title || `HTTP ${res.status}`
+        throw new Error(`Mailchimp API error: ${errorMessage}`)
+      }
+      
+      return res
     })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(`Mailchimp API error: ${errorData.detail || errorData.title || 'Unknown error'}`)
-    }
 
     const result = await response.json()
     console.log(`Successfully updated ${email} in Mailchimp list:`, result.id)

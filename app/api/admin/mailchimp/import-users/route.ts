@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       return true
     })
 
-    // Import to Mailchimp
+    // Import to Mailchimp with rate limiting and delays
     const results = {
       total: dbResults.length,
       valid: 0,
@@ -132,9 +132,18 @@ export async function POST(request: NextRequest) {
       errors: [] as string[]
     }
 
-    for (const item of toImport) {
+    // Add delay between requests to avoid rate limiting
+    const delayBetweenRequests = 200 // 200ms between requests (5 per second max)
+    
+    for (let i = 0; i < toImport.length; i++) {
+      const item = toImport[i]
       const dbRecord = dbResults.find(r => r.email === item.email)
       if (!dbRecord) continue
+
+      // Add delay between requests (except for the first one)
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayBetweenRequests))
+      }
 
       try {
         if (source === 'users') {
@@ -156,7 +165,15 @@ export async function POST(request: NextRequest) {
         results.valid++
       } catch (error: any) {
         results.failed++
-        results.errors.push(`${item.email}: ${error.message}`)
+        const errorMsg = error.message || 'Unknown error'
+        results.errors.push(`${item.email}: ${errorMsg}`)
+        
+        // If we hit rate limit, add extra delay before continuing
+        if (errorMsg.includes('rate limit') || errorMsg.includes('503') || errorMsg.includes('429')) {
+          console.log(`Rate limit detected, waiting 5 seconds before continuing...`)
+          await new Promise(resolve => setTimeout(resolve, 5000))
+        }
+        
         // Continue with next email
       }
     }
