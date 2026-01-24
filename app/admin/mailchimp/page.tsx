@@ -313,8 +313,8 @@ export default function MailchimpAdminPage() {
           <p className="text-gray-600">Test and debug Mailchimp email integration</p>
         </div>
 
-        {/* Available Lists - Always show if there's an error or if user wants to check */}
-        {((stats?.errorDetails || (stats?.error && stats.error.includes('List ID'))) || availableLists.length > 0) && (
+        {/* Available Lists - Show when List ID error or if lists are loaded */}
+        {((stats?.errorDetails || (stats?.error && (stats.error.includes('List ID') || stats.error.includes('List ID')))) || availableLists.length > 0) && (
           <Card className="mb-6 border-orange-200 bg-orange-50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-800">
@@ -322,7 +322,9 @@ export default function MailchimpAdminPage() {
                 Find Your List ID
               </CardTitle>
               <CardDescription className="text-orange-700">
-                The List ID "{stats?.config?.listId || 'Not set'}" was not found. {availableLists.length === 0 ? 'Click the button below to load your available Mailchimp lists:' : 'Here are your available Mailchimp lists:'}
+                {stats?.errorDetails || (stats?.error && stats.error.includes('List ID')) 
+                  ? `The List ID "${stats?.config?.listId || 'Not set'}" was not found. ${availableLists.length === 0 ? 'Click the button below to load your available Mailchimp lists:' : 'Here are your available Mailchimp lists:'}`
+                  : 'Your available Mailchimp lists:'}
               </CardDescription>
             </CardHeader>
             <CardContent>
