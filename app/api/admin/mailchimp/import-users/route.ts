@@ -57,17 +57,23 @@ export async function POST(request: NextRequest) {
       `)
       dbResults = result.rows || []
     } else if (source === 'orders') {
+      // Get both user email and payer email (PayPal payment email)
+      // Prefer payer_email if available, as it's the actual payment email
       const result = await query(`
         SELECT DISTINCT
           o.id as order_id,
-          o.customer_email as email,
-          o.customer_name,
+          COALESCE(o.payer_email, u.email) as email,
+          u.first_name,
+          u.last_name,
           o.created_at,
-          o.total_amount
+          o.total_amount,
+          o.payer_email,
+          u.email as user_email
         FROM orders o
-        WHERE o.customer_email IS NOT NULL 
-          AND o.customer_email != ''
-          AND o.status = 'completed'
+        JOIN users u ON o.user_id = u.id
+        WHERE (o.payer_email IS NOT NULL AND o.payer_email != '') 
+           OR (u.email IS NOT NULL AND u.email != '')
+        AND o.status = 'completed'
         ORDER BY o.created_at DESC
       `)
       dbResults = result.rows || []
@@ -112,10 +118,9 @@ export async function POST(request: NextRequest) {
             tags: ['imported-from-db', 'user']
           })
         } else {
-          const nameParts = (dbRecord.customer_name || '').split(' ')
           await addToMailchimpList(item.email, {
-            firstName: nameParts[0] || '',
-            lastName: nameParts.slice(1).join(' ') || '',
+            firstName: dbRecord.first_name || '',
+            lastName: dbRecord.last_name || '',
             source: 'database-import-orders',
             tags: ['imported-from-db', 'customer', 'has-ordered']
           })

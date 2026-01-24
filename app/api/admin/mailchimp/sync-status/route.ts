@@ -49,15 +49,21 @@ export async function GET(request: NextRequest) {
       `, [limit])
       dbRecords = result.rows || []
     } else if (source === 'orders') {
+      // Get both user email and payer email (PayPal payment email)
+      // Prefer payer_email if available, as it's the actual payment email
       const result = await query(`
         SELECT DISTINCT
-          o.customer_email as email,
-          o.customer_name,
-          o.created_at
+          COALESCE(o.payer_email, u.email) as email,
+          u.first_name,
+          u.last_name,
+          o.created_at,
+          o.payer_email,
+          u.email as user_email
         FROM orders o
-        WHERE o.customer_email IS NOT NULL 
-          AND o.customer_email != ''
-          AND o.status = 'completed'
+        JOIN users u ON o.user_id = u.id
+        WHERE (o.payer_email IS NOT NULL AND o.payer_email != '') 
+           OR (u.email IS NOT NULL AND u.email != '')
+        AND o.status = 'completed'
         ORDER BY o.created_at DESC
         LIMIT $1
       `, [limit])

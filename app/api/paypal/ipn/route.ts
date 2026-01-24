@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     const txnId = formData.get('txn_id')
     const receiverEmail = formData.get('receiver_email')
     const businessEmail = formData.get('business') // PayPal sometimes uses 'business' instead of 'receiver_email'
+    const payerEmail = formData.get('payer_email') // Email of the person who paid (may differ from account email)
     const custom = formData.get('custom') // This should contain our order ID
     const mcGross = formData.get('mc_gross')
     const mcCurrency = formData.get('mc_currency')
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest) {
       txnId,
       receiverEmail,
       businessEmail,
+      payerEmail,
       custom,
       mcGross,
       mcCurrency,
@@ -182,12 +184,13 @@ async function processIPNAsync(data: {
   txnId: string | null
   receiverEmail: string | null
   businessEmail: string | null
+  payerEmail: string | null
   custom: string | null
   mcGross: string | null
   mcCurrency: string | null
   ipnLogId: string | null
 }) {
-  const { body, formData, paymentStatus, txnId, receiverEmail, businessEmail, custom, mcGross, mcCurrency, ipnLogId } = data
+  const { body, formData, paymentStatus, txnId, receiverEmail, businessEmail, payerEmail, custom, mcGross, mcCurrency, ipnLogId } = data
   
   try {
 
@@ -196,6 +199,7 @@ async function processIPNAsync(data: {
       txnId,
       receiverEmail,
       businessEmail,
+      payerEmail,
       custom,
       mcGross,
       mcCurrency
@@ -373,16 +377,46 @@ async function processIPNAsync(data: {
         return
     }
 
-    // Update order status
-    await query(`
-      UPDATE orders 
-      SET 
-        status = $1,
-        payment_status = $2,
-        payment_transaction_id = $3,
-        updated_at = NOW()
-      WHERE id = $4
-    `, [newStatus, paymentStatusDB, txnId, custom])
+    // Update order status and store payer email if provided
+    // Note: payer_email column may not exist yet, so we'll use a safe update
+    if (payerEmail) {
+      await query(`
+        UPDATE orders 
+        SET 
+          status = $1,
+          payment_status = $2,
+          payment_transaction_id = $3,
+          payer_email = $4,
+          updated_at = NOW()
+        WHERE id = $5
+      `, [newStatus, paymentStatusDB, txnId, payerEmail, custom]).catch(async (error: any) => {
+        // If payer_email column doesn't exist, try without it
+        if (error.message?.includes('payer_email')) {
+          console.warn('payer_email column not found, updating without it. Run the migration script to add it.')
+          await query(`
+            UPDATE orders 
+            SET 
+              status = $1,
+              payment_status = $2,
+              payment_transaction_id = $3,
+              updated_at = NOW()
+            WHERE id = $4
+          `, [newStatus, paymentStatusDB, txnId, custom])
+        } else {
+          throw error
+        }
+      })
+    } else {
+      await query(`
+        UPDATE orders 
+        SET 
+          status = $1,
+          payment_status = $2,
+          payment_transaction_id = $3,
+          updated_at = NOW()
+        WHERE id = $4
+      `, [newStatus, paymentStatusDB, txnId, custom])
+    }
 
     // If payment completed, process referral cashback
     if (paymentStatus === 'Completed' && order.cashback_used > 0) {
@@ -564,11 +598,13 @@ async function processIPNAsync(data: {
       }
 
       // Add customer to Mailchimp with order data
+      // Use payer_email if available (actual payment email), otherwise use user_email
       try {
         console.log('Adding customer to Mailchimp...')
         const { addOrderCustomerToMailchimp } = await import('@/lib/mailchimp')
+        const emailToUse = payerEmail || order.user_email
         await addOrderCustomerToMailchimp({
-          email: order.user_email,
+          email: emailToUse,
           firstName: order.first_name || '',
           lastName: order.last_name || '',
           characterName: order.delivery_character || '',
@@ -576,7 +612,12 @@ async function processIPNAsync(data: {
           orderId: custom,
           orderTotal: parseFloat(order.total_amount)
         })
-        console.log('Customer added to Mailchimp successfully')
+        console.log('Customer added to Mailchimp successfully', { 
+          email: emailToUse, 
+          payerEmail, 
+          userEmail: order.user_email,
+          usingPayerEmail: !!payerEmail
+        })
       } catch (mailchimpError) {
         console.error('Failed to add order customer to Mailchimp:', mailchimpError)
         // Don't fail IPN processing if Mailchimp fails

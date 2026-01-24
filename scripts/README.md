@@ -24,7 +24,33 @@ node scripts/apply-performance-indexes.js
 
 **Expected runtime:** 2-5 minutes depending on table sizes
 
-### 2. apply-military-status-migration.js
+### 2. apply-payer-email-migration.js
+
+Adds `payer_email` column to the `orders` table to store PayPal payer email addresses.
+
+**Usage:**
+```bash
+# Make sure POSTGRES_URL is set in your environment
+node scripts/apply-payer-email-migration.js
+```
+
+**What it does:**
+- Adds `payer_email` column to `orders` table
+- Creates an index on `payer_email` for faster lookups
+- Verifies the migration was successful
+- Shows statistics on how many orders have payer_email populated
+
+**Why it's needed:**
+PayPal IPN includes `payer_email` which is the email address of the person who actually paid. This may differ from the user's account email if they paid with a different PayPal account. Storing this allows us to:
+- Import the correct payment email to Mailchimp
+- Sync with the actual payer's email address
+- Maintain better email list quality
+
+**Expected runtime:** 5-10 seconds
+
+**Safe to run multiple times:** Yes (uses IF NOT EXISTS)
+
+### 3. apply-military-status-migration.js
 
 Applies migration to add military status fields (is_veteran, is_serving) to users table.
 
@@ -46,7 +72,7 @@ node scripts/apply-military-status-migration.js
 
 **Safe to run multiple times:** Yes (uses IF NOT EXISTS)
 
-### 3. check-db-performance.js
+### 4. check-db-performance.js
 
 Checks database performance metrics and identifies issues.
 
@@ -71,12 +97,17 @@ node scripts/check-db-performance.js
    node scripts/apply-performance-indexes.js
    ```
 
-2. **Apply military status migration (if needed):**
+2. **Apply payer email migration (recommended for Mailchimp sync):**
+   ```bash
+   node scripts/apply-payer-email-migration.js
+   ```
+
+3. **Apply military status migration (if needed):**
    ```bash
    node scripts/apply-military-status-migration.js
    ```
 
-3. **Monitor performance:**
+4. **Monitor performance:**
    ```bash
    node scripts/check-db-performance.js
    ```
