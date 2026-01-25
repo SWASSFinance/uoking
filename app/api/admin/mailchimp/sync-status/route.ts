@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
-import { getMailchimpSubscriber } from '@/lib/mailchimp'
+import { getAllMailchimpMembers } from '@/lib/mailchimp'
 import { createNoCacheResponse } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
@@ -27,7 +27,13 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const source = searchParams.get('source') || 'users'
-    const limit = parseInt(searchParams.get('limit') || '100')
+    const limit = parseInt(searchParams.get('limit') || '5000') // Increased default to get more comprehensive sync
+
+    console.log(`Fetching all Mailchimp members for bulk comparison...`)
+    
+    // Fetch ALL Mailchimp members once (fast, bulk operation)
+    const mailchimpData = await getAllMailchimpMembers()
+    console.log(`Got ${mailchimpData.totalCount} members from Mailchimp`)
 
     // Get database records
     let dbRecords: any[] = []
@@ -50,29 +56,25 @@ export async function GET(request: NextRequest) {
       `, [limit])
       dbRecords = result.rows || []
     } else if (source === 'orders') {
-      // Get both user email and payer email (PayPal payment email)
-      // Prefer payer_email if available, as it's the actual payment email
-      // Handle case where payer_email column might not exist yet
       try {
-          const result = await query(`
-            SELECT DISTINCT
-              COALESCE(o.payer_email, u.email) as email,
-              u.first_name,
-              u.last_name,
-              o.created_at,
-              o.payer_email,
-              u.email as user_email
-            FROM orders o
-            JOIN users u ON o.user_id = u.id
-            WHERE (o.payer_email IS NOT NULL AND o.payer_email != '' AND o.payer_email NOT LIKE 'deleted_%') 
-               OR (u.email IS NOT NULL AND u.email != '' AND u.email NOT LIKE 'deleted_%')
-            AND o.status = 'completed'
-            ORDER BY o.created_at DESC
-            LIMIT $1
-          `, [limit])
+        const result = await query(`
+          SELECT DISTINCT
+            COALESCE(o.payer_email, u.email) as email,
+            u.first_name,
+            u.last_name,
+            o.created_at,
+            o.payer_email,
+            u.email as user_email
+          FROM orders o
+          JOIN users u ON o.user_id = u.id
+          WHERE (o.payer_email IS NOT NULL AND o.payer_email != '' AND o.payer_email NOT LIKE 'deleted_%') 
+             OR (u.email IS NOT NULL AND u.email != '' AND u.email NOT LIKE 'deleted_%')
+          AND o.status = 'completed'
+          ORDER BY o.created_at DESC
+          LIMIT $1
+        `, [limit])
         dbRecords = result.rows || []
       } catch (error: any) {
-        // If payer_email column doesn't exist, fall back to user email only
         if (error.message?.includes('payer_email')) {
           console.warn('payer_email column not found, using user email only')
           const result = await query(`
@@ -98,49 +100,30 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Check Mailchimp status for each with rate limiting (500ms between requests)
-    const syncStatus = []
-    for (let i = 0; i < dbRecords.length; i++) {
-      const record = dbRecords[i]
+    console.log(`Got ${dbRecords.length} records from database`)
+
+    // Bulk comparison in memory (super fast!)
+    const syncStatus = dbRecords.map(record => {
+      const emailLower = record.email.toLowerCase()
+      const inMailchimp = mailchimpData.emailSet.has(emailLower)
+      const memberInfo = mailchimpData.memberMap.get(emailLower)
       
-      // Add delay between requests (except for the first one)
-      if (i > 0) {
-        await new Promise(resolve => setTimeout(resolve, 500))
+      return {
+        email: record.email,
+        firstName: record.first_name || '',
+        lastName: record.last_name || '',
+        inMailchimp,
+        mailchimpStatus: memberInfo?.status || null,
+        mailchimpTags: memberInfo?.tags || [],
+        inDatabase: true,
+        source: source === 'users' ? 'users' : 'orders'
       }
-      
-      try {
-        const subscriber = await getMailchimpSubscriber(record.email)
-        syncStatus.push({
-          email: record.email,
-          inMailchimp: !!subscriber,
-          mailchimpStatus: subscriber?.status || null,
-          inDatabase: true,
-          source: source === 'users' ? 'users' : 'orders'
-        })
-      } catch (error) {
-        syncStatus.push({
-          email: record.email,
-          inMailchimp: false,
-          mailchimpStatus: null,
-          inDatabase: true,
-          source: source === 'users' ? 'users' : 'orders',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
-        
-        // If we hit rate limit, add extra delay before continuing
-        if (error instanceof Error && (
-          error.message.includes('rate limit') || 
-          error.message.includes('simultaneous connections') ||
-          error.message.includes('exceeded the limit')
-        )) {
-          console.log(`Rate limit detected at ${i + 1}/${dbRecords.length}, waiting 5 seconds...`)
-          await new Promise(resolve => setTimeout(resolve, 5000))
-        }
-      }
-    }
+    })
 
     const missingInMailchimp = syncStatus.filter(s => !s.inMailchimp)
     const inMailchimp = syncStatus.filter(s => s.inMailchimp)
+
+    console.log(`Sync results: ${inMailchimp.length} in Mailchimp, ${missingInMailchimp.length} missing`)
 
     return createNoCacheResponse({
       total: syncStatus.length,

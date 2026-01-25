@@ -106,6 +106,109 @@ function generateEmailHash(email: string): string {
 }
 
 // Add subscriber to Mailchimp list
+// Fetch all members from Mailchimp list (handles pagination automatically)
+export async function getAllMailchimpMembers() {
+  try {
+    // Validate required environment variables
+    if (!MAILCHIMP_API_KEY || !MAILCHIMP_SERVER_PREFIX || !MAILCHIMP_LIST_ID) {
+      throw new Error('Mailchimp configuration is missing. Please check environment variables.')
+    }
+
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
+    const allMembers: any[] = []
+    let offset = 0
+    const count = 1000 // Max per page
+    let totalItems = 0
+
+    // Fetch first page to get total count
+    const firstResponse = await fetch(
+      `${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members?count=${count}&offset=${offset}&fields=members.email_address,members.status,members.tags,total_items`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        signal: AbortSignal.timeout(30000)
+      }
+    )
+
+    if (!firstResponse.ok) {
+      const errorData = await firstResponse.json().catch(() => ({}))
+      throw new Error(`Mailchimp API error: ${errorData.detail || errorData.title || firstResponse.status}`)
+    }
+
+    const firstData = await firstResponse.json()
+    totalItems = firstData.total_items
+    allMembers.push(...(firstData.members || []))
+
+    console.log(`Fetched ${allMembers.length} of ${totalItems} Mailchimp members`)
+
+    // Fetch remaining pages
+    while (allMembers.length < totalItems) {
+      offset += count
+      
+      const response = await fetch(
+        `${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}/members?count=${count}&offset=${offset}&fields=members.email_address,members.status,members.tags`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Basic ${authString}`,
+            'Content-Type': 'application/json'
+          },
+          signal: AbortSignal.timeout(30000)
+        }
+      )
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch page at offset ${offset}, continuing...`)
+        break
+      }
+
+      const data = await response.json()
+      const members = data.members || []
+      
+      if (members.length === 0) break
+      
+      allMembers.push(...members)
+      console.log(`Fetched ${allMembers.length} of ${totalItems} Mailchimp members`)
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+
+    // Convert to a Set of lowercase emails for fast lookup
+    const emailSet = new Set(
+      allMembers
+        .filter(m => m.email_address)
+        .map(m => m.email_address.toLowerCase())
+    )
+
+    // Also return the full member data for detailed analysis
+    const memberMap = new Map(
+      allMembers
+        .filter(m => m.email_address)
+        .map(m => [m.email_address.toLowerCase(), {
+          email: m.email_address,
+          status: m.status,
+          tags: m.tags?.map((t: any) => t.name) || []
+        }])
+    )
+
+    console.log(`Successfully fetched ${allMembers.length} total members from Mailchimp`)
+
+    return {
+      emailSet,
+      memberMap,
+      totalCount: allMembers.length
+    }
+
+  } catch (error) {
+    console.error('Error fetching all Mailchimp members:', error)
+    throw error
+  }
+}
+
 // Batch add multiple members to Mailchimp list (up to 500 at once)
 export async function batchAddToMailchimpList(
   members: Array<{
