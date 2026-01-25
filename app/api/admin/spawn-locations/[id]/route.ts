@@ -5,7 +5,7 @@ import { query } from '@/lib/db'
 // Review a spawn location submission (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -16,6 +16,7 @@ export async function PUT(
       )
     }
 
+    const { id: submissionId } = await params
     const body = await request.json()
     const { status, reviewNotes } = body
 
@@ -36,7 +37,7 @@ export async function PUT(
        JOIN products p ON sls.product_id = p.id
        JOIN users u ON sls.user_id = u.id
        WHERE sls.id = $1`,
-      [params.id]
+      [submissionId]
     )
 
     if (submissionResult.rows.length === 0) {
@@ -64,7 +65,7 @@ export async function PUT(
         `UPDATE spawn_location_submissions 
          SET status = $1, reviewed_by = $2, reviewed_at = NOW(), review_notes = $3, updated_at = NOW()
          WHERE id = $4`,
-        [status, session.user.id, reviewNotes, params.id]
+        [status, session.user.id, reviewNotes, submissionId]
       )
 
       // If approved, award points and update product
@@ -84,7 +85,7 @@ export async function PUT(
           `UPDATE spawn_location_submissions 
            SET points_awarded = 20, points_awarded_at = NOW()
            WHERE id = $1`,
-          [params.id]
+          [submissionId]
         )
 
         // Update the product's spawn location if it's empty or different
@@ -123,7 +124,7 @@ export async function PUT(
 // Get a specific submission (admin only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -134,6 +135,7 @@ export async function GET(
       )
     }
 
+    const { id: submissionId } = await params
     const result = await query(
       `SELECT 
         sls.*,
@@ -146,7 +148,7 @@ export async function GET(
        JOIN products p ON sls.product_id = p.id
        JOIN users u ON sls.user_id = u.id
        WHERE sls.id = $1`,
-      [params.id]
+      [submissionId]
     )
 
     if (result.rows.length === 0) {

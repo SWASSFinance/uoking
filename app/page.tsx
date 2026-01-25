@@ -9,6 +9,7 @@ import { SlotSection } from "@/components/slot-section"
 import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 import { PremiumBenefitsAdWrapper } from "@/components/premium-benefits-ad-wrapper"
+import { InfoBanner } from "@/components/info-banner"
 import { getActiveBanners } from "@/lib/db"
 import Link from "next/link"
 
@@ -49,6 +50,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Info Banner - Discounts, Referrals, Cashback */}
+      <InfoBanner />
 
       {/* Premium Benefits Advertisement */}
       <section className="py-8 bg-white dark:bg-gray-900">
