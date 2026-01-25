@@ -62,7 +62,7 @@ export default async function HomePage() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
                 {[
                   { icon: "🚚", title: "Free Delivery", desc: "All shards, no minimum order", link: "/delivery-returns" },
-                  { icon: "🎖️", title: "Military Discount", desc: "Veterans get 15% global cashback", link: "/account" },
+                  { icon: "🎖️", title: "Military Support", desc: "3% of all orders shared with veterans", link: "/account" },
                   { icon: "📊", title: "Volume Discounts", desc: "Save up to 20% on bulk orders", link: "/special-deals" },
                   { icon: "👥", title: "Referral Program", desc: "Earn 10% cashback for every friend", link: "/account" },
                   { icon: "💰", title: "Loyalty Cashback", desc: "Get 5% back on every purchase", link: "/account" }

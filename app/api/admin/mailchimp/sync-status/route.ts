@@ -57,22 +57,22 @@ export async function GET(request: NextRequest) {
       dbRecords = result.rows || []
     } else if (source === 'orders') {
       try {
-        const result = await query(`
-          SELECT DISTINCT
-            COALESCE(o.payer_email, u.email) as email,
-            u.first_name,
-            u.last_name,
-            o.created_at,
-            o.payer_email,
-            u.email as user_email
-          FROM orders o
-          JOIN users u ON o.user_id = u.id
-          WHERE (o.payer_email IS NOT NULL AND o.payer_email != '' AND o.payer_email NOT LIKE 'deleted_%') 
-             OR (u.email IS NOT NULL AND u.email != '' AND u.email NOT LIKE 'deleted_%')
-          AND o.status = 'completed'
-          ORDER BY o.created_at DESC
-          LIMIT $1
-        `, [limit])
+          const result = await query(`
+            SELECT DISTINCT
+              COALESCE(o.payer_email, u.email) as email,
+              u.first_name,
+              u.last_name,
+              o.created_at,
+              o.payer_email,
+              u.email as user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE (o.payer_email IS NOT NULL AND o.payer_email != '' AND o.payer_email NOT LIKE 'deleted_%') 
+               OR (u.email IS NOT NULL AND u.email != '' AND u.email NOT LIKE 'deleted_%')
+            AND o.status = 'completed'
+            ORDER BY o.created_at DESC
+            LIMIT $1
+          `, [limit])
         dbRecords = result.rows || []
       } catch (error: any) {
         if (error.message?.includes('payer_email')) {
@@ -109,14 +109,14 @@ export async function GET(request: NextRequest) {
       const memberInfo = mailchimpData.memberMap.get(emailLower)
       
       return {
-        email: record.email,
+          email: record.email,
         firstName: record.first_name || '',
         lastName: record.last_name || '',
         inMailchimp,
         mailchimpStatus: memberInfo?.status || null,
         mailchimpTags: memberInfo?.tags || [],
-        inDatabase: true,
-        source: source === 'users' ? 'users' : 'orders'
+          inDatabase: true,
+          source: source === 'users' ? 'users' : 'orders'
       }
     })
 

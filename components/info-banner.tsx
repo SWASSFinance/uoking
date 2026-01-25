@@ -13,8 +13,8 @@ export function InfoBanner() {
     },
     {
       icon: <Star className="h-5 w-5" />,
-      title: "Military Discount",
-      description: "Veterans get 15% global cashback",
+      title: "Military Support",
+      description: "3% of all orders shared with veterans",
       link: "/account",
       color: "text-red-600 dark:text-red-400",
       bgColor: "bg-red-50 dark:bg-red-900/20"
