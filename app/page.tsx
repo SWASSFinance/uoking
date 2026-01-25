@@ -103,13 +103,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Premium Benefits Advertisement */}
-      <section className="py-8 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <PremiumBenefitsAdWrapper variant="banner" />
-        </div>
-      </section>
-
       {/* Combined Classes and Deal of the Day Section */}
       <section className="py-16 bg-gradient-to-r from-orange-50/90 to-amber-50/90 dark:from-gray-800/90 dark:to-gray-700/90 backdrop-blur-sm">
         <div className="container mx-auto px-4">
