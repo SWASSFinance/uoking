@@ -21,38 +21,86 @@ export default async function HomePage() {
     <div className="min-h-screen">
       <Header />
       
-      {/* Banner Section - Takes up actual space */}
-      <section className="relative h-[400px] w-full overflow-hidden">
+      {/* Hero Banner Section with Info */}
+      <section className="relative min-h-[700px] w-full overflow-hidden">
         <ImageBanner 
           imagePath="/uo/banner.png" 
           alt="UO King Banner" 
         />
         {/* Semi-transparent overlay - responsive to theme */}
-        <div className="absolute inset-0 bg-black/30 dark:bg-black/20 z-10"></div>
+        <div className="absolute inset-0 bg-black/40 dark:bg-black/30 z-10"></div>
         
         {/* Dragon Animation */}
         <DragonAnimation />
         
-        {/* Welcome Text - Centered in banner */}
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center text-white">
-            <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl">
+        {/* Welcome Text and Info - Centered in banner */}
+        <div className="absolute inset-0 flex items-center justify-center z-20 px-4">
+          <div className="container mx-auto text-center text-white max-w-6xl">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-3 drop-shadow-2xl">
               Welcome to UO KING
             </h1>
             {banners.length > 0 && banners[0]?.button_text && (
               <a
                 href={banners[0].button_url || '#'}
-                className="inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg font-semibold rounded-lg transition-colors drop-shadow-lg"
+                className="inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-4 text-lg font-semibold rounded-lg transition-colors drop-shadow-lg mb-8"
               >
                 {banners[0].button_text}
               </a>
             )}
+            
+            {/* Why Shop at UO King - Integrated into Hero */}
+            <div className="mt-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-lg">
+                Why Shop at UO King?
+              </h2>
+              <p className="text-sm md:text-base mb-6 drop-shadow-lg opacity-90">
+                Enjoy exclusive benefits, discounts, and rewards with every purchase
+              </p>
+
+              {/* Features Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                {[
+                  { icon: "🚚", title: "Free Delivery", desc: "All shards, no minimum order", link: "/delivery-returns" },
+                  { icon: "🎖️", title: "Military Discount", desc: "Veterans get 15% global cashback", link: "/account" },
+                  { icon: "📊", title: "Volume Discounts", desc: "Save up to 20% on bulk orders", link: "/special-deals" },
+                  { icon: "👥", title: "Referral Program", desc: "Earn 10% cashback for every friend", link: "/account" },
+                  { icon: "💰", title: "Loyalty Cashback", desc: "Get 5% back on every purchase", link: "/account" }
+                ].map((feature, index) => (
+                  <Link
+                    key={index}
+                    href={feature.link}
+                    className="group block p-3 md:p-4 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">
+                      {feature.icon}
+                    </div>
+                    <h3 className="font-semibold text-white text-xs md:text-sm mb-1">
+                      {feature.title}
+                    </h3>
+                    <p className="text-[10px] md:text-xs text-white/80 leading-tight">
+                      {feature.desc}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Call to Action */}
+              <div className="mt-6">
+                <p className="text-xs md:text-sm drop-shadow-lg">
+                  New to UO King?{' '}
+                  <Link 
+                    href="/signup" 
+                    className="text-amber-300 font-semibold hover:text-amber-200 underline"
+                  >
+                    Sign up now
+                  </Link>
+                  {' '}and start earning rewards!
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Info Banner - Discounts, Referrals, Cashback */}
-      <InfoBanner />
 
       {/* Premium Benefits Advertisement */}
       <section className="py-8 bg-white dark:bg-gray-900">

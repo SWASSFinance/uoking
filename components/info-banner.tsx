@@ -4,41 +4,41 @@ import Link from 'next/link'
 export function InfoBanner() {
   const features = [
     {
+      icon: <Gift className="h-5 w-5" />,
+      title: "Free Delivery",
+      description: "All shards, no minimum order",
+      link: "/delivery-returns",
+      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-900/20"
+    },
+    {
+      icon: <Star className="h-5 w-5" />,
+      title: "Military Discount",
+      description: "Veterans get 15% global cashback",
+      link: "/account",
+      color: "text-red-600 dark:text-red-400",
+      bgColor: "bg-red-50 dark:bg-red-900/20"
+    },
+    {
       icon: <Percent className="h-5 w-5" />,
       title: "Volume Discounts",
       description: "Save up to 20% on bulk orders",
       link: "/special-deals",
-      color: "text-green-600 dark:text-green-400",
-      bgColor: "bg-green-50 dark:bg-green-900/20"
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20"
     },
     {
       icon: <Users className="h-5 w-5" />,
       title: "Referral Program",
       description: "Earn 10% cashback for every friend",
       link: "/account",
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-50 dark:bg-blue-900/20"
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-50 dark:bg-purple-900/20"
     },
     {
       icon: <DollarSign className="h-5 w-5" />,
       title: "Loyalty Cashback",
       description: "Get 5% back on every purchase",
-      link: "/account",
-      color: "text-purple-600 dark:text-purple-400",
-      bgColor: "bg-purple-50 dark:bg-purple-900/20"
-    },
-    {
-      icon: <Gift className="h-5 w-5" />,
-      title: "Daily Deals",
-      description: "New special offers every day",
-      link: "#deal-of-the-day",
-      color: "text-orange-600 dark:text-orange-400",
-      bgColor: "bg-orange-50 dark:bg-orange-900/20"
-    },
-    {
-      icon: <Star className="h-5 w-5" />,
-      title: "Earn Points",
-      description: "Contribute content & earn rewards",
       link: "/account",
       color: "text-amber-600 dark:text-amber-400",
       bgColor: "bg-amber-50 dark:bg-amber-900/20"
