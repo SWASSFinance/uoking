@@ -6,14 +6,19 @@ import { getSkillBySlug, getSkills } from '@/lib/db';
 import SkillDetail from '@/components/skill-detail';
 import Link from 'next/link';
 
+// Prevent build-time static generation to avoid database connection pool exhaustion
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 interface SkillPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: SkillPageProps): Promise<Metadata> {
-  const skill = await getSkillBySlug(params.slug);
+  const { slug } = await params;
+  const skill = await getSkillBySlug(slug);
   
   if (!skill) {
     return {
@@ -49,15 +54,9 @@ export async function generateMetadata({ params }: SkillPageProps): Promise<Meta
   };
 }
 
-export async function generateStaticParams() {
-  const skills = await getSkills();
-  return skills.map((skill) => ({
-    slug: skill.slug,
-  }));
-}
-
 export default async function SkillPage({ params }: SkillPageProps) {
-  const skill = await getSkillBySlug(params.slug);
+  const { slug } = await params;
+  const skill = await getSkillBySlug(slug);
 
   if (!skill) {
     notFound();

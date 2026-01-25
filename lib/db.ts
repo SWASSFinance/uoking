@@ -7,9 +7,10 @@ const pool = new Pool({
   ssl: {
     rejectUnauthorized: false
   },
-  max: 10,  // Reduced from 20 - Neon handles connection pooling
+  max: 20,  // Increased for build time when many pages render in parallel
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,  // Increased from 2000 for serverless
+  allowExitOnIdle: true,  // Allow pool to close when idle
 });
 
 // Test connection function
