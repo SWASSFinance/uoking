@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 import { query } from '@/lib/db'
-import { addToMailchimpList } from '@/lib/mailchimp'
+import { batchAddToMailchimpList } from '@/lib/mailchimp'
 import { validateEmailQuality } from '@/lib/email-validation'
 
 export async function POST(request: NextRequest) {
@@ -152,64 +152,107 @@ export async function POST(request: NextRequest) {
           invalid: results.invalid
         })
 
-        // Import to Mailchimp with rate limiting and delays
-        const delayBetweenRequests = 200
-        
-        for (let i = 0; i < toImport.length; i++) {
-          const item = toImport[i]
+        // Prepare members for batch import
+        const membersToImport = toImport.map(item => {
           const dbRecord = dbResults.find(r => r.email === item.email)
-          if (!dbRecord) continue
-
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, delayBetweenRequests))
+          if (!dbRecord) return null
+          
+          return {
+            email: item.email,
+            firstName: dbRecord.first_name || '',
+            lastName: dbRecord.last_name || '',
+            characterName: '',
+            mainShard: '',
+            source: source === 'users' ? 'database-import-users' : 'database-import-orders',
+            tags: source === 'users' 
+              ? ['imported-from-db', 'user']
+              : ['imported-from-db', 'customer', 'has-ordered']
           }
+        }).filter(Boolean) as Array<{
+          email: string
+          firstName: string
+          lastName: string
+          characterName: string
+          mainShard: string
+          source: string
+          tags: string[]
+        }>
+
+        sendEvent({ type: 'status', message: `Sending batch import to Mailchimp (${membersToImport.length} members)...` })
+
+        // Use batch import - processes up to 500 at once
+        const BATCH_SIZE = 100 // Use smaller batches to provide progress updates
+        let processedCount = 0
+
+        for (let i = 0; i < membersToImport.length; i += BATCH_SIZE) {
+          const batch = membersToImport.slice(i, i + BATCH_SIZE)
+          
+          sendEvent({ 
+            type: 'status', 
+            message: `Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(membersToImport.length / BATCH_SIZE)} (${batch.length} members)...` 
+          })
 
           try {
-            if (source === 'users') {
-              await addToMailchimpList(item.email, {
-                firstName: dbRecord.first_name,
-                lastName: dbRecord.last_name,
-                source: 'database-import-users',
-                tags: ['imported-from-db', 'user']
-              })
-            } else {
-              await addToMailchimpList(item.email, {
-                firstName: dbRecord.first_name || '',
-                lastName: dbRecord.last_name || '',
-                source: 'database-import-orders',
-                tags: ['imported-from-db', 'customer', 'has-ordered']
-              })
-            }
-            results.imported++
-            results.valid++
+            const batchResult = await batchAddToMailchimpList(batch)
             
-            // Send success event
-            sendEvent({
-              type: 'progress',
-              email: item.email,
-              status: 'imported',
-              current: i + 1,
-              total: toImport.length
+            results.imported += batchResult.added + batchResult.updated
+            results.valid += batchResult.added + batchResult.updated
+            results.failed += batchResult.errors.length
+            
+            // Send progress for successful imports
+            batch.forEach(member => {
+              processedCount++
+              const hadError = batchResult.errors.find(e => e.email === member.email)
+              
+              if (!hadError) {
+                sendEvent({
+                  type: 'progress',
+                  email: member.email,
+                  status: 'imported',
+                  current: processedCount,
+                  total: membersToImport.length
+                })
+              } else {
+                results.errors.push(`${member.email}: ${hadError.error}`)
+                sendEvent({
+                  type: 'progress',
+                  email: member.email,
+                  status: 'failed',
+                  error: hadError.error,
+                  current: processedCount,
+                  total: membersToImport.length
+                })
+              }
             })
+
+            sendEvent({ 
+              type: 'status', 
+              message: `Batch complete: ${batchResult.added} added, ${batchResult.updated} updated, ${batchResult.errors.length} errors` 
+            })
+
+            // Small delay between batches to avoid overwhelming the API
+            if (i + BATCH_SIZE < membersToImport.length) {
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+
           } catch (error: any) {
-            results.failed++
-            const errorMsg = error.message || 'Unknown error'
-            results.errors.push(`${item.email}: ${errorMsg}`)
+            // Batch failed entirely
+            const errorMsg = error.message || 'Batch operation failed'
+            sendEvent({ type: 'status', message: `Batch failed: ${errorMsg}` })
             
-            // Send failure event
-            sendEvent({
-              type: 'progress',
-              email: item.email,
-              status: 'failed',
-              error: errorMsg,
-              current: i + 1,
-              total: toImport.length
+            batch.forEach(member => {
+              processedCount++
+              results.failed++
+              results.errors.push(`${member.email}: ${errorMsg}`)
+              sendEvent({
+                type: 'progress',
+                email: member.email,
+                status: 'failed',
+                error: errorMsg,
+                current: processedCount,
+                total: membersToImport.length
+              })
             })
-            
-            if (errorMsg.includes('rate limit') || errorMsg.includes('503') || errorMsg.includes('429')) {
-              sendEvent({ type: 'status', message: 'Rate limit hit, waiting 5 seconds...' })
-              await new Promise(resolve => setTimeout(resolve, 5000))
-            }
           }
         }
 

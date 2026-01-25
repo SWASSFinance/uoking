@@ -106,6 +106,120 @@ function generateEmailHash(email: string): string {
 }
 
 // Add subscriber to Mailchimp list
+// Batch add multiple members to Mailchimp list (up to 500 at once)
+export async function batchAddToMailchimpList(
+  members: Array<{
+    email: string
+    firstName?: string
+    lastName?: string
+    characterName?: string
+    mainShard?: string
+    tags?: string[]
+    source?: string
+  }>
+) {
+  try {
+    // Validate required environment variables
+    if (!MAILCHIMP_API_KEY || !MAILCHIMP_SERVER_PREFIX || !MAILCHIMP_LIST_ID) {
+      throw new Error('Mailchimp configuration is missing. Please check environment variables.')
+    }
+
+    if (!members || members.length === 0) {
+      return { success: true, added: 0, updated: 0, errors: [] }
+    }
+
+    // Mailchimp allows up to 500 members per batch
+    const BATCH_SIZE = 500
+    const batches = []
+    for (let i = 0; i < members.length; i += BATCH_SIZE) {
+      batches.push(members.slice(i, i + BATCH_SIZE))
+    }
+
+    const results = {
+      added: 0,
+      updated: 0,
+      errors: [] as Array<{ email: string; error: string }>
+    }
+
+    const authString = Buffer.from(`${MAILCHIMP_API_KEY}:${MAILCHIMP_API_KEY}`).toString('base64')
+
+    for (const batch of batches) {
+      // Prepare members array for batch operation
+      const membersData = batch.map(member => ({
+        email_address: member.email.toLowerCase(),
+        status: 'subscribed' as const,
+        merge_fields: {
+          FNAME: member.firstName || '',
+          LNAME: member.lastName || '',
+          CHARACTER: member.characterName || '',
+          SHARD: member.mainShard || ''
+        },
+        tags: [
+          ...(member.tags || []),
+          member.source ? `source:${member.source}` : 'source:website',
+          'uo-king-customer'
+        ]
+      }))
+
+      try {
+        const response = await fetch(`${MAILCHIMP_API_URL}/lists/${MAILCHIMP_LIST_ID}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authString}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            members: membersData,
+            update_existing: true // Update if member already exists
+          }),
+          signal: AbortSignal.timeout(60000) // 60 second timeout for batch
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(`Mailchimp batch API error: ${errorData.detail || errorData.title || response.status}`)
+        }
+
+        const result = await response.json()
+        
+        // Count results
+        results.added += result.new_members?.length || 0
+        results.updated += result.updated_members?.length || 0
+        
+        // Collect errors
+        if (result.errors && result.errors.length > 0) {
+          result.errors.forEach((err: any) => {
+            results.errors.push({
+              email: err.email_address,
+              error: err.error || 'Unknown error'
+            })
+          })
+        }
+
+      } catch (error: any) {
+        // If batch fails, add all members to errors
+        batch.forEach(member => {
+          results.errors.push({
+            email: member.email,
+            error: error.message || 'Batch operation failed'
+          })
+        })
+      }
+    }
+
+    return {
+      success: true,
+      added: results.added,
+      updated: results.updated,
+      errors: results.errors
+    }
+
+  } catch (error) {
+    console.error('Error in batch add to Mailchimp:', error)
+    throw error
+  }
+}
+
 export async function addToMailchimpList(
   email: string,
   data: {
