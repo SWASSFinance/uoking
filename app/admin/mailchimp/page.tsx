@@ -192,7 +192,7 @@ export default function MailchimpAdminPage() {
   const loadRecentUsers = async () => {
     try {
       setLoadingUsers(true)
-      const response = await fetch('/api/admin/mailchimp/recent-users?limit=20', {
+      const response = await fetch('/api/admin/mailchimp/recent-users?limit=6', {
         cache: 'no-store'
       })
       if (response.ok) {
