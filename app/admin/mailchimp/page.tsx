@@ -108,6 +108,7 @@ export default function MailchimpAdminPage() {
   const [importing, setImporting] = useState(false)
   const [importResults, setImportResults] = useState<any>(null)
   const [importProgress, setImportProgress] = useState<{current: number, total: number} | null>(null)
+  const [importLogs, setImportLogs] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState<'overview' | 'sync' | 'import' | 'health'>('overview')
   
   // Single email test import state
@@ -373,7 +374,9 @@ export default function MailchimpAdminPage() {
       setImporting(true)
       setImportResults(null)
       setImportProgress({ current: 0, total: 0 })
+      setImportLogs([])
       
+      // Use fetch to initiate the stream
       const response = await fetch('/api/admin/mailchimp/import-users', {
         method: 'POST',
         headers: {
@@ -386,28 +389,76 @@ export default function MailchimpAdminPage() {
         }),
       })
 
-      const data = await response.json()
+      if (!response.ok || !response.body) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to start import')
+      }
 
-      if (response.ok) {
-        setImportResults(data)
-        setImportProgress(null)
-        toast({
-          title: "Import Complete",
-          description: `Successfully imported ${data.results.imported} emails from ${source}`,
-        })
-        loadStats()
-        loadListHealth()
-        loadSyncStatus(source) // Refresh sync status
-      } else {
-        setImportProgress(null)
-        toast({
-          title: "Import Failed",
-          description: data.error || "Failed to import emails",
-          variant: "destructive",
-        })
+      // Read the stream
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+        
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() || ''
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              
+              switch (data.type) {
+                case 'status':
+                  setImportLogs(prev => [...prev, `ℹ️ ${data.message}`])
+                  break
+                  
+                case 'start':
+                  setImportProgress({ current: 0, total: data.total })
+                  setImportLogs(prev => [
+                    ...prev,
+                    `✓ Starting import of ${data.total} emails (${data.skipped} skipped, ${data.invalid} invalid)`
+                  ])
+                  break
+                  
+                case 'progress':
+                  setImportProgress({ current: data.current, total: data.total })
+                  if (data.status === 'imported') {
+                    setImportLogs(prev => [...prev, `✅ ${data.email} - Imported`])
+                  } else if (data.status === 'failed') {
+                    setImportLogs(prev => [...prev, `❌ ${data.email} - Failed: ${data.error}`])
+                  }
+                  break
+                  
+                case 'complete':
+                  setImportResults(data)
+                  setImportProgress(null)
+                  toast({
+                    title: "Import Complete",
+                    description: `Imported ${data.results.imported} emails (${data.results.failed} failed)`,
+                  })
+                  loadStats()
+                  loadListHealth()
+                  loadSyncStatus(source)
+                  break
+                  
+                case 'error':
+                  throw new Error(data.error)
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e)
+            }
+          }
+        }
       }
     } catch (error: any) {
       setImportProgress(null)
+      setImportLogs(prev => [...prev, `❌ Error: ${error.message}`])
       toast({
         title: "Import Failed",
         description: error.message || "Failed to import emails",
@@ -1455,14 +1506,35 @@ export default function MailchimpAdminPage() {
                 </div>
 
                 {importing && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center space-x-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                      <span className="text-sm text-blue-700">Importing emails... This may take a while. Please wait.</span>
+                  <div className="mt-4 space-y-2">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                        <span className="text-sm text-blue-700">Importing emails...</span>
+                        {importProgress && importProgress.total > 0 && (
+                          <span className="text-sm text-blue-600 font-semibold">
+                            {importProgress.current} / {importProgress.total}
+                          </span>
+                        )}
+                      </div>
+                      {importProgress && importProgress.total > 0 && (
+                        <div className="mt-2 w-full bg-blue-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
-                    {importProgress && (
-                      <div className="mt-2 text-xs text-blue-600">
-                        Processing... (This can take several minutes for large imports)
+                    
+                    {/* Real-time logs */}
+                    {importLogs.length > 0 && (
+                      <div className="p-4 bg-gray-900 text-gray-100 rounded-lg max-h-96 overflow-y-auto font-mono text-xs space-y-1">
+                        {importLogs.map((log, idx) => (
+                          <div key={idx} className="whitespace-pre-wrap">
+                            {log}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
