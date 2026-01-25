@@ -57,7 +57,7 @@ export async function PUT(
       { status: 500 }
     )
   }
-}
+} 
  
 export async function DELETE(
   request: NextRequest,
