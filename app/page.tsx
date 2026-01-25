@@ -23,10 +23,13 @@ export default async function HomePage() {
       
       {/* Hero Banner Section with Info */}
       <section className="relative min-h-[700px] w-full overflow-hidden">
-        <ImageBanner 
-          imagePath="/uo/banner.png" 
-          alt="UO King Banner" 
-        />
+        {/* Background Image */}
+        <div className="absolute inset-0 w-full h-full">
+          <ImageBanner 
+            imagePath="/uo/banner.png" 
+            alt="UO King Banner" 
+          />
+        </div>
         {/* Semi-transparent overlay - responsive to theme */}
         <div className="absolute inset-0 bg-black/40 dark:bg-black/30 z-10"></div>
         
@@ -50,9 +53,7 @@ export default async function HomePage() {
             
             {/* Why Shop at UO King - Integrated into Hero */}
             <div className="mt-8">
-              <h2 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-lg">
-                Why Shop at UO King?
-              </h2>
+            
               <p className="text-sm md:text-base mb-6 drop-shadow-lg opacity-90">
                 Enjoy exclusive benefits, discounts, and rewards with every purchase
               </p>
