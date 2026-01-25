@@ -263,7 +263,7 @@ export function Header() {
     <>
       <div className="sticky top-0 z-50">
         {/* Trust Banner */}
-        <div className="bg-gradient-to-r from-green-500/90 to-emerald-500/90 dark:from-green-600/90 dark:to-emerald-600/90 backdrop-blur-sm border-b border-green-400/20 dark:border-green-500/20">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 border-b border-green-400/20 dark:border-green-500/20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center h-6">
               <p className="text-xs font-medium text-white text-center">
@@ -272,7 +272,7 @@ export function Header() {
             </div>
           </div>
         </div>
-        <header className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -304,7 +304,7 @@ export function Header() {
               </button>
               {activeDropdown === 'class' && (
                 <div 
-                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                   onMouseEnter={() => handleMouseEnter('class')}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -343,7 +343,7 @@ export function Header() {
               </button>
               {activeDropdown === 'prop' && (
                 <div 
-                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                   onMouseEnter={() => handleMouseEnter('prop')}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -374,7 +374,7 @@ export function Header() {
               </button>
               {activeDropdown === 'slot' && (
                 <div 
-                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                   onMouseEnter={() => handleMouseEnter('slot')}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -405,7 +405,7 @@ export function Header() {
               </button>
               {activeDropdown === 'store' && (
                 <div 
-                  className="absolute left-0 top-full mt-0 w-[750px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-[750px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                   onMouseEnter={() => handleMouseEnter('store')}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -456,7 +456,7 @@ export function Header() {
               </button>
               {activeDropdown === 'scrolls' && (
                 <div 
-                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                   onMouseEnter={() => handleMouseEnter('scrolls')}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -487,7 +487,7 @@ export function Header() {
               </button>
               {activeDropdown === 'tools' && (
                 <div 
-                  className="absolute left-0 top-full mt-0 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
+                  className="absolute left-0 top-full mt-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50"
                   onMouseEnter={() => handleMouseEnter('tools')}
                   onMouseLeave={handleMouseLeave}
                 >
