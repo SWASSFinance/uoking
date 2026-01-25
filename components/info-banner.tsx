@@ -23,7 +23,7 @@ export function InfoBanner() {
       icon: <Percent className="h-5 w-5" />,
       title: "Volume Discounts",
       description: "Save up to 20% on bulk orders",
-      link: "/special-deals",
+      link: "/store",
       color: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-50 dark:bg-blue-900/20"
     },

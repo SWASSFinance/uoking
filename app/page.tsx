@@ -63,7 +63,7 @@ export default async function HomePage() {
                 {[
                   { icon: "🚚", title: "Free Delivery", desc: "All shards, no minimum order", link: "/delivery-returns" },
                   { icon: "🎖️", title: "Military Support", desc: "3% of all orders shared with veterans", link: "/account" },
-                  { icon: "📊", title: "Volume Discounts", desc: "Save up to 20% on bulk orders", link: "/special-deals" },
+                  { icon: "📊", title: "Volume Discounts", desc: "Save up to 20% on bulk orders", link: "/store" },
                   { icon: "👥", title: "Referral Program", desc: "Earn 10% cashback for every friend", link: "/account" },
                   { icon: "💰", title: "Loyalty Cashback", desc: "Get 5% back on every purchase", link: "/account" }
                 ].map((feature, index) => (
