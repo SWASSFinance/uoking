@@ -9,7 +9,18 @@ export async function GET(
   try {
     const { slug } = await params
     const reviews = await getCategoryReviews(slug)
-    return NextResponse.json(reviews)
+    
+    // Calculate average rating and review count
+    const reviewCount = reviews.length
+    const avgRating = reviewCount > 0
+      ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviewCount
+      : 0
+    
+    return NextResponse.json({
+      reviews,
+      avgRating,
+      reviewCount
+    })
   } catch (error) {
     console.error('Error fetching category reviews:', error)
     return NextResponse.json(

@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast'
 export default function ProductPage() {
   const [product, setProduct] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
   const { toast } = useToast()
@@ -44,6 +45,20 @@ export default function ProductPage() {
         const data = await response.json()
         setProduct(data.product)
         setReviews(data.reviews)
+
+        // Fetch related products from the same category
+        if (data.product?.category_id) {
+          try {
+            const relatedResponse = await fetch(`/api/products?categoryId=${data.product.category_id}&limit=4`)
+            if (relatedResponse.ok) {
+              const relatedData = await relatedResponse.json()
+              // Filter out the current product
+              setRelatedProducts(relatedData.products.filter((p: any) => p.id !== data.product.id).slice(0, 3))
+            }
+          } catch (error) {
+            console.error('Error loading related products:', error)
+          }
+        }
       } catch (error) {
         console.error('Error loading product:', error)
         notFound();
@@ -242,36 +257,74 @@ export default function ProductPage() {
 
                 {/* Short Description */}
                 {product.short_description && (
-                  <pre className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-300">{product.short_description}</pre>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+                    <pre className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-300">{product.short_description}</pre>
+                  </div>
                 )}
+
+                {/* Key Features */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3 text-center">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">In Stock</p>
+                  </div>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 text-center">
+                    <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">Fast Delivery</p>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-3 text-center">
+                    <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">Secure</p>
+                  </div>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-center">
+                    <Star className="h-5 w-5 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">5% Cashback</p>
+                  </div>
+                </div>
               </div>
 
               {/* Game Info */}
-              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
-                <CardHeader>
-                  <CardTitle className="text-lg dark:text-white">Game Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {product.spawn_location && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-300">Spawn Location:</span>
-                      <span className="font-medium dark:text-white">{product.spawn_location}</span>
-                    </div>
-                  )}
-                  {product.drop_rate && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-300">Drop Rate:</span>
-                      <span className="font-medium dark:text-white">{product.drop_rate}</span>
-                    </div>
-                  )}
-                  {product.class_names && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-300">Recommended Class:</span>
-                      <span className="font-medium dark:text-white">{product.class_names}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {(product.spawn_location || product.drop_rate || product.class_names || product.type) && (
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-lg dark:text-white">Game Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {product.type && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Item Type:</span>
+                        <span className="font-medium dark:text-white capitalize">{product.type}</span>
+                      </div>
+                    )}
+                    {product.spawn_location && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Spawn Location:</span>
+                        <span className="font-medium dark:text-white">{product.spawn_location}</span>
+                      </div>
+                    )}
+                    {product.drop_rate && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Drop Rate:</span>
+                        <span className="font-medium dark:text-white">{product.drop_rate}</span>
+                      </div>
+                    )}
+                    {product.class_names && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Recommended Class:</span>
+                        <span className="font-medium dark:text-white">{product.class_names}</span>
+                      </div>
+                    )}
+                    {product.category_name && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Category:</span>
+                        <Link href={`/UO/${product.category_slug}`} className="font-medium text-amber-600 dark:text-amber-400 hover:underline">
+                          {product.category_name}
+                        </Link>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Spawn Location Submission */}
               {product?.id && (
@@ -328,23 +381,6 @@ export default function ProductPage() {
               <div className="space-y-6">
                 <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
                   <CardHeader>
-                    <CardTitle className="dark:text-white">Need Help?</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <Button variant="outline" className="w-full justify-start">
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        Visit Live Chat
-                      </Button>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
-                        <p>Our support team is available 24/7 to help with your order.</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
-                  <CardHeader>
                     <CardTitle className="dark:text-white">Delivery Information</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -358,15 +394,115 @@ export default function ProductPage() {
                         <span className="dark:text-gray-300">100% secure delivery guarantee</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <MessageCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <span className="dark:text-gray-300">SMS notification when ready</span>
+                        <CheckCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <span className="dark:text-gray-300">All shards supported</span>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Why Buy From Us */}
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="dark:text-white">Why UO King?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">💰 5% Loyalty Cashback</div>
+                        <p className="text-gray-600 dark:text-gray-300">Earn rewards on every purchase</p>
+                      </div>
+                      <Separator />
+                      <div>
+                        <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">📊 Volume Discounts</div>
+                        <p className="text-gray-600 dark:text-gray-300">Save up to 20% on bulk orders</p>
+                      </div>
+                      <Separator />
+                      <div>
+                        <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">🎖️ Military Support</div>
+                        <p className="text-gray-600 dark:text-gray-300">3% of orders support veterans</p>
+                      </div>
+                      <Separator />
+                      <div>
+                        <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">👥 Referral Program</div>
+                        <p className="text-gray-600 dark:text-gray-300">Earn 10% for every friend</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Need Help */}
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="dark:text-white">Need Help?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                      <p>Have questions about this item?</p>
+                      <Link href="/contact" className="block">
+                        <Button variant="outline" className="w-full">
+                          Contact Support
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             </div>
           </div>
+
+          {/* Related Products */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Related Products</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {relatedProducts.map((relatedProduct) => (
+                  <Link
+                    key={relatedProduct.id}
+                    href={`/product/${relatedProduct.slug}`}
+                    className="group"
+                  >
+                    <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-amber-200 dark:border-gray-600 hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-lg transition-all duration-300">
+                      <CardContent className="p-4">
+                        <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mb-3">
+                          {relatedProduct.image_url ? (
+                            <img
+                              src={relatedProduct.image_url}
+                              alt={relatedProduct.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShoppingCart className="h-12 w-12 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                          {relatedProduct.name}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                            ${parseFloat(relatedProduct.sale_price || relatedProduct.price).toFixed(2)}
+                          </span>
+                          {relatedProduct.sale_price && (
+                            <Badge variant="destructive" className="text-xs">Sale</Badge>
+                          )}
+                        </div>
+                        {relatedProduct.avg_rating > 0 && (
+                          <div className="flex items-center space-x-1 mt-2">
+                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              {parseFloat(relatedProduct.avg_rating).toFixed(1)} ({relatedProduct.review_count})
+                            </span>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

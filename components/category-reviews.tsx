@@ -37,8 +37,8 @@ interface UserReview {
 export function CategoryReviews({ 
   categoryId, // This is actually the category slug
   initialReviews = [], 
-  avgRating = 0, 
-  reviewCount = 0 
+  avgRating: initialAvgRating = 0, 
+  reviewCount: initialReviewCount = 0 
 }: CategoryReviewsProps) {
   const { data: session } = useSession()
   const [reviews, setReviews] = useState<Review[]>(initialReviews)
@@ -46,6 +46,13 @@ export function CategoryReviews({
   const [showForm, setShowForm] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [checkingUserReview, setCheckingUserReview] = useState(false)
+  const [avgRating, setAvgRating] = useState(initialAvgRating)
+  const [reviewCount, setReviewCount] = useState(initialReviewCount)
+
+  // Load reviews and stats on mount
+  useEffect(() => {
+    loadReviews()
+  }, [categoryId])
 
   // Check if user has already submitted a review
   useEffect(() => {
@@ -53,6 +60,20 @@ export function CategoryReviews({
       checkUserReview()
     }
   }, [session, categoryId])
+
+  const loadReviews = async () => {
+    try {
+      const response = await fetch(`/api/categories/${categoryId}/reviews`)
+      if (response.ok) {
+        const data = await response.json()
+        setReviews(data.reviews || [])
+        setAvgRating(data.avgRating || 0)
+        setReviewCount(data.reviewCount || 0)
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error)
+    }
+  }
 
   const checkUserReview = async () => {
     setCheckingUserReview(true)
@@ -83,7 +104,9 @@ export function CategoryReviews({
       
       if (reviewsResponse.ok) {
         const reviewsData = await reviewsResponse.json()
-        setReviews(reviewsData)
+        setReviews(reviewsData.reviews || [])
+        setAvgRating(reviewsData.avgRating || 0)
+        setReviewCount(reviewsData.reviewCount || 0)
       }
       
       if (userReviewResponse.ok) {
