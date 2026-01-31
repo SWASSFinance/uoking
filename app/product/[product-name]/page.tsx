@@ -349,8 +349,11 @@ export default function ProductPage() {
                     <CardTitle className="dark:text-white">Product Description</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose prose-gray max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-gray-700 dark:text-gray-300 leading-relaxed">{product.description}</pre>
+                    <div className="prose prose-gray dark:prose-invert max-w-none">
+                      <div 
+                        className="text-gray-700 dark:text-gray-300 leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: product.description }}
+                      />
                     </div>
                   </CardContent>
                 </Card>
