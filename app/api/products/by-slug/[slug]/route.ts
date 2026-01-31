@@ -3,10 +3,6 @@ import { getProductBySlug, getProductReviews, query } from '@/lib/db'
 import { getProductBySlugOptimized } from '@/lib/db-optimized'
 import { auth } from '@/app/api/auth/[...nextauth]/route'
 
-// Disable caching for this route to always fetch fresh product data
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
