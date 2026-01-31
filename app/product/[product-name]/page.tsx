@@ -123,6 +123,22 @@ export default function ProductPage() {
   const avgRating = parseFloat(product.avg_rating || '0');
   const reviewCount = parseInt(product.review_count || '0');
 
+  // Helper function to format description based on whether it contains HTML
+  const formatDescription = (desc: string) => {
+    if (!desc) return '';
+    
+    // Check if description contains HTML tags
+    const hasHTML = /<[^>]+>/.test(desc);
+    
+    if (hasHTML) {
+      // Already has HTML, return as-is
+      return desc;
+    } else {
+      // Plain text - convert line breaks to <br> tags
+      return desc.replace(/\n/g, '<br>');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
@@ -352,7 +368,7 @@ export default function ProductPage() {
                     <div className="prose prose-gray dark:prose-invert max-w-none">
                       <div 
                         className="text-gray-700 dark:text-gray-300 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: product.description }}
+                        dangerouslySetInnerHTML={{ __html: formatDescription(product.description) }}
                       />
                     </div>
                   </CardContent>
