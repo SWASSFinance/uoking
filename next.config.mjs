@@ -17,27 +17,9 @@ const nextConfig = {
     // Performance optimizations
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
-  // Empty turbopack config to silence Next.js 16+ warning
-  turbopack: {},
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
-  },
-  // Optimize bundle size
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-        },
-      }
-    }
-    return config
   },
 }
 
