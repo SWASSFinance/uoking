@@ -17,14 +17,6 @@ const nextConfig = {
     // Performance optimizations
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-  },
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
