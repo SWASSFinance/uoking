@@ -17,6 +17,8 @@ const nextConfig = {
     // Performance optimizations
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
+  // Empty turbopack config to silence Next.js 16+ warning
+  turbopack: {},
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
