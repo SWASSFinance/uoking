@@ -96,7 +96,7 @@ export async function generateMetadata({
         url: canonicalUrl,
         siteName: 'UO King',
         locale: 'en_US',
-        type: 'product',
+        type: 'website',
         images: product.image_url ? [
           {
             url: product.image_url.startsWith('http') ? product.image_url : `${baseUrl}${product.image_url}`,
@@ -137,7 +137,7 @@ export async function generateMetadata({
         url: `https://uoking.com/product/${productSlug}`,
         siteName: 'UO King',
         locale: 'en_US',
-        type: 'product',
+        type: 'website',
       },
       twitter: {
         card: 'summary',
