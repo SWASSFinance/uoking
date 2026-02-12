@@ -18,6 +18,11 @@ interface ProductStructuredDataProps {
 }
 
 export function ProductStructuredData({ product }: ProductStructuredDataProps) {
+  // Safely handle missing product data
+  if (!product || !product.slug || !product.name) {
+    return null
+  }
+
   const baseUrl = 'https://uoking.com'
   const productUrl = `${baseUrl}/product/${product.slug}`
 

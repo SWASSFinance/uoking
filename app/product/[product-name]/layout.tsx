@@ -10,15 +10,16 @@ export async function generateMetadata({
   const resolvedParams = await params
   const productSlug = resolvedParams['product-name']
 
+  // Create safe fallback metadata first
+  const fallbackTitle = `${productSlug.replace(/-/g, ' ')} - UO King | Ultima Online Items`
+  const fallbackDescription = `Buy ${productSlug.replace(/-/g, ' ')} for Ultima Online. Premium quality items with fast delivery and 24/7 support.`
+
   try {
     // Fetch product data directly from database (no API call needed)
     const product = await getProductBySlugOptimized(productSlug)
 
     if (!product) {
       // Fallback metadata if product not found - still allow indexing for SEO
-      const fallbackTitle = `${productSlug.replace(/-/g, ' ')} - UO King | Ultima Online Items`
-      const fallbackDescription = `Buy ${productSlug.replace(/-/g, ' ')} for Ultima Online. Premium quality items with fast delivery and 24/7 support.`
-
       return {
         title: fallbackTitle,
         description: fallbackDescription,
@@ -118,12 +119,10 @@ export async function generateMetadata({
       },
     }
   } catch (error) {
+    // Log error but don't crash - return safe fallback
     console.error('Error generating product metadata:', error)
 
     // Even on error, create SEO-friendly fallback with indexing enabled
-    const fallbackTitle = `${productSlug.replace(/-/g, ' ')} - UO King | Ultima Online Items`
-    const fallbackDescription = `Buy ${productSlug.replace(/-/g, ' ')} for Ultima Online. Premium quality items with fast delivery and 24/7 support.`
-
     return {
       title: fallbackTitle,
       description: fallbackDescription,
