@@ -16,6 +16,7 @@ import { ProductReviewForm } from '@/components/product-review-form'
 import { ProductReviews } from '@/components/product-reviews'
 import { SpawnLocationForm } from '@/components/spawn-location-form'
 import { ProductImageSubmissions } from '@/components/product-image-submissions'
+import { ProductStructuredData } from '@/components/product-structured-data'
 import { useCart } from '@/contexts/cart-context'
 import { useToast } from '@/hooks/use-toast'
 
@@ -141,6 +142,9 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Add structured data for SEO */}
+      <ProductStructuredData product={product} />
+
       <Header />
       <main className="py-16 px-4">
         <div className="container mx-auto">
